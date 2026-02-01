@@ -1,26 +1,400 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0b1118; /* scuro elegante */
+  --foreground: #eef2f7;
+
+  --muted: rgba(255, 255, 255, 0.75);
+  --glass: rgba(17, 24, 39, 0.65);
+
+  --accent: #6ee7b7; /* puntino/cerchi verdi */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-muted: var(--muted);
+  --color-glass: var(--glass);
+  --color-accent: var(--accent);
+
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), ui-sans-serif, system-ui;
+}
+
+/* =========================================================
+   COMPONENT CLASSES
+   ========================================================= */
+@layer components {
+  /* ---------------------------------------------------------
+     Theme helpers (scoped)
+     --------------------------------------------------------- */
+
+  .theme-light {
+    isolation: isolate;
+    background: #ffffff;
+    color: #0b1118;
+
+    --color-background: #ffffff;
+    --color-foreground: #0b1118;
+    --color-muted: rgba(11, 17, 24, 0.60);
+    --color-glass: rgba(255, 255, 255, 0.65);
+  }
+
+  .theme-dark {
+    isolation: isolate;
+    background: var(--background);
+    color: var(--foreground);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-muted: var(--muted);
+    --color-glass: var(--glass);
+  }
+
+  /* ---------------------------------------------------------
+     Services Section (reference-like on WHITE)
+     --------------------------------------------------------- */
+
+  .services-wrap {
+    @apply mx-auto max-w-6xl px-6;
+  }
+
+  .services-pad {
+    @apply py-24 md:py-28;
+  }
+
+  .services-grid {
+    @apply grid grid-cols-1 gap-y-16 md:grid-cols-3 md:gap-x-24;
+  }
+
+  .service-card {
+    @apply relative;
+  }
+
+  .service-n {
+    @apply text-[13px] tracking-[0.22em] text-slate-500;
+  }
+
+  .service-title {
+    @apply mt-6 font-display text-[22px] md:text-[24px] font-semibold text-slate-900;
+  }
+
+  .service-desc {
+    @apply mt-6 max-w-[40ch] text-[15px] leading-[2.05] text-slate-500;
+  }
+
+  .service-ghost-layer {
+    @apply pointer-events-none absolute inset-0 flex items-center justify-center;
+  }
+
+  .service-ghost-text {
+    @apply select-none font-display font-extrabold tracking-[-0.06em]
+    text-[190px] md:text-[240px] leading-none;
+    color: rgba(11, 17, 24, 0.065);
+    transition: color 220ms ease, filter 220ms ease, opacity 220ms ease;
+  }
+
+  .service-card.group:hover .service-ghost-text {
+    color: rgba(11, 17, 24, 0.115);
+    filter: saturate(1.05);
+  }
+
+  .service-ghost-underline {
+    @apply absolute left-1/2 -translate-x-1/2 -bottom-2 h-[3px] w-[70%];
+    background: rgba(11, 17, 24, 0.10);
+    transform-origin: center;
+  }
+
+  /* ---------------------------------------------------------
+     About Split Section (FULL WIDTH)
+     --------------------------------------------------------- */
+
+  .about-split {
+    @apply relative w-full min-h-[100svh] overflow-hidden;
+    background: var(--background);
+    color: var(--foreground);
+    isolation: isolate;
+  }
+
+  .about-split-wrap {
+    @apply grid grid-cols-1 md:grid-cols-2;
+    min-height: 100svh;
+    width: 100%;
+  }
+
+  .about-split-left {
+    @apply relative flex items-center px-8 py-20 md:px-10;
+  }
+
+  .about-split-left::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.06) 0%,
+            rgba(255, 255, 255, 0.03) 22%,
+            rgba(255, 255, 255, 0.00) 52%
+    );
+    pointer-events: none;
+  }
+
+  .about-eyebrow {
+    @apply relative z-10 text-sm font-semibold text-white/90;
+  }
+
+  .about-title {
+    @apply relative z-10 mt-6 font-display font-extrabold
+    text-[52px] leading-[1.02]
+    md:text-[72px] md:leading-[1.02]
+    tracking-[-0.02em];
+  }
+
+  .about-title-gradient {
+    background: linear-gradient(90deg, #5b7cff 0%, #ff4da8 85%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .about-desc {
+    @apply relative z-10 mt-10 max-w-[52ch]
+    text-base md:text-lg leading-[1.9]
+    text-white/75;
+  }
+
+  .about-cta {
+    @apply relative z-10 mt-12;
+  }
+
+  .about-split-right {
+    @apply relative min-h-[48svh] md:min-h-[100svh];
+  }
+
+  .about-image {
+    @apply absolute inset-0 bg-cover bg-center;
+  }
+
+  .about-image::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.08);
+    pointer-events: none;
+  }
+
+  /* ---------------------------------------------------------
+     Portfolio Collage (WHITE top + DARK bottom, symmetric)
+     --------------------------------------------------------- */
+
+  .collage-section {
+    @apply relative w-full overflow-hidden;
+    background: #ffffff;
+    color: #0b1118;
+    isolation: isolate;
+  }
+
+  /* banda scura sotto (come reference) */
+  .collage-section::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 46%;
+    background: var(--background);
+    z-index: 0;
+  }
+
+  .collage-wrap {
+    @apply relative z-10 w-full;
+    /* più aria sopra dalla sezione precedente */
+    padding-left: 36px;
+    padding-right: 36px;
+  }
+
+  /* ✅ più spazio SOPRA al titolo, leggermente meno SOTTO (simmetria migliore) */
+  .collage-head {
+    @apply mx-auto text-center;
+    max-width: 78rem;
+    padding-top: 160px;   /* più sopra */
+    padding-bottom: 88px; /* un filo meno sotto */
+  }
+
+  .collage-kicker {
+    @apply text-[12px] font-semibold tracking-[0.26em] text-slate-500;
+  }
+
+  .collage-title {
+    @apply mt-6 font-display font-extrabold tracking-[-0.02em] text-slate-900;
+    font-size: clamp(44px, 5.2vw, 82px);
+    line-height: 1.02;
+  }
+
+  /* Griglia simmetrica:
+     - 5 colonne (laterali uguali)
+     - laterali: col più “larga”
+     - centrali: 3 colonne
+     - 2 righe al centro
+  */
+  .collage-grid {
+    position: relative;
+    z-index: 10;
+
+    display: grid;
+    grid-template-columns:
+      minmax(220px, 1.18fr)
+      minmax(210px, 1fr)
+      minmax(210px, 1fr)
+      minmax(210px, 1fr)
+      minmax(220px, 1.18fr);
+    grid-template-rows: auto auto;
+
+    gap: 34px;
+
+    /* più piccolo -> evita overlap, resta “pieno” */
+    max-width: 1680px;
+    margin: 0 auto;
+    padding-bottom: 120px;
+    align-items: start;
+  }
+
+  /* tile base */
+  .collage-tile {
+    @apply relative overflow-hidden;
+    background: #0b1118;
+    box-shadow: 0 20px 55px rgba(0, 0, 0, 0.18);
+  }
+
+  .collage-img {
+    @apply block h-full w-full;
+    object-fit: cover;
+    transform: translateZ(0);
+  }
+
+  /* ✅ centrali: un pelo più “alte che larghe” */
+  .collage-tile-center {
+    aspect-ratio: 4 / 5;
+  }
+
+  /* ✅ laterali: uguali tra loro e più “rettangolari lunghi” + NON riempiono tutta l’altezza */
+  .collage-tile-side {
+    aspect-ratio: 16 / 11;          /* più lungo degli altri */
+    place-self: center;             /* centrato nel blocco che occupa due righe */
+    width: 100%;
+    max-width: 520px;               /* evita che esplodano */
+  }
+
+  /* posizionamento slots (simmetria certa) */
+  .collage-slot-side-left {
+    grid-column: 1;
+    grid-row: 1 / span 2; /* occupa due righe ma resta “mezza altezza” grazie all’aspect + center */
+  }
+
+  .collage-slot-side-right {
+    grid-column: 5;
+    grid-row: 1 / span 2;
+  }
+
+  .collage-slot-top-1 { grid-column: 2; grid-row: 1; }
+  .collage-slot-top-2 { grid-column: 3; grid-row: 1; }
+  .collage-slot-top-3 { grid-column: 4; grid-row: 1; }
+
+  .collage-slot-bot-1 { grid-column: 2; grid-row: 2; }
+  .collage-slot-bot-2 { grid-column: 3; grid-row: 2; }
+  .collage-slot-bot-3 { grid-column: 4; grid-row: 2; }
+
+  /* Tooltip follow mouse (NO cerchietto) */
+  .collage-tooltip {
+    position: fixed;
+    z-index: 80;
+    pointer-events: none;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .collage-badge-top {
+    @apply inline-flex items-center justify-center;
+    background: rgba(11, 17, 24, 0.92);
+    color: #ffffff;
+    padding: 12px 18px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    font-size: 12px;
+    text-transform: uppercase;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+  }
+
+  .collage-badge-bottom {
+    @apply inline-flex items-center justify-center;
+    background: #ffffff;
+    color: #0b1118;
+    padding: 12px 18px;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    font-size: 12px;
+    text-transform: uppercase;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.14);
+    margin-top: 10px;
+  }
+
+  /* responsive */
+  @media (max-width: 1100px) {
+    .collage-grid {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto;
+      gap: 22px;
+      padding-bottom: 80px;
+      max-width: 860px;
+    }
+
+    .collage-slot-side-left,
+    .collage-slot-side-right,
+    .collage-slot-top-1,
+    .collage-slot-top-2,
+    .collage-slot-top-3,
+    .collage-slot-bot-1,
+    .collage-slot-bot-2,
+    .collage-slot-bot-3 {
+      grid-column: auto;
+      grid-row: auto;
+    }
+
+    .collage-tile-center {
+      aspect-ratio: 4 / 5;
+    }
+
+    .collage-tile-side {
+      aspect-ratio: 16 / 11;
+      place-self: stretch;
+      max-width: none;
+    }
+
+    .collage-head {
+      padding-top: 130px;
+      padding-bottom: 64px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .collage-wrap {
+      padding-left: 18px;
+      padding-right: 18px;
+    }
+
+    .collage-grid {
+      grid-template-columns: 1fr;
+      max-width: 520px;
+    }
+  }
 }
