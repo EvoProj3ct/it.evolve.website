@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FillButton } from "./FillButton";
 import { HeroSocials } from "./HeroSocials";
@@ -43,6 +43,16 @@ export function HeroSlider() {
         ],
         []
     );
+
+    /**
+     * ✅ Preload immagini (evita flash/nero in produzione)
+     */
+    useEffect(() => {
+        slides.forEach((s) => {
+            const img = new Image();
+            img.src = s.imageUrl;
+        });
+    }, [slides]);
 
     const [i, setI] = useState(0);
     const [direction, setDirection] = useState<1 | -1>(1);
@@ -88,7 +98,9 @@ export function HeroSlider() {
             x: [
                 "0%",
                 dir === 1 ? `-${SHOVE}%` : `${SHOVE}%`,
-                dir === 1 ? `-${Math.round(PUSH * 0.72)}%` : `${Math.round(PUSH * 0.72)}%`,
+                dir === 1
+                    ? `-${Math.round(PUSH * 0.72)}%`
+                    : `${Math.round(PUSH * 0.72)}%`,
                 dir === 1 ? `-${PUSH}%` : `${PUSH}%`,
             ],
             scale: [1, 0.996, 0.992, 0.988],
@@ -137,7 +149,8 @@ export function HeroSlider() {
      */
     const wipeVariants = {
         enter: (dir: 1 | -1) => ({
-            clipPath: dir === 1 ? "inset(0% 0% 0% 100%)" : "inset(0% 100% 0% 0%)",
+            clipPath:
+                dir === 1 ? "inset(0% 0% 0% 100%)" : "inset(0% 100% 0% 0%)",
         }),
         center: { clipPath: "inset(0% 0% 0% 0%)" },
         exit: (_dir: 1 | -1) => ({ clipPath: "inset(0% 0% 0% 0%)" }),
@@ -205,7 +218,7 @@ export function HeroSlider() {
                     exit="exit"
                     transition={panelTransition as any}
                     className="absolute inset-0"
-                    style={{transformOrigin: "center center"}}
+                    style={{ transformOrigin: "center center" }}
                     onAnimationStart={() => {
                         setIsAnimating(true);
                         setContentReady(false);
@@ -223,11 +236,11 @@ export function HeroSlider() {
                         exit="exit"
                         transition={wipeTransition as any}
                         className="absolute inset-0 overflow-hidden"
-                        style={{willChange: "clip-path"}}
+                        style={{ willChange: "clip-path" }}
                     >
                         <motion.div
                             className="absolute inset-0 bg-cover bg-center"
-                            style={{backgroundImage: `url(${slide.imageUrl})`}}
+                            style={{ backgroundImage: `url(${slide.imageUrl})` }}
                             custom={direction}
                             variants={bgVariants}
                             initial="enter"
@@ -237,13 +250,10 @@ export function HeroSlider() {
                         />
 
                         {/* Overlay */}
-                        <div className="absolute inset-0 bg-black/35"/>
-                        <div
-                            className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.35)_45%,rgba(0,0,0,0.10)_75%,rgba(0,0,0,0)_100%)]"/>
-                        <div
-                            className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0)_52%,rgba(255,255,255,0.10)_52%,rgba(255,255,255,0.10)_64%,rgba(255,255,255,0)_64%,rgba(255,255,255,0)_100%)]"/>
-                        <div
-                            className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0)_68%,rgba(255,255,255,0.08)_68%,rgba(255,255,255,0.08)_78%,rgba(255,255,255,0)_78%,rgba(255,255,255,0)_100%)]"/>
+                        <div className="absolute inset-0 bg-black/35" />
+                        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.35)_45%,rgba(0,0,0,0.10)_75%,rgba(0,0,0,0)_100%)]" />
+                        <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0)_52%,rgba(255,255,255,0.10)_52%,rgba(255,255,255,0.10)_64%,rgba(255,255,255,0)_64%,rgba(255,255,255,0)_100%)]" />
+                        <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0)_68%,rgba(255,255,255,0.08)_68%,rgba(255,255,255,0.08)_78%,rgba(255,255,255,0)_78%,rgba(255,255,255,0)_100%)]" />
 
                         {/* Content */}
                         <motion.div
@@ -279,14 +289,16 @@ export function HeroSlider() {
                                             {/* ✅ Descrizione */}
                                             <motion.p
                                                 key={`sub-${navId}`}
-                                                initial={{opacity: 0, y: rise}}
+                                                initial={{ opacity: 0, y: rise }}
                                                 animate={
                                                     contentReady
-                                                        ? {opacity: 1, y: 0, pointerEvents: "auto"}
-                                                        : {opacity: 0, y: rise, pointerEvents: "none"}
+                                                        ? { opacity: 1, y: 0, pointerEvents: "auto" }
+                                                        : { opacity: 0, y: rise, pointerEvents: "none" }
                                                 }
                                                 transition={
-                                                    contentReady ? fadeInText(descDelayAfterStop) : {duration: 0.12}
+                                                    contentReady
+                                                        ? fadeInText(descDelayAfterStop)
+                                                        : { duration: 0.12 }
                                                 }
                                                 className="
                           max-w-[640px]
@@ -303,14 +315,16 @@ export function HeroSlider() {
                                             {/* ✅ Bottone */}
                                             <motion.div
                                                 key={`cta-${navId}`}
-                                                initial={{opacity: 0, y: rise}}
+                                                initial={{ opacity: 0, y: rise }}
                                                 animate={
                                                     contentReady
-                                                        ? {opacity: 1, y: 0, pointerEvents: "auto"}
-                                                        : {opacity: 0, y: rise, pointerEvents: "none"}
+                                                        ? { opacity: 1, y: 0, pointerEvents: "auto" }
+                                                        : { opacity: 0, y: rise, pointerEvents: "none" }
                                                 }
                                                 transition={
-                                                    contentReady ? fadeInText(btnDelayAfterStop) : {duration: 0.12}
+                                                    contentReady
+                                                        ? fadeInText(btnDelayAfterStop)
+                                                        : { duration: 0.12 }
                                                 }
                                                 className="pt-8 md:pt-10"
                                             >
@@ -326,43 +340,43 @@ export function HeroSlider() {
             </AnimatePresence>
 
             {/* ✅ Socials (Instagram / TikTok / LinkedIn) */}
-                <div
-                    className={[
-                        "absolute bottom-10 left-10 z-20 hidden md:flex items-center gap-3",
-                    ].join(" ")}
+            <div
+                className={[
+                    "absolute bottom-10 left-10 z-20 hidden md:flex items-center gap-3",
+                ].join(" ")}
+            >
+                <HeroSocials isDisabled={isAnimating} />
+            </div>
+
+            {/* Controls */}
+            <div className="absolute left-6 top-1/2 z-20 hidden -translate-y-1/2 md:block">
+                <button
+                    onClick={prev}
+                    className="grid h-12 w-12 place-items-center rounded-full border border-white/30 bg-transparent text-white hover:bg-white/10"
+                    aria-label="Previous"
+                    style={{ opacity: isAnimating ? 0.55 : 1, cursor: "pointer" }}
                 >
-                    <HeroSocials isDisabled={isAnimating}/>
-                </div>
+                    ‹
+                </button>
+            </div>
 
-                {/* Controls */}
-                <div className="absolute left-6 top-1/2 z-20 hidden -translate-y-1/2 md:block">
-                    <button
-                        onClick={prev}
-                        className="grid h-12 w-12 place-items-center rounded-full border border-white/30 bg-transparent text-white hover:bg-white/10"
-                        aria-label="Previous"
-                        style={{opacity: isAnimating ? 0.55 : 1, cursor: "pointer"}}
-                    >
-                        ‹
-                    </button>
-                </div>
+            <div className="absolute right-6 top-1/2 z-20 hidden -translate-y-1/2 md:block">
+                <button
+                    onClick={next}
+                    className="grid h-12 w-12 place-items-center rounded-full border border-white/30 bg-transparent text-white hover:bg-white/10"
+                    aria-label="Next"
+                    style={{ opacity: isAnimating ? 0.55 : 1, cursor: "pointer" }}
+                >
+                    ›
+                </button>
+            </div>
 
-                <div className="absolute right-6 top-1/2 z-20 hidden -translate-y-1/2 md:block">
-                    <button
-                        onClick={next}
-                        className="grid h-12 w-12 place-items-center rounded-full border border-white/30 bg-transparent text-white hover:bg-white/10"
-                        aria-label="Next"
-                        style={{opacity: isAnimating ? 0.55 : 1, cursor: "pointer"}}
-                    >
-                        ›
-                    </button>
-                </div>
-
-                {/* Counter */}
-                <div className="absolute bottom-8 right-10 z-20 font-display text-white/80">
-                    <span className="text-4xl font-semibold">{i + 1}</span>
-                    <span className="ml-2 text-2xl">,</span>
-                    <span className="ml-2 text-2xl">{slides.length}</span>
-                </div>
+            {/* Counter */}
+            <div className="absolute bottom-8 right-10 z-20 font-display text-white/80">
+                <span className="text-4xl font-semibold">{i + 1}</span>
+                <span className="ml-2 text-2xl">,</span>
+                <span className="ml-2 text-2xl">{slides.length}</span>
+            </div>
         </section>
-);
+    );
 }
