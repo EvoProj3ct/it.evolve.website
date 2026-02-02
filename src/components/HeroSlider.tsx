@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FillButton } from "./FillButton";
 import { HeroSocials } from "./HeroSocials";
@@ -14,22 +14,59 @@ type Slide = {
     imageUrl: string;
 };
 
-// ✅ preload robusto: carica + decode (evita freeze/flash con background-image)
+// ====== SLIDES (stabili) ======
+const SLIDES: Slide[] = [
+    {
+        titleTop: "Tecnologia",
+        titleBottom: "Sartoriale",
+        subtitle:
+            "Studiamo, strutturiamo e digitalizziamo i processi aziendali con soluzioni scalabili su misura.",
+        cta: "SCOPRI COME",
+        imageUrl: "/hero/slide1.png",
+    },
+    {
+        titleTop: "La Giusta",
+        titleBottom: "Taglia",
+        subtitle:
+            "Niente spese superflue. Analizziamo il tuo progetto per offrirti la taglia di sviluppo, dalla S alla XL, proporzionata alle tue reali esigenze.",
+        cta: "IL NOSTRO METODO",
+        imageUrl: "/hero/slide2.png",
+    },
+    {
+        titleTop: "Disegnato",
+        titleBottom: "Per Te",
+        subtitle:
+            "Grazie ad ATLAS, il nostro ecosistema modulare e scalabile, ti forniamo un prodotto solo tuo: dati, processi, operatività, tutto pensato per farti sentire a casa.",
+        cta: "SCOPRI ATLAS",
+        imageUrl: "/hero/slide3.png",
+    },
+];
+
+const IMAGE_URLS = SLIDES.map((s) => s.imageUrl);
+
+// ====== PRELOAD (parte subito, al load del modulo) ======
+const _preloadCache = new Map<string, Promise<void>>();
+
 function preloadAndDecode(src: string) {
-    return new Promise<void>((resolve) => {
+    if (_preloadCache.has(src)) return _preloadCache.get(src)!;
+
+    const p = new Promise<void>((resolve) => {
         const img = new Image();
         img.src = src;
 
+        // prova ad alzare la priorità (non supportato ovunque, ma innocuo)
+        try {
+            (img as any).fetchPriority = "high";
+        } catch {}
+
         const done = () => resolve();
 
-        // Se decode() esiste, aspetta la decodifica (la parte che spesso causa lo "scattino")
         const anyImg = img as any;
         if (typeof anyImg.decode === "function") {
             anyImg
                 .decode()
                 .then(done)
                 .catch(() => {
-                    // fallback: load events
                     if (img.complete) return done();
                     img.onload = done;
                     img.onerror = done;
@@ -40,52 +77,29 @@ function preloadAndDecode(src: string) {
             img.onerror = done;
         }
     });
+
+    _preloadCache.set(src, p);
+    return p;
 }
 
+// kick immediato
+const PRELOAD_ALL = Promise.all(IMAGE_URLS.map(preloadAndDecode)).then(() => undefined);
+
 export function HeroSlider() {
-    const slides: Slide[] = useMemo(
-        () => [
-            {
-                titleTop: "Tecnologia",
-                titleBottom: "Sartoriale",
-                subtitle:
-                    "Studiamo, strutturiamo e digitalizziamo i processi aziendali con soluzioni scalabili su misura.",
-                cta: "SCOPRI COME",
-                imageUrl: "/hero/slide1.png",
-            },
-            {
-                titleTop: "La Giusta",
-                titleBottom: "Taglia",
-                subtitle:
-                    "Niente spese superflue. Analizziamo il tuo progetto per offrirti la taglia di sviluppo, dalla S alla XL, proporzionata alle tue reali esigenze.",
-                cta: "IL NOSTRO METODO",
-                imageUrl: "/hero/slide2.png",
-            },
-            {
-                titleTop: "Disegnato",
-                titleBottom: "Per Te",
-                subtitle:
-                    "Grazie ad ATLAS, il nostro ecosistema modulare e scalabile, ti forniamo un prodotto solo tuo: dati, processi, operatività, tutto pensato per farti sentire a casa.",
-                cta: "SCOPRI ATLAS",
-                imageUrl: "/hero/slide3.png",
-            },
-        ],
-        []
-    );
+    const slides = useMemo(() => SLIDES, []);
 
     const [i, setI] = useState(0);
     const [direction, setDirection] = useState<1 | -1>(1);
     const [isAnimating, setIsAnimating] = useState(false);
-    const [contentReady, setContentReady] = useState(false);
+
+    const [contentReady, setContentReady] = useState(true);
+    const [imagesReady, setImagesReady] = useState(false);
 
     const [navId, setNavId] = useState(0);
 
-    // ✅ trigger dedicato per la roulette
+    // roulette
     const [rouletteTrigger, setRouletteTrigger] = useState(0);
     const firstRouletteDoneRef = useRef(false);
-
-    // ✅ gating: non far partire lo slider finché tutte le immagini non sono decodificate
-    const [imagesReady, setImagesReady] = useState(false);
 
     const slide = slides[i];
 
@@ -104,31 +118,19 @@ export function HeroSlider() {
 
     const rise = 14;
 
-    // ✅ delay extra SOLO per la prima volta (post-loading)
     const FIRST_ROULETTE_DELAY = 520;
 
-    /**
-     * ✅ Preload + decode immagini (evita flash/nero + micro-freeze in produzione)
-     */
+    // ✅ aspetta il preload (che però è già partito PRIMA del primo render)
     useEffect(() => {
         let cancelled = false;
-
-        (async () => {
-            try {
-                await Promise.all(slides.map((s) => preloadAndDecode(s.imageUrl)));
-            } finally {
-                if (!cancelled) {
-                    setImagesReady(true);
-                    // quando sono pronte, il contenuto può animare correttamente
-                    setContentReady(true);
-                }
-            }
-        })();
-
+        PRELOAD_ALL.finally(() => {
+            if (cancelled) return;
+            setImagesReady(true);
+        });
         return () => {
             cancelled = true;
         };
-    }, [slides]);
+    }, []);
 
     /**
      * ✅ PUSH con decelerazione
@@ -195,7 +197,7 @@ export function HeroSlider() {
     };
 
     /**
-     * WIPE VERTICALE
+     * WIPE
      */
     const wipeVariants = {
         enter: (dir: 1 | -1) => ({
@@ -233,16 +235,13 @@ export function HeroSlider() {
         ease: [0.2, 0.7, 0.2, 1] as any,
     };
 
-    /**
-     * ✅ dissolvenza IN più evidente per descrizione e bottone
-     */
     const fadeInText = (delay: number) => ({
         delay,
         duration: 0.95,
         ease: [0.22, 0.0, 0.15, 1] as any,
     });
 
-    // ✅ prima roulette: parte solo dopo che immagini sono pronte
+    // ✅ prima roulette: parte dopo che le immagini sono davvero pronte (così non “strozza” la prima transizione)
     useEffect(() => {
         if (firstRouletteDoneRef.current) return;
         if (!imagesReady) return;
@@ -257,7 +256,6 @@ export function HeroSlider() {
 
     const go = useCallback(
         (dir: 1 | -1) => {
-            if (!imagesReady) return; // ✅ evita click mentre sta ancora preparando immagini
             if (isAnimating) return;
 
             setIsAnimating(true);
@@ -267,12 +265,11 @@ export function HeroSlider() {
             setNavId((v) => v + 1);
             setI((v) => (v + dir + slides.length) % slides.length);
 
-            // ✅ dopo la prima volta, appena switchi parte subito
             if (firstRouletteDoneRef.current) {
                 setRouletteTrigger((v) => v + 1);
             }
         },
-        [imagesReady, isAnimating, slides.length]
+        [isAnimating, slides.length]
     );
 
     const prev = () => go(-1);
@@ -282,6 +279,24 @@ export function HeroSlider() {
 
     return (
         <section className="relative h-[100svh] w-full overflow-hidden bg-black">
+            {/* ✅ Preload DOM “visibile ma invisibile”: aiuta alcuni browser a non fare flash con background-image */}
+            <div
+                aria-hidden
+                className="pointer-events-none absolute -left-[9999px] -top-[9999px] h-px w-px opacity-0"
+            >
+                {IMAGE_URLS.map((src) => (
+                    <img
+                        key={src}
+                        src={src}
+                        alt=""
+                        decoding="async"
+                        loading="eager"
+                        // @ts-ignore
+                        fetchPriority="high"
+                    />
+                ))}
+            </div>
+
             <AnimatePresence initial={false} custom={direction} mode="sync">
                 <motion.div
                     key={navId}
@@ -299,8 +314,7 @@ export function HeroSlider() {
                     }}
                     onAnimationComplete={() => {
                         setIsAnimating(false);
-                        // ✅ solo se le immagini sono pronte (lo sono dopo preload)
-                        setContentReady(imagesReady);
+                        setContentReady(true);
                     }}
                 >
                     <motion.div
@@ -313,12 +327,16 @@ export function HeroSlider() {
                         className="absolute inset-0 overflow-hidden"
                         style={{ willChange: "clip-path" }}
                     >
+                        {/* ✅ OVERSCAN: elimina la riga nera all’inizio del wipe (gap/antialias) */}
                         <motion.div
-                            className="absolute inset-0 bg-cover bg-center"
-                            // ✅ background-color evita qualsiasi "pezzo nero" dovuto a frame senza texture
+                            className="absolute bg-cover bg-center"
                             style={{
+                                inset: "-2px", // <— importantissimo per eliminare il “pezzetto nero” al bordo del clip
                                 backgroundColor: "#000",
-                                backgroundImage: imagesReady ? `url(${slide.imageUrl})` : "none",
+                                backgroundImage: `url(${slide.imageUrl})`,
+                                willChange: "transform",
+                                transform: "translateZ(0)",
+                                backfaceVisibility: "hidden",
                             }}
                             custom={direction}
                             variants={bgVariants}
@@ -347,7 +365,6 @@ export function HeroSlider() {
                             <div className="w-full -translate-y-2 md:-translate-y-6">
                                 <div className="max-w-[760px]">
                                     <div className="flex flex-col gap-10 md:gap-12">
-                                        {/* ✅ Titolo */}
                                         <motion.h1
                                             className="
                         font-display font-extrabold text-white
@@ -374,7 +391,6 @@ export function HeroSlider() {
                                         </motion.h1>
 
                                         <div className="min-h-[170px] md:min-h-[190px]">
-                                            {/* ✅ Descrizione */}
                                             <motion.p
                                                 key={`sub-${navId}`}
                                                 initial={{ opacity: 0, y: rise }}
@@ -400,7 +416,6 @@ export function HeroSlider() {
                                                 {slide.subtitle}
                                             </motion.p>
 
-                                            {/* ✅ Bottone */}
                                             <motion.div
                                                 key={`cta-${navId}`}
                                                 initial={{ opacity: 0, y: rise }}
@@ -427,19 +442,18 @@ export function HeroSlider() {
                 </motion.div>
             </AnimatePresence>
 
-            {/* ✅ Socials */}
+            {/* Socials */}
             <div className="absolute bottom-10 left-10 z-20 hidden md:flex items-center gap-3">
-                <HeroSocials isDisabled={isAnimating || !imagesReady} />
+                <HeroSocials isDisabled={isAnimating} />
             </div>
 
             {/* Controls */}
             <div className="absolute left-6 top-1/2 z-20 hidden -translate-y-1/2 md:block">
                 <button
                     onClick={prev}
-                    disabled={isAnimating || !imagesReady}
-                    className="grid h-12 w-12 place-items-center rounded-full border border-white/30 bg-transparent text-white hover:bg-white/10 disabled:opacity-50"
+                    className="grid h-12 w-12 place-items-center rounded-full border border-white/30 bg-transparent text-white hover:bg-white/10"
                     aria-label="Previous"
-                    style={{ cursor: isAnimating || !imagesReady ? "default" : "pointer" }}
+                    style={{ opacity: isAnimating ? 0.55 : 1, cursor: "pointer" }}
                 >
                     ‹
                 </button>
@@ -448,10 +462,9 @@ export function HeroSlider() {
             <div className="absolute right-6 top-1/2 z-20 hidden -translate-y-1/2 md:block">
                 <button
                     onClick={next}
-                    disabled={isAnimating || !imagesReady}
-                    className="grid h-12 w-12 place-items-center rounded-full border border-white/30 bg-transparent text-white hover:bg-white/10 disabled:opacity-50"
+                    className="grid h-12 w-12 place-items-center rounded-full border border-white/30 bg-transparent text-white hover:bg-white/10"
                     aria-label="Next"
-                    style={{ cursor: isAnimating || !imagesReady ? "default" : "pointer" }}
+                    style={{ opacity: isAnimating ? 0.55 : 1, cursor: "pointer" }}
                 >
                     ›
                 </button>
