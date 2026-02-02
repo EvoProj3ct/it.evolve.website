@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FillButton } from "./FillButton";
 import { HeroSocials } from "./HeroSocials";
+import { RouletteTitle } from "./RouletteTitle";
 
 type Slide = {
     titleTop: string;
@@ -61,6 +62,10 @@ export function HeroSlider() {
 
     const [navId, setNavId] = useState(0);
 
+    // ✅ trigger dedicato per la roulette
+    const [rouletteTrigger, setRouletteTrigger] = useState(0);
+    const firstRouletteDoneRef = useRef(false);
+
     const slide = slides[i];
 
     /**
@@ -77,6 +82,9 @@ export function HeroSlider() {
     const btnDelayAfterStop = 0.96;
 
     const rise = 14;
+
+    // ✅ delay extra SOLO per la prima volta (post-loading)
+    const FIRST_ROULETTE_DELAY = 520;
 
     /**
      * ✅ PUSH con decelerazione
@@ -185,7 +193,7 @@ export function HeroSlider() {
     };
 
     /**
-     * ✅ NEW: dissolvenza IN più evidente per descrizione e bottone
+     * ✅ dissolvenza IN più evidente per descrizione e bottone
      */
     const fadeInText = (delay: number) => ({
         delay,
@@ -193,18 +201,40 @@ export function HeroSlider() {
         ease: [0.22, 0.0, 0.15, 1] as any,
     });
 
+    // ✅ prima roulette: parte solo dopo che contentReady è true (post-loading)
+    useEffect(() => {
+        if (firstRouletteDoneRef.current) return;
+        if (!contentReady) return;
+
+        const id = window.setTimeout(() => {
+            setRouletteTrigger((v) => v + 1);
+            firstRouletteDoneRef.current = true;
+        }, FIRST_ROULETTE_DELAY);
+
+        return () => window.clearTimeout(id);
+    }, [contentReady]);
+
     const go = (dir: 1 | -1) => {
         if (isAnimating) return;
+
         setIsAnimating(true);
         setContentReady(false);
         setDirection(dir);
 
+        // cambia slide
         setNavId((v) => v + 1);
         setI((v) => (v + dir + slides.length) % slides.length);
+
+        // ✅ dopo la prima volta, appena switchi parte subito
+        if (firstRouletteDoneRef.current) {
+            setRouletteTrigger((v) => v + 1);
+        }
     };
 
     const prev = () => go(-1);
     const next = () => go(1);
+
+    const titleText = `${slide.titleTop}\n${slide.titleBottom}`;
 
     return (
         <section className="relative h-[100svh] w-full overflow-hidden">
@@ -268,6 +298,7 @@ export function HeroSlider() {
                             <div className="w-full -translate-y-2 md:-translate-y-6">
                                 <div className="max-w-[760px]">
                                     <div className="flex flex-col gap-10 md:gap-12">
+                                        {/* ✅ Titolo: SOLO 3 lettere colorate + stop sfalsato + rallentamento */}
                                         <motion.h1
                                             className="
                         font-display font-extrabold text-white
@@ -281,8 +312,16 @@ export function HeroSlider() {
                                             exit="exit"
                                             transition={titleTransition as any}
                                         >
-                                            <span className="block">{slide.titleTop}</span>
-                                            <span className="block">{slide.titleBottom}</span>
+                                            <RouletteTitle
+                                                text={titleText}
+                                                triggerKey={rouletteTrigger}
+                                                picks={3}
+                                                durationMs={3300}
+                                                tickMinMs={85}
+                                                tickMaxMs={460}
+                                                stopFractions={[0.62, 0.82, 1]}
+                                                className="whitespace-pre-wrap"
+                                            />
                                         </motion.h1>
 
                                         <div className="min-h-[170px] md:min-h-[190px]">
@@ -339,12 +378,8 @@ export function HeroSlider() {
                 </motion.div>
             </AnimatePresence>
 
-            {/* ✅ Socials (Instagram / TikTok / LinkedIn) */}
-            <div
-                className={[
-                    "absolute bottom-10 left-10 z-20 hidden md:flex items-center gap-3",
-                ].join(" ")}
-            >
+            {/* ✅ Socials */}
+            <div className="absolute bottom-10 left-10 z-20 hidden md:flex items-center gap-3">
                 <HeroSocials isDisabled={isAnimating} />
             </div>
 

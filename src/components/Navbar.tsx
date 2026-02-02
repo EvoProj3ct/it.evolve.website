@@ -16,14 +16,25 @@ const portfolioDropdown = [
     { label: "Websites", href: "/portfolio/websites" },
 ];
 
+function accentForIndex(i: number) {
+    const palette = [
+        "var(--accent-yellow)",
+        "var(--accent-blue)",
+        "var(--accent-purple)",
+    ];
+    return palette[i % palette.length];
+}
+
 function DropdownItem({
                           href,
                           label,
                           onClick,
+                          accent,
                       }: {
     href: string;
     label: string;
     onClick: () => void;
+    accent: string;
 }) {
     /**
      * Misure finali (pixel-perfect)
@@ -31,7 +42,6 @@ function DropdownItem({
     const TEXT_START_PAD = 32; // spazio fisso prima del testo
     const LINE_LEFT_PAD = 10;
     const LINE_W = 20;
-    const GAP_TO_TEXT = 10;
 
     const NET_TEXT_SHIFT = 6; // piccolo movimento verso destra
 
@@ -50,16 +60,13 @@ function DropdownItem({
                 animate="rest"
             >
                 {/* Spazio fisso prima del testo */}
-                <div
-                    className="relative"
-                    style={{ width: TEXT_START_PAD, height: "1em" }}
-                >
+                <div className="relative" style={{ width: TEXT_START_PAD, height: "1em" }}>
                     <motion.div
                         className="absolute top-1/2 h-[2px]"
                         style={{
                             left: LINE_LEFT_PAD,
                             width: LINE_W,
-                            backgroundColor: "var(--color-accent)",
+                            backgroundColor: accent, // ✅ colore alternato
                             transformOrigin: "left center",
                             marginTop: "-1px",
                         }}
@@ -77,7 +84,7 @@ function DropdownItem({
                     style={{ whiteSpace: "nowrap" }}
                     variants={{
                         rest: { x: 0, color: "rgba(238,242,247,0.90)" },
-                        hover: { x: NET_TEXT_SHIFT, color: "var(--color-accent)" },
+                        hover: { x: NET_TEXT_SHIFT, color: accent }, // ✅ colore alternato
                     }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
                 >
@@ -105,10 +112,7 @@ function NavDropdown({
 }) {
     const isOpen = openId === id;
 
-    const longestLen = items.reduce(
-        (m, it) => Math.max(m, it.label.length),
-        0
-    );
+    const longestLen = items.reduce((m, it) => Math.max(m, it.label.length), 0);
     const menuMinWidth = `${longestLen + 7}ch`;
 
     return (
@@ -132,12 +136,13 @@ function NavDropdown({
                         style={{ minWidth: menuMinWidth, width: "max-content" }}
                     >
                         <div className="py-3">
-                            {items.map((item) => (
+                            {items.map((item, idx) => (
                                 <DropdownItem
                                     key={item.href}
                                     href={item.href}
                                     label={item.label}
                                     onClick={closeAll}
+                                    accent={accentForIndex(idx)} // ✅ 1°,2°,3° -> giallo, blu, viola (poi ripete)
                                 />
                             ))}
                         </div>

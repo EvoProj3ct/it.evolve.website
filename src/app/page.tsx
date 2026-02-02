@@ -5,6 +5,7 @@ import { AboutSplit } from "@/components/AboutSplit";
 import { PortfolioCollage} from "@/components/PortfolioCollage";
 
 
+
 export default function Page() {
   return (
       <main>

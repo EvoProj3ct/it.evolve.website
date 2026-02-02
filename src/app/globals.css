@@ -8,6 +8,15 @@
   --glass: rgba(17, 24, 39, 0.65);
 
   --accent: #6ee7b7; /* puntino/cerchi verdi */
+
+  /* ✅ 3 colori secondari ricorrenti */
+  --accent-yellow: #facc15;
+  --accent-blue: #3b82f6;
+  --accent-purple: #a855f7;
+
+  /* ✅ fallback per editor (next/font sovrascrive via className html) */
+  --font-body: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-display: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
 }
 
 @theme inline {
@@ -63,6 +72,51 @@ body {
   }
 
   /* ---------------------------------------------------------
+     Hero Socials (3 colori alternati in hover)
+     --------------------------------------------------------- */
+
+  .hero-socials {
+    @apply absolute bottom-7 left-7 z-20 hidden md:flex items-center gap-3;
+  }
+
+  .hero-social-btn {
+    /* ✅ default così l’editor “vede” la variabile */
+    --social-accent: var(--accent-yellow);
+
+    @apply relative grid h-9 w-9 place-items-center rounded-full
+    border border-white/25 bg-white/0 text-white/85
+    transition duration-300
+    hover:bg-white/5
+    focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40;
+  }
+
+  .hero-social-glow {
+    @apply pointer-events-none absolute inset-0 rounded-full
+    ring-1 ring-white/0
+    transition duration-300;
+  }
+
+  .hero-social-icon {
+    @apply relative text-[15px] opacity-90 transition duration-300;
+  }
+
+  /* ✅ hover colorato: bordo + icona + glow */
+  .hero-social-btn:hover {
+    border-color: var(--social-accent);
+    color: var(--social-accent);
+  }
+
+  .hero-social-btn:hover .hero-social-icon {
+    opacity: 1;
+  }
+
+  .hero-social-btn:hover .hero-social-glow {
+    box-shadow:
+            0 0 0 1px color-mix(in srgb, var(--social-accent) 65%, transparent),
+            0 0 0 8px rgba(255, 255, 255, 0.04);
+  }
+
+  /* ---------------------------------------------------------
      Services Section (reference-like on WHITE)
      --------------------------------------------------------- */
 
@@ -101,19 +155,32 @@ body {
   .service-ghost-text {
     @apply select-none font-display font-extrabold tracking-[-0.06em]
     text-[190px] md:text-[240px] leading-none;
+
     color: rgba(11, 17, 24, 0.065);
-    transition: color 220ms ease, filter 220ms ease, opacity 220ms ease;
+
+    transition:
+            color 220ms ease,
+            filter 220ms ease,
+            opacity 220ms ease,
+            text-shadow 220ms ease;
   }
 
   .service-card.group:hover .service-ghost-text {
-    color: rgba(11, 17, 24, 0.115);
+    color: var(--ghost-accent);
     filter: saturate(1.05);
+    text-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
   }
 
   .service-ghost-underline {
     @apply absolute left-1/2 -translate-x-1/2 -bottom-2 h-[3px] w-[70%];
     background: rgba(11, 17, 24, 0.10);
     transform-origin: center;
+    transition: background 220ms ease, opacity 220ms ease;
+  }
+
+  .service-card.group:hover .service-ghost-underline {
+    background: var(--ghost-accent);
+    opacity: 0.28;
   }
 
   /* ---------------------------------------------------------
@@ -162,7 +229,12 @@ body {
   }
 
   .about-title-gradient {
-    background: linear-gradient(90deg, #5b7cff 0%, #ff4da8 85%);
+    background: linear-gradient(
+            90deg,
+            var(--accent-blue) 0%,
+            var(--accent-purple) 55%,
+            var(--accent-yellow) 100%
+    );
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -205,7 +277,6 @@ body {
     isolation: isolate;
   }
 
-  /* banda scura sotto (come reference) */
   .collage-section::after {
     content: "";
     position: absolute;
@@ -219,17 +290,15 @@ body {
 
   .collage-wrap {
     @apply relative z-10 w-full;
-    /* più aria sopra dalla sezione precedente */
     padding-left: 36px;
     padding-right: 36px;
   }
 
-  /* ✅ più spazio SOPRA al titolo, leggermente meno SOTTO (simmetria migliore) */
   .collage-head {
     @apply mx-auto text-center;
     max-width: 78rem;
-    padding-top: 160px;   /* più sopra */
-    padding-bottom: 88px; /* un filo meno sotto */
+    padding-top: 160px;
+    padding-bottom: 88px;
   }
 
   .collage-kicker {
@@ -242,12 +311,6 @@ body {
     line-height: 1.02;
   }
 
-  /* Griglia simmetrica:
-     - 5 colonne (laterali uguali)
-     - laterali: col più “larga”
-     - centrali: 3 colonne
-     - 2 righe al centro
-  */
   .collage-grid {
     position: relative;
     z-index: 10;
@@ -263,14 +326,12 @@ body {
 
     gap: 34px;
 
-    /* più piccolo -> evita overlap, resta “pieno” */
     max-width: 1680px;
     margin: 0 auto;
     padding-bottom: 120px;
     align-items: start;
   }
 
-  /* tile base */
   .collage-tile {
     @apply relative overflow-hidden;
     background: #0b1118;
@@ -283,23 +344,20 @@ body {
     transform: translateZ(0);
   }
 
-  /* ✅ centrali: un pelo più “alte che larghe” */
   .collage-tile-center {
     aspect-ratio: 4 / 5;
   }
 
-  /* ✅ laterali: uguali tra loro e più “rettangolari lunghi” + NON riempiono tutta l’altezza */
   .collage-tile-side {
-    aspect-ratio: 16 / 11;          /* più lungo degli altri */
-    place-self: center;             /* centrato nel blocco che occupa due righe */
+    aspect-ratio: 16 / 11;
+    place-self: center;
     width: 100%;
-    max-width: 520px;               /* evita che esplodano */
+    max-width: 520px;
   }
 
-  /* posizionamento slots (simmetria certa) */
   .collage-slot-side-left {
     grid-column: 1;
-    grid-row: 1 / span 2; /* occupa due righe ma resta “mezza altezza” grazie all’aspect + center */
+    grid-row: 1 / span 2;
   }
 
   .collage-slot-side-right {
@@ -315,7 +373,6 @@ body {
   .collage-slot-bot-2 { grid-column: 3; grid-row: 2; }
   .collage-slot-bot-3 { grid-column: 4; grid-row: 2; }
 
-  /* Tooltip follow mouse (NO cerchietto) */
   .collage-tooltip {
     position: fixed;
     z-index: 80;
@@ -348,7 +405,6 @@ body {
     margin-top: 10px;
   }
 
-  /* responsive */
   @media (max-width: 1100px) {
     .collage-grid {
       grid-template-columns: 1fr 1fr;
