@@ -100,7 +100,7 @@ export function IntroLoader() {
                         >
                             {/* Fase 1: fill */}
                             <motion.div
-                                className="absolute left-0 top-0 h-full bg-emerald-300/90"
+                                className="absolute left-0 top-0 h-full bg-blue-600/90"
                                 initial={{ width: "0%" }}
                                 animate={{ width: "100%" }}
                                 transition={{ duration: 0.55, ease: "easeOut" }}
@@ -108,7 +108,7 @@ export function IntroLoader() {
 
                             {/* Fase 2: split */}
                             <motion.div
-                                className="absolute left-1/2 top-0 h-full bg-emerald-300/90"
+                                className="absolute left-1/2 top-0 h-full bg-blue-600/90"
                                 initial={{ width: "0%", x: "-50%" }}
                                 animate={
                                     phase === "split"
@@ -118,7 +118,7 @@ export function IntroLoader() {
                                 transition={{ duration: 0.35, ease: "easeOut" }}
                             />
                             <motion.div
-                                className="absolute left-1/2 top-0 h-full bg-emerald-300/90"
+                                className="absolute left-1/2 top-0 h-full bg-blue-600/90"
                                 initial={{ width: "0%", x: "-50%" }}
                                 animate={
                                     phase === "split"
@@ -135,7 +135,7 @@ export function IntroLoader() {
                         className="
               fixed left-0 top-1/2 z-[10000]
               h-[2px] w-screen -translate-y-1/2
-              bg-emerald-300
+              bg-blue-600/90
               [transform:translateZ(0)]
               will-change-transform
             "

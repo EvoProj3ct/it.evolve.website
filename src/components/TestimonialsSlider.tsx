@@ -1,0 +1,179 @@
+"use client";
+
+import { AnimatePresence, motion } from "framer-motion";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+type Testimonial = {
+    id: string;
+    quote: string;
+    name: string;
+    role?: string;
+    accent?: "yellow" | "blue" | "purple";
+};
+
+const ACCENT_VAR: Record<NonNullable<Testimonial["accent"]>, string> = {
+    yellow: "var(--accent-yellow)",
+    blue: "var(--accent-blue)",
+    purple: "var(--accent-purple)",
+};
+
+export function TestimonialsSlider() {
+    const items: Testimonial[] = useMemo(
+        () => [
+            {
+                id: "t1",
+                quote:
+                    "Con Evolve vogliamo portare i nostri anni di esperienza lavorativa nel settore dello sviluppo informatico a disposizione delle piccole e medie imprese.",
+                name: "Emanuele I.",
+                role: "Consulente per l'Innovazione",
+                accent: "purple",
+            },
+            {
+                id: "t2",
+                quote:
+                    "Evolve nasce da lontano, da uno sguardo al futuro che non ha mai smesso di fissare l'orizzonte. L'attenzione all'innovazione è cruciale per noi.",
+                name: "Gianmarco M.",
+                role: "Consulente per i Sistemi",
+                accent: "yellow",
+            },
+            {
+                id: "t3",
+                quote:
+                    "Molte volte mi sono trovato di fronte a imprese soverchiate dalla quantità di lavoro disorganizzato che si trovavano ad affrontare. Evolve vuole aiutarle a gestirlo al meglio.",
+                name: "Luca D.",
+                role: "Amministratore Delegato",
+                accent: "blue",
+            },
+        ],
+        []
+    );
+
+    const total = items.length;
+
+    const [i, setI] = useState(0);
+    const [dir, setDir] = useState<1 | -1>(1);
+
+    // ✅ lock anti-overlap (niente bug di closure)
+    const lockRef = useRef(false);
+    const timerRef = useRef<number | null>(null);
+
+    const active = items[i];
+    const accent = active.accent ? ACCENT_VAR[active.accent] : "var(--accent-blue)";
+
+    const go = useCallback(
+        (nextDir: 1 | -1) => {
+            if (lockRef.current) return;
+            lockRef.current = true;
+
+            setDir(nextDir);
+            setI((v) => (v + nextDir + total) % total);
+        },
+        [total]
+    );
+
+    const prev = () => go(-1);
+    const next = () => go(1);
+
+    // ✅ autoplay sempre attivo
+    useEffect(() => {
+        const AUTOPLAY_MS = 12000;
+
+        if (timerRef.current) window.clearInterval(timerRef.current);
+        timerRef.current = window.setInterval(() => {
+            next();
+        }, AUTOPLAY_MS);
+
+        return () => {
+            if (timerRef.current) window.clearInterval(timerRef.current);
+        };
+    }, [next]);
+
+    // ✅ se navighi manualmente, resetta timer (opzionale ma “premium”)
+    const restartTimer = useCallback(() => {
+        const AUTOPLAY_MS = 5000;
+        if (timerRef.current) window.clearInterval(timerRef.current);
+        timerRef.current = window.setInterval(() => next(), AUTOPLAY_MS);
+    }, [next]);
+
+    const onPrev = () => {
+        prev();
+        restartTimer();
+    };
+    const onNext = () => {
+        next();
+        restartTimer();
+    };
+
+    const ghostNumber = String(i + 1).padStart(2, "0");
+
+    return (
+        <section className="testi2-section">
+            <div className="testi2-wrap">
+                <div className="testi2-ghost" aria-hidden>
+                    {ghostNumber}
+                </div>
+
+                <div className="testi2-grid">
+                    {/* LEFT */}
+                    <div className="testi2-left">
+                        <div className="testi2-quoteCircle" style={{ ["--testi-accent" as any]: accent }}>
+                            <svg className="testi2-quoteSvg" viewBox="0 0 120 90" aria-hidden>
+                                <path d="M52 80H18c-2 0-4-2-4-4V50c0-17 9-30 26-38l7 11c-11 6-16 14-16 24v3h21c2 0 4 2 4 4v22c0 2-2 4-4 4Z" />
+                                <path d="M106 80H72c-2 0-4-2-4-4V50c0-17 9-30 26-38l7 11c-11 6-16 14-16 24v3h21c2 0 4 2 4 4v22c0 2-2 4-4 4Z" />
+                            </svg>
+                        </div>
+                    </div>
+
+                    {/* CENTER */}
+                    <div className="testi2-center">
+                        <AnimatePresence initial={false} mode="wait" custom={dir}>
+                            <motion.div
+                                key={active.id}
+                                custom={dir}
+                                initial={{ opacity: 0, y: 8, x: dir === 1 ? 14 : -14 }}
+                                animate={{ opacity: 1, y: 0, x: 0 }}
+                                exit={{ opacity: 0, y: -6, x: dir === 1 ? -14 : 14 }}
+                                transition={{ duration: 0.38, ease: [0.22, 0.0, 0.15, 1] }}
+                                onAnimationComplete={() => {
+                                    lockRef.current = false;
+                                }}
+                            >
+                                <p className="testi2-quote">{active.quote}</p>
+
+                                <div className="testi2-author">
+                  <span className="testi2-dash" aria-hidden>
+                    —
+                  </span>
+                                    <span className="testi2-name" style={{ color: accent }}>
+                    {active.name}
+                  </span>
+                                    {active.role ? <span className="testi2-role"> · {active.role}</span> : null}
+                                </div>
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+
+                    {/* RIGHT */}
+                    <div className="testi2-right">
+                        <button
+                            type="button"
+                            className="testi2-navBtn"
+                            onClick={onPrev}
+                            aria-label="Previous testimonial"
+                        >
+                            ‹
+                        </button>
+                        <button
+                            type="button"
+                            className="testi2-navBtn"
+                            onClick={onNext}
+                            aria-label="Next testimonial"
+                        >
+                            ›
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}

@@ -2,6 +2,8 @@ import "./globals.css";
 import { Montserrat, Inter } from "next/font/google";
 import { IntroLoader} from "@/components/IntroLoader";
 import { IntroLoaderGhosts } from "@/components/IntroLoaderGhosts";
+import { SiteFooter } from "@/components/Footer";
+import { Navbar } from "@/components/Navbar";
 
 const montserrat = Montserrat({
     subsets: ["latin"],
@@ -19,8 +21,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     return (
         <html lang="it" className={`${montserrat.variable} ${inter.variable}`}>
         <body>
-            <IntroLoaderGhosts />
+        <Navbar />
+            <IntroLoader />
             {children}
+        <SiteFooter />
         </body>
         </html>
     );

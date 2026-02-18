@@ -1,19 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 const homeDropdown = [
-    { label: "Main Home", href: "/" },
-    { label: "Creative Studio", href: "/creative" },
-    { label: "Business Startup", href: "/startup" },
+    { label: "Consulenza", href: "/portfolio" },
+    { label: "Startup Innovativa", href: "/portfolio" },
+    { label: "Formazione", href: "/portfolio" },
 ];
 
 const portfolioDropdown = [
-    { label: "Stampa 3D", href: "/portfolio/stampa-3d" },
-    { label: "ATLAS use cases", href: "/portfolio/atlas-use-cases" },
-    { label: "Websites", href: "/portfolio/websites" },
+    { label: "Evolve Atlas", href: "/portfolio" },
+    { label: "Stampa 3D", href: "/portfolio" },
+    { label: "Siti Web", href: "/portfolio" },
 ];
 
 function accentForIndex(i: number) {
@@ -36,20 +36,16 @@ function DropdownItem({
     onClick: () => void;
     accent: string;
 }) {
-    /**
-     * Misure finali (pixel-perfect)
-     */
-    const TEXT_START_PAD = 32; // spazio fisso prima del testo
+    const TEXT_START_PAD = 32;
     const LINE_LEFT_PAD = 10;
     const LINE_W = 20;
-
-    const NET_TEXT_SHIFT = 6; // piccolo movimento verso destra
+    const NET_TEXT_SHIFT = 6;
 
     return (
         <Link
             href={href}
             onClick={onClick}
-            className="block px-4 py-3 hover:bg-white/5"
+            className="block px-4 py-3 hover:bg-black/[0.04]"
             style={{ whiteSpace: "nowrap" }}
         >
             <motion.div
@@ -59,14 +55,13 @@ function DropdownItem({
                 whileHover="hover"
                 animate="rest"
             >
-                {/* Spazio fisso prima del testo */}
                 <div className="relative" style={{ width: TEXT_START_PAD, height: "1em" }}>
                     <motion.div
                         className="absolute top-1/2 h-[2px]"
                         style={{
                             left: LINE_LEFT_PAD,
                             width: LINE_W,
-                            backgroundColor: accent, // ✅ colore alternato
+                            backgroundColor: accent,
                             transformOrigin: "left center",
                             marginTop: "-1px",
                         }}
@@ -78,13 +73,12 @@ function DropdownItem({
                     />
                 </div>
 
-                {/* Testo */}
                 <motion.span
                     className="text-foreground/90"
                     style={{ whiteSpace: "nowrap" }}
                     variants={{
                         rest: { x: 0, color: "rgba(238,242,247,0.90)" },
-                        hover: { x: NET_TEXT_SHIFT, color: accent }, // ✅ colore alternato
+                        hover: { x: NET_TEXT_SHIFT, color: accent },
                     }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
                 >
@@ -120,9 +114,9 @@ function NavDropdown({
             <button
                 type="button"
                 onClick={() => setOpenId(isOpen ? null : id)}
-                className="flex items-center gap-1 hover:text-foreground"
+                className="flex items-center gap-1 text-[#0b1118] hover:text-black transition-colors"
             >
-                {label} <span className="text-foreground/60">▾</span>
+                {label} <span className="text-black/50">▾</span>
             </button>
 
             <AnimatePresence>
@@ -142,7 +136,7 @@ function NavDropdown({
                                     href={item.href}
                                     label={item.label}
                                     onClick={closeAll}
-                                    accent={accentForIndex(idx)} // ✅ 1°,2°,3° -> giallo, blu, viola (poi ripete)
+                                    accent={accentForIndex(idx)}
                                 />
                             ))}
                         </div>
@@ -157,49 +151,115 @@ export function Navbar() {
     const [openId, setOpenId] = useState<string | null>(null);
     const closeAll = () => setOpenId(null);
 
+    // ✅ show/hide on scroll
+    const [hidden, setHidden] = useState(false);
+    const lastY = useRef(0);
+    const ticking = useRef(false);
+
+    useEffect(() => {
+        lastY.current = window.scrollY;
+
+        const onScroll = () => {
+            if (ticking.current) return;
+            ticking.current = true;
+
+            requestAnimationFrame(() => {
+                const y = window.scrollY;
+                const delta = y - lastY.current;
+
+                const TOP_LOCK = 24;        // sempre visibile vicino al top
+                const HIDE_AFTER = 120;     // non nascondere subito
+                const DELTA_TRIGGER = 8;    // evita flicker con scroll micro
+
+                if (y < TOP_LOCK) {
+                    setHidden(false);
+                } else if (y > HIDE_AFTER) {
+                    if (delta > DELTA_TRIGGER) {
+                        // scroll DOWN
+                        setHidden(true);
+                        if (openId) closeAll();
+                    } else if (delta < -DELTA_TRIGGER) {
+                        // scroll UP
+                        setHidden(false);
+                    }
+                }
+
+                lastY.current = y;
+                ticking.current = false;
+            });
+        };
+
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [openId]);
+
     return (
-        <header className="absolute top-0 left-0 right-0 z-50">
-            <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-6">
-                <Link
-                    href="/"
-                    onClick={closeAll}
-                    className="text-xl tracking-wide text-foreground"
-                >
-                    <span className="font-display font-semibold">Evolve</span>
-                </Link>
-
-                <div className="flex items-center gap-8 text-sm text-foreground/90">
-                    <NavDropdown
-                        id="home"
-                        label="Home"
-                        items={homeDropdown}
-                        openId={openId}
-                        setOpenId={setOpenId}
-                        closeAll={closeAll}
-                    />
-
-                    <Link href="/about" onClick={closeAll} className="hover:text-foreground">
-                        About
+        <motion.header
+            className="fixed top-0 left-0 right-0 z-50"
+            initial={false}
+            animate={hidden ? "hidden" : "shown"}
+            variants={{
+                shown: { y: 0, opacity: 1 },
+                hidden: { y: -18, opacity: 0 },
+            }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+        >
+            <div className="bg-white/70 backdrop-blur-md ring-1 ring-black/5">
+                <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+                    <Link
+                        href="/"
+                        onClick={closeAll}
+                        className="text-xl tracking-wide text-[#0b1118] hover:text-black transition-colors"
+                    >
+                        <span className="font-display font-semibold">Evolve</span>
                     </Link>
 
-                    <NavDropdown
-                        id="portfolio"
-                        label="Portfolio"
-                        items={portfolioDropdown}
-                        openId={openId}
-                        setOpenId={setOpenId}
-                        closeAll={closeAll}
-                    />
+                    <div className="flex items-center gap-8 text-sm text-[#0b1118]">
+                        <NavDropdown
+                            id="home"
+                            label="Home"
+                            items={homeDropdown}
+                            openId={openId}
+                            setOpenId={setOpenId}
+                            closeAll={closeAll}
+                        />
 
-                    <Link href="/blogs" onClick={closeAll} className="hover:text-foreground">
-                        Blogs
-                    </Link>
+                        <Link
+                            href="/portfolio"
+                            onClick={closeAll}
+                            className="text-[#0b1118] hover:text-black transition-colors"
+                        >
+                            Portfolio
+                        </Link>
 
-                    <Link href="/contact" onClick={closeAll} className="hover:text-foreground">
-                        Contact
-                    </Link>
-                </div>
-            </nav>
-        </header>
+                        <NavDropdown
+                            id="portfolio"
+                            label="Prodotti"
+                            items={portfolioDropdown}
+                            openId={openId}
+                            setOpenId={setOpenId}
+                            closeAll={closeAll}
+                        />
+
+                        <Link
+                            href="/blogs"
+                            onClick={closeAll}
+                            className="text-[#0b1118] hover:text-black transition-colors"
+                        >
+                            Team
+                        </Link>
+
+                        <Link
+                            href="/contact"
+                            onClick={closeAll}
+                            className="text-[#0b1118] hover:text-black transition-colors"
+                        >
+                            Contatti
+                        </Link>
+                    </div>
+                </nav>
+            </div>
+        </motion.header>
     );
 }
