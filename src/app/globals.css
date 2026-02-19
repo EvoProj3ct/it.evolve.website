@@ -1711,7 +1711,7 @@ body {
 
   .portfolio-media{
     width: 100%;
-    height: clamp(520px, 58vh, 720px); /* formato predefinito */
+    height: clamp(520px, 90vh, 720px); /* formato predefinito */
     max-width: 100%;
     overflow: hidden;
     background: #f4f6fb;
