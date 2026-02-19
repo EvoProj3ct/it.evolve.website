@@ -17,74 +17,102 @@ export type PortfolioSection = {
 
 const SECTIONS: PortfolioSection[] = [
     {
-        id: "strategy",
-        title: "Strategia Digitale",
+        id: "consulenza",
+        title: "Consulenza Informatica",
         num: "01",
         accent: "blue",
         body: [
-            "Progettiamo roadmap, priorità e KPI per trasformare obiettivi di business in prodotti digitali misurabili.",
-            "Dal workshop iniziale alle milestone: chiarezza, velocità e allineamento con il team interno.",
+            "La consulenza è il punto di partenza per prendere decisioni consapevoli: analizziamo il contesto operativo",
+            "individuiamo criticità e opportunità. Definiamo insieme a te la giusta direzione tecnologica per la tua crescita.",
         ],
         cardTitle: "Strategia Digitale",
         cardText:
-            "Analisi, posizionamento e roadmap: scegliamo cosa costruire, quando, e perché — con metriche e trade-off espliciti.",
+            "Affianchiamo le aziende nella comprensione e strutturazione dei propri processi digitali.",
         image: "/portfolio/portfolio_01.png",
     },
     {
-        id: "product",
-        title: "Prodotto & UX",
+        id: "stampa",
+        title: "Stampa 3D",
         num: "02",
         accent: "purple",
         body: [
-            "Interfacce essenziali e coerenti: UX pragmatica, design system e prototipi rapidi per validare prima di sviluppare.",
-            "Riduciamo complessità e attrito: esperienze chiare, accessibili e immediate.",
+            "Grazie alla stampa 3D, è possibile collegare il digitale al fisico, ampliando le possibilità operative dell'attività.",
+            "Ti forniamo strumenti utili o che possono fare colpo sulle persone a cui venderai il tuo prodotto: dal marketing alla gestione dei processi.",
         ],
-        cardTitle: "Prodotto & UX",
+        cardTitle: "Stampa 3D",
         cardText:
-            "Wireframe, prototipi e design system: uniamo estetica e usabilità per esperienze che ‘si capiscono’ al primo colpo.",
+            "Progettiamo e realizziamo soluzioni fisiche tramite stampa 3D integrate con sistemi digitali, anche con integrazioni elettroniche (eLinker, microcontroller).",
         image: "/portfolio/portfolio_02.png",
     },
     {
-        id: "webapps",
-        title: "Web App su Misura",
+        id: "sviluppo",
+        title: "Sviluppo Software",
         num: "03",
         accent: "yellow",
         body: [
-            "Costruiamo applicazioni moderne (Next.js/React) con performance, SEO e scalabilità in mente.",
-            "Dal backoffice al portale clienti: flussi solidi, sicurezza e integrazioni reali con i tuoi sistemi.",
+            "Ogni applicazione è pensata per integrarsi con l’operatività quotidiana, adattarsi alla complessità del contesto e crescere nel tempo, evitando soluzioni rigide o sovradimensionate.",
+            "Dal backoffice al portale clienti: flussi solidi, sicurezza e integrazioni reali con i tuoi sistemi, sviluppate da professionisti con oltre dieci anni di esperienza nello sviluppo di soluzioni informatiche.",
         ],
-        cardTitle: "Web App su Misura",
+        cardTitle: "Sviluppo Software",
         cardText:
-            "Architetture pulite, componenti riusabili e release rapide: dal prototipo alla produzione senza sorprese.",
+            "Progettiamo e sviluppiamo software su misura partendo dai processi reali dell’azienda.",
         image: "/portfolio/portfolio_03.png",
     },
     {
         id: "automation",
-        title: "Automazioni & Integrazioni",
+        title: "Soluzioni IA",
         num: "04",
         accent: "blue",
         body: [
-            "Integriamo CRM, ERP, e-commerce, pagamenti, email e strumenti interni con automazioni affidabili.",
-            "Meno lavoro manuale, meno errori: pipeline, webhook, code, job schedulati e monitoraggio.",
+            "Niente fuffa: soluzioni che ti aiutano davvero a rendere più efficente la tua attività.",
+            "L’IA viene utilizzata come strumento di supporto decisionale, automazione o analisi, sempre in modo proporzionato e controllabile.",
         ],
-        cardTitle: "Automazioni & Integrazioni",
+        cardTitle: "Soluzioni IA",
         cardText:
-            "Connettiamo API e servizi: flussi robusti, retry, logging e osservabilità per far funzionare tutto ‘sempre’.",
+            "Integriamo soluzioni basate su intelligenza artificiale per produrre casi d'uso concreti e misurabili.",
         image: "/portfolio/portfolio_04.png",
     },
     {
-        id: "cloud",
-        title: "Cloud & DevOps",
+        id: "formazione",
+        title: "Formazione",
         num: "05",
         accent: "purple",
         body: [
-            "CI/CD, ambienti e deployment: rendiamo le release noiose (nel senso buono).",
-            "Sicurezza, backup, alerting e cost control: la produzione deve dormire tranquilla.",
+            "La formazione è pensata come parte del progetto: accompagniamo il team nella comprensione degli strumenti, dei flussi e delle logiche operative.",
+            "Un sistema funziona davvero solo se chi lo usa lo comprende come se l'avesse fatto lui.",
         ],
-        cardTitle: "Cloud & DevOps",
+        cardTitle: "Formazione",
         cardText:
-            "Infrastructure as Code, pipeline e monitoraggio: più affidabilità, meno downtime, più prevedibilità.",
+            "Offriamo formazione mirata per rendere te e i tuoi collaboratori autonomi nell’utilizzo dei sistemi sviluppati.",
         image: "/portfolio/portfolio_05.png",
+    },
+    {
+        id: "gestionali",
+        title: "Evolve Atlas",
+        num: "06",
+        accent: "yellow",
+        body: [
+            "ATLAS consente di strutturare dati, flussi operativi e relazioni in modo coerente, mantenendo controllo, semplicità e possibilità di evoluzione nel tempo, anche in contesti complessi o in crescita.",
+            "E per dimostrarti quanto è utile: lo usiamo in prima persona noi, e per tutto il tempo dello sviluppo lo useremo con te.",
+        ],
+        cardTitle: "Evolve Atlas",
+        cardText:
+            "ATLAS è il sistema gestionale sviluppato internamente ad Evolve: un ecosistema modulare, in cui ogni componente è configurato in base al tuo processo aziendale.",
+        image: "/portfolio/portfolio_06.png",
+    },
+    {
+        id: "siti",
+        title: "Siti Web",
+        num: "06",
+        accent: "blue",
+        body: [
+            "Ogni scelta è orientata a chiarezza, usabilità e integrazione con altri sistemi aziendali.",
+            "Il risultato è un sito coerente con l'attività, facile da gestire e pronto a evolvere.",
+        ],
+        cardTitle: "Siti Web",
+        cardText:
+            "Dal semplice sito vetrina ad una vero e proprio strumento operativo, ogni sito web è realizzato nella giusta taglia.",
+        image: "/portfolio/portfolio_07.png",
     },
 ];
 
@@ -173,3 +201,4 @@ export default function Portfolio() {
         </section>
     );
 }
+
