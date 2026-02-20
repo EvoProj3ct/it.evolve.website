@@ -1790,38 +1790,1049 @@ body {
 }
 
 
-/* sfondo “soft” tipo screenshot */
-.heroSoftBg {
-  background:
-          radial-gradient(900px 420px at 30% 30%, rgba(0,0,0,0.03) 0%, transparent 62%),
-          radial-gradient(820px 520px at 70% 55%, rgba(0,0,0,0.028) 0%, transparent 62%),
-          linear-gradient(180deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.00) 60%);
-  filter: blur(0px);
+@layer components {
+  /* =========================
+     HERO + MARQUEE (contact-like)
+     ========================= */
+
+  .heroMarquee {
+    background: #fff;
+    color: #0b1118;
+  }
+
+  .heroMarquee-wrap {
+    width: min(92vw, 1180px);
+    margin: 0 auto;
+  }
+
+  /* HERO */
+  .heroMarquee-hero {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(90px, 12vh, 150px) 0 clamp(60px, 8vh, 90px);
+    background: #fff;
+  }
+
+  /* bg “foto + fade” come contact */
+  .heroMarquee-bg {
+    position: absolute;
+    inset: 0;
+    background-image: var(--contact-bg, url("/contact/contact_bg.jpg"));
+    background-size: cover;
+    background-position: center;
+    filter: saturate(0.95);
+    opacity: 0.18;
+    transform: scale(1.02);
+  }
+
+  .heroMarquee-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+            900px 520px at 50% 40%,
+            rgba(255, 255, 255, 0.92) 0%,
+            rgba(255, 255, 255, 0.75) 45%,
+            rgba(255, 255, 255, 0.55) 100%
+    );
+  }
+
+  .heroMarquee-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(11, 17, 24, 0.22);
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(6px);
+
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+  }
+
+  .heroMarquee-title {
+    margin: 22px 0 0 0;
+    font-family: var(--font-display, system-ui);
+    font-weight: 950;
+    letter-spacing: -0.04em;
+    font-size: clamp(44px, 6.2vw, 92px);
+    line-height: 0.98;
+    max-width: 18ch; /* ✅ stessa “partenza” del contact */
+    position: relative;
+    z-index: 1;
+  }
+
+  .heroMarquee-subtitle {
+    margin: 22px 0 0 0;
+    font-size: 16px;
+    line-height: 1.9;
+    color: rgba(11, 17, 24, 0.62);
+    max-width: 70ch;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* BAND (marquee) */
+  .heroMarquee-band {
+    background: #000;
+    border-top: 1px solid rgba(0, 0, 0, 0.12);
+  }
+
+  .heroMarquee-bandInner {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .heroMarquee-fade {
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 56px;
+    z-index: 2;
+  }
+
+  .heroMarquee-fadeLeft {
+    left: 0;
+    background: linear-gradient(90deg, #000 0%, transparent 100%);
+  }
+
+  .heroMarquee-fadeRight {
+    right: 0;
+    background: linear-gradient(270deg, #000 0%, transparent 100%);
+  }
+
+  /* ===== marquee: NO OVERLAP (corretto) ===== */
+  .marquee {
+    overflow: hidden;
+    white-space: nowrap;
+    background: #000;
+  }
+
+  .marqueeInner {
+    display: inline-flex;
+    width: max-content;
+    will-change: transform;
+    animation: marqueeLoop 80s linear infinite;
+  }
+
+  .marqueeItem {
+    display: inline-flex;
+    flex-shrink: 0;
+    white-space: nowrap;
+
+    color: rgba(255, 255, 255, 0.92);
+    font-weight: 800;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+
+    line-height: 64px;
+    font-size: 16px;
+    padding: 0 28px;
+  }
+
+  @keyframes marqueeLoop {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+  }
+
+  @media (max-width: 640px) {
+    .marqueeItem {
+      line-height: 56px;
+      font-size: 14px;
+      letter-spacing: 0.18em;
+      padding: 0 22px;
+    }
+    .heroMarquee-title {
+      max-width: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marqueeInner { animation: none; transform: none; }
+  }
 }
 
-/* marquee minimal */
-.marqueeTrack {
-  display: flex;
-  gap: 40px;
-  white-space: nowrap;
-  will-change: transform;
+
+@layer components {
+  .whyUs {
+    background: #fff;
+    color: #0b1118;
+    padding: clamp(84px, 10vh, 140px) 0;
+  }
+
+  .whyUs-wrap {
+    width: min(92vw, 1180px);
+    margin: 0 auto;
+  }
+
+  .whyUs-head {
+    text-align: center;
+    margin: 0 auto clamp(34px, 4vw, 54px);
+    max-width: 78ch;
+  }
+
+  .whyUs-title {
+    font-family: var(--font-display, system-ui);
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    font-size: clamp(34px, 4.2vw, 56px);
+    line-height: 1.06;
+    margin: 0;
+  }
+
+  .whyUs-subtitle {
+    margin: 18px auto 0;
+    font-size: 16px;
+    line-height: 1.9;
+    color: rgba(11, 17, 24, 0.58);
+    max-width: 62ch;
+  }
+
+  .whyUs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: clamp(18px, 2.4vw, 28px);
+    align-items: stretch;
+  }
+
+  /* BRUTAL CARD */
+  .whyUs-card {
+    position: relative;
+    background: #fff;
+    border: 1px solid rgba(11, 17, 24, 0.12);
+    border-radius: 0;               /* ✅ no round */
+    box-shadow: none;               /* ✅ no “designy shadows” */
+    padding: clamp(22px, 2.2vw, 30px);
+    transition: border-color 160ms ease, transform 160ms ease;
+    overflow: hidden;
+  }
+
+  .whyUs-card:hover {
+    border-color: rgba(11, 17, 24, 0.26);
+    transform: translateY(-1px);    /* micro, brutal */
+  }
+
+  /* Icon container: square, no rounding */
+  .whyUs-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 0; /* ✅ */
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(11, 17, 24, 0.12);
+    background: transparent;
+    color: rgba(11, 17, 24, 0.82);
+    margin-bottom: 16px;
+    transition: color 160ms ease, border-color 160ms ease;
+  }
+
+  .whyUs-card:hover .whyUs-icon {
+    color: var(--whyus-accent, var(--accent-blue));
+    border-color: color-mix(in srgb, var(--whyus-accent) 60%, rgba(11, 17, 24, 0.20));
+  }
+
+  .whyUs-iconSvg {
+    width: 26px;
+    height: 26px;
+    display: block;
+  }
+
+  .whyUs-cardTitle {
+    font-family: var(--font-display, system-ui);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-size: 18px;
+    margin: 2px 0 10px 0;
+    color: rgba(11, 17, 24, 0.92);
+  }
+
+  .whyUs-cardDesc {
+    margin: 0;
+    font-size: 14.5px;
+    line-height: 1.9;
+    color: rgba(11, 17, 24, 0.58);
+    max-width: 38ch;
+  }
+
+  /* Accent brutal: hairline on bottom, grows on hover */
+  .whyUs-accentLine {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--whyus-accent, var(--accent-blue));
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform 180ms ease;
+    opacity: 0.95;
+  }
+
+  .whyUs-card:hover .whyUs-accentLine {
+    transform: scaleX(1);
+  }
+
+  @media (max-width: 1100px) {
+    .whyUs-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .whyUs {
+      padding: 72px 0;
+    }
+    .whyUs-grid {
+      grid-template-columns: 1fr;
+    }
+    .whyUs-cardDesc {
+      max-width: none;
+    }
+  }
 }
 
-.marqueeRow {
-  display: inline-block;
-  white-space: nowrap;
-  animation: marqueeLeft 26s linear infinite;
+@layer components {
+  /* =========================
+     CONTACT (ultra minimal)
+     ========================= */
+
+  .contactMini {
+    background: #fff;
+    color: #0b1118;
+  }
+
+  .contactMini-wrap {
+    width: min(92vw, 1180px);
+    margin: 0 auto;
+  }
+
+  /* HERO */
+  .contactMini-hero {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(90px, 12vh, 50px) 0 clamp(60px, 8vh, 90px);
+    background: #fff;
+  }
+
+  /* background foto + fade come screenshot */
+  .contactMini-bg {
+    position: absolute;
+    inset: 0;
+    background-image: var(--contact-bg, url("/contact/contact_bg.jpg"));
+    background-size: cover;
+    background-position: center;
+    filter: saturate(0.95);
+    opacity: 0.18;
+    transform: scale(1.02);
+  }
+
+  .contactMini-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(900px 520px at 50% 40%, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.75) 45%, rgba(255,255,255,0.55) 100%);
+  }
+
+  .contactMini-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    padding: 0 16px;
+    border-radius: 999px; /* pill ok (come screen) */
+    border: 1px solid rgba(11, 17, 24, 0.22);
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(6px);
+
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .contactMini-title {
+    margin: 22px 0 0 0;
+    font-family: var(--font-display, system-ui);
+    font-weight: 950;
+    letter-spacing: -0.04em;
+    font-size: clamp(44px, 6.2vw, 92px);
+    line-height: 0.98;
+    max-width: 18ch;
+  }
+
+  .contactMini-subtitle {
+    margin: 22px 0 0 0;
+    font-size: 16px;
+    line-height: 1.9;
+    color: rgba(11, 17, 24, 0.62);
+    max-width: 70ch;
+  }
+
+  /* BODY */
+  .contactMini-body {
+    padding: clamp(52px, 7vh, 92px) 0 clamp(84px, 10vh, 140px);
+    background: #fff;
+  }
+
+  .contactMini-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: clamp(26px, 4vw, 60px);
+    align-items: start;
+  }
+
+  .contactMini-left {
+    padding-top: 12px;
+  }
+
+  .contactMini-h2 {
+    margin: 0;
+    font-family: var(--font-display, system-ui);
+    font-weight: 850;
+    letter-spacing: -0.02em;
+    font-size: 22px;
+  }
+
+  .contactMini-p {
+    margin: 14px 0 0 0;
+    font-size: 15px;
+    line-height: 1.95;
+    color: rgba(11, 17, 24, 0.62);
+    max-width: 62ch;
+  }
+
+  .contactMini-ctaRow {
+    margin-top: 22px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .contactMini-cta {
+    --cta-accent: var(--accent-blue);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    padding: 0 16px;
+
+    border-radius: 0; /* ✅ spigoli */
+    border: 1px solid rgba(11, 17, 24, 0.16);
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(6px);
+
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 12px;
+
+    text-decoration: none;
+    color: rgba(11, 17, 24, 0.92);
+
+    transition: transform 160ms ease, border-color 160ms ease, color 160ms ease;
+  }
+
+  .contactMini-cta:hover {
+    border-color: color-mix(in srgb, var(--cta-accent) 65%, rgba(11,17,24,0.20));
+    color: var(--cta-accent);
+    transform: translateY(-1px);
+  }
+
+  .contactMini-cta.isGhost {
+    background: transparent;
+  }
+
+  /* CARDS */
+  .contactMini-cards {
+    display: grid;
+    gap: 18px;
+  }
+
+  .contactMini-card {
+    --card-accent: var(--accent-blue);
+    position: relative;
+    border-radius: 0; /* ✅ no round */
+    border: 1px solid rgba(11, 17, 24, 0.12);
+    background: #fff;
+    padding: 22px;
+    overflow: hidden;
+    transition: border-color 160ms ease, transform 160ms ease;
+  }
+
+  .contactMini-card:hover {
+    border-color: rgba(11, 17, 24, 0.26);
+    transform: translateY(-1px);
+  }
+
+  .contactMini-cardTop {
+    width: 52px;
+    height: 52px;
+    border-radius: 0; /* ✅ */
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(11, 17, 24, 0.12);
+    color: rgba(11, 17, 24, 0.86);
+    transition: color 160ms ease, border-color 160ms ease;
+  }
+
+  .contactMini-card:hover .contactMini-cardTop {
+    color: var(--card-accent);
+    border-color: color-mix(in srgb, var(--card-accent) 60%, rgba(11,17,24,0.22));
+  }
+
+  .contactMini-icon {
+    width: 26px;
+    height: 26px;
+    display: block;
+  }
+
+  .contactMini-cardBody {
+    margin-top: 14px;
+    display: grid;
+    gap: 8px;
+  }
+
+  .contactMini-cardTitle {
+    font-family: var(--font-display, system-ui);
+    font-weight: 850;
+    letter-spacing: -0.02em;
+    font-size: 18px;
+  }
+
+  .contactMini-link {
+    width: fit-content;
+    text-decoration: none;
+    color: rgba(11, 17, 24, 0.70);
+    font-weight: 700;
+    transition: color 160ms ease;
+  }
+
+  .contactMini-link:hover {
+    color: rgba(11, 17, 24, 0.92);
+  }
+
+  .contactMini-muted {
+    color: rgba(11, 17, 24, 0.62);
+    line-height: 1.8;
+  }
+
+  .contactMini-accentLine {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--card-accent);
+    transform-origin: left;
+    transform: scaleX(0);
+    transition: transform 180ms ease;
+    opacity: 0.95;
+  }
+
+  .contactMini-card:hover .contactMini-accentLine {
+    transform: scaleX(1);
+  }
+
+  /* Responsive */
+  @media (max-width: 980px) {
+    .contactMini-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .contactMini-title {
+      max-width: none;
+    }
+  }
 }
 
-.marqueeRow:nth-child(2) {
-  animation-delay: -13s; /* metà durata per loop continuo */
+@layer components {
+  /* =========================
+     WHO (contact-like, ultra minimal)
+     ========================= */
+
+  .whoMini {
+    background: #fff;
+    color: #0b1118;
+  }
+
+  .whoMini-wrap {
+    width: min(92vw, 1180px);
+    margin: 0 auto;
+  }
+
+  .whoMini-hero {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(90px, 12vh, 150px) 0 clamp(70px, 9vh, 120px);
+    background: #fff;
+  }
+
+  /* stesso look “foto + fade” che usi in contact */
+  .whoMini-bg {
+    position: absolute;
+    inset: 0;
+    background-image: var(--contact-bg, url("/contact/contact_bg.jpg"));
+    background-size: cover;
+    background-position: center;
+    filter: saturate(0.95);
+    opacity: 0.18;
+    transform: scale(1.02);
+  }
+
+  .whoMini-bg::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+            900px 520px at 50% 40%,
+            rgba(255, 255, 255, 0.92) 0%,
+            rgba(255, 255, 255, 0.75) 45%,
+            rgba(255, 255, 255, 0.55) 100%
+    );
+  }
+
+  .whoMini-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 34px;
+    padding: 0 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(11, 17, 24, 0.22);
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(6px);
+
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+
+    position: relative;
+    z-index: 1;
+  }
+
+  .whoMini-title {
+    margin: 22px 0 0 0;
+    font-family: var(--font-display, system-ui);
+    font-weight: 950;
+    letter-spacing: -0.04em;
+    font-size: clamp(44px, 6.2vw, 92px);
+    line-height: 0.98;
+    max-width: 18ch;
+
+    position: relative;
+    z-index: 1;
+  }
+
+  .whoMini-subtitle {
+    margin: 22px 0 0 0;
+    font-size: 16px;
+    line-height: 1.9;
+    color: rgba(11, 17, 24, 0.62);
+    max-width: 78ch;
+
+    position: relative;
+    z-index: 1;
+    white-space: pre-line; /* supporta la stringa multilinea */
+  }
+
+  @media (max-width: 640px) {
+    .whoMini-title {
+      max-width: none;
+    }
+  }
 }
 
-@keyframes marqueeLeft {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-100%); }
-}
+@layer components {
+  /* =========================
+     WHO TIMELINE — BRUTAL / MINIMAL
+     ========================= */
 
-@media (prefers-reduced-motion: reduce) {
-  .marqueeRow { animation: none; }
+  .whoTL-grid {
+    margin-top: 54px;
+    display: grid;
+    grid-template-columns: 1fr 64px; /* content + rail (più stretto, brutal) */
+    gap: 22px;
+    align-items: start;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* -------- Steps -------- */
+  .whoTL-steps {
+    display: grid;
+    gap: 52px;
+  }
+
+  .whoTL-step {
+    position: relative;
+    max-width: 78ch;
+    padding: 0;               /* ✅ niente “card” */
+    border: 0;                /* ✅ no border */
+    background: transparent;  /* ✅ brutal */
+    transition: opacity 180ms ease, filter 180ms ease;
+  }
+
+  .whoTL-step.isRight { margin-left: auto; }
+  .whoTL-step.isLeft  { margin-right: auto; }
+
+  /* non attivi: sbiaditi */
+  .whoTL-step.isDim {
+    opacity: 0.22;
+    filter: saturate(0.9);
+  }
+
+  /* attivo: più presente + micro glow */
+  .whoTL-step.isActive {
+    opacity: 1;
+    filter: saturate(1);
+  }
+
+  .whoTL-stepTitle {
+    font-family: var(--font-display, system-ui);
+    font-weight: 950;
+    letter-spacing: -0.02em;
+    font-size: 22px;
+    margin: 0 0 12px 0;
+    color: rgba(11, 17, 24, 0.94);
+  }
+
+  .whoTL-stepBody {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.95;
+    color: rgba(11, 17, 24, 0.62);
+    white-space: pre-line;
+  }
+
+  .whoTL-step.isActive .whoTL-stepTitle {
+    /* micro “illumina” brutal, senza decorazioni */
+    text-shadow: 0 0 22px color-mix(in srgb, var(--step-accent) 18%, transparent);
+  }
+
+  .whoTL-step.isActive .whoTL-stepBody {
+    color: rgba(11, 17, 24, 0.70);
+  }
+
+  /* -------- Rail (RIGHT) -------- */
+  .whoTL-rail {
+    position: sticky;
+    top: clamp(90px, 12vh, 150px);
+    height: calc(100svh - clamp(90px, 12vh, 150px) - 40px);
+    align-self: start;
+  }
+
+  .whoTL-railInner {
+    position: relative;
+    height: 100%;
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    /* ✅ niente box / niente bordo */
+    background: transparent;
+    border: 0;
+    padding: 18px 0;
+  }
+
+  /* linea base (semplice) */
+  .whoTL-railLine {
+    position: absolute;
+    left: 50%;
+    top: 18px;
+    bottom: 18px;
+    width: 8px;                 /* ✅ grossa */
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: rgba(11, 17, 24, 0.12);
+  }
+
+  /* linea progress (colorata) */
+  .whoTL-railProg {
+    position: absolute;
+    left: 50%;
+    top: 18px;
+    width: 8px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: var(--rail-accent);
+    box-shadow: 0 0 0 10px color-mix(in srgb, var(--rail-accent) 10%, transparent);
+    transition: height 220ms cubic-bezier(.2,.8,.2,1), background 180ms ease;
+  }
+
+  /* -------- Dots (brutal minimal) -------- */
+  .whoTL-dot {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 1px; /* solo per allineamento nel flex */
+  }
+
+  .whoTL-dotOuter {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+
+    /* ✅ cerchio minimal */
+    border: 2px solid rgba(11, 17, 24, 0.22);
+    background: transparent;
+
+    display: grid;
+    place-items: center;
+
+    transition: border-color 160ms ease, transform 160ms ease;
+  }
+
+  /* fill SOLO quando done */
+  .whoTL-dotFill {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(11, 17, 24, 0.22);
+    transform: scale(0);
+    transition: transform 200ms cubic-bezier(.2,.8,.2,1), background 160ms ease;
+  }
+
+  .whoTL-dot.isDone .whoTL-dotFill {
+    transform: scale(1);
+    background: rgba(11, 17, 24, 0.85); /* ✅ completato = pieno nero */
+  }
+
+  /* active: outline appena accent (ma restando minimal) */
+  .whoTL-dot.isActive .whoTL-dotOuter {
+    border-color: color-mix(in srgb, var(--dot-accent) 70%, rgba(11,17,24,0.22));
+    transform: scale(1.02);
+  }
+
+  /* responsive */
+  @media (max-width: 980px) {
+    .whoTL-grid {
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    /* rail sopra, orizzontale, super minimal */
+    .whoTL-rail {
+      position: relative;
+      top: auto;
+      height: 86px;
+    }
+
+    .whoTL-railInner {
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 0 8px;
+      align-items: center;
+    }
+
+    .whoTL-railLine {
+      top: 50%;
+      bottom: auto;
+      left: 10px;
+      right: 10px;
+      height: 8px;
+      width: auto;
+      transform: translateY(-50%);
+    }
+
+    .whoTL-railProg {
+      top: 50%;
+      left: 10px;
+      height: 8px;
+      width: calc(var(--prog-w, 0%) * 1%);
+      transform: translateY(-50%);
+    }
+
+    /* se vuoi progress orizzontale anche su mobile:
+       in JSX basta usare width invece di height e settare --prog-w */
+  }
+}
+@layer components {
+  /* =========================
+     WHO — Apple/minimal timeline
+     ========================= */
+
+  .whoAPL-wrap {
+    position: relative;
+    margin-top: 52px;
+  }
+
+  /* layout steps */
+  .whoAPL-steps {
+    display: grid;
+    gap: 54px;
+    padding-right: 120px; /* spazio per timeline a destra */
+  }
+
+  .whoAPL-step {
+    max-width: 78ch;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    transition: opacity 180ms ease, filter 180ms ease, transform 220ms ease;
+    will-change: transform;
+  }
+
+  .whoAPL-step.isRight {
+    margin-left: auto;
+  }
+
+  .whoAPL-step.isLeft {
+    margin-right: auto;
+  }
+
+  .whoAPL-step.isDim {
+    opacity: 0.22;
+    filter: saturate(0.95);
+  }
+
+  .whoAPL-step.isActive {
+    opacity: 1;
+    filter: saturate(1);
+  }
+
+  .whoAPL-title {
+    font-family: var(--font-display, system-ui);
+    font-weight: 950;
+    letter-spacing: -0.02em;
+    font-size: 22px;
+    margin: 0 0 12px 0;
+    color: rgba(11, 17, 24, 0.94);
+  }
+
+  .whoAPL-body {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.95;
+    color: rgba(11, 17, 24, 0.62);
+    white-space: pre-line;
+  }
+
+  .whoAPL-step.isActive .whoAPL-title {
+    text-shadow: 0 0 20px color-mix(in srgb, rgba(0,0,0,0.08) 40%, transparent);
+  }
+
+  .whoAPL-step.isActive .whoAPL-body {
+    color: rgba(11, 17, 24, 0.70);
+  }
+
+  /* timeline overlay anchored to the right of content */
+  .whoAPL-lineLayer {
+    position: absolute;
+    top: 0;
+    right: 48px;     /* dove “finiscono” i box */
+    width: 40px;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  /* dots */
+  .whoAPL-dot {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 24px;
+    height: 24px;
+  }
+
+  .whoAPL-dotRing {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    border: 2px solid rgba(11, 17, 24, 0.22); /* neutral */
+    background: #fff;
+    transition: border-color 160ms ease, background 160ms ease;
+  }
+
+  /* core minimal (si vede solo quando done) */
+  .whoAPL-dotCore {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: 999px;
+    background: rgba(11, 17, 24, 0.86); /* brutal black */
+    transition: transform 180ms cubic-bezier(.2,.8,.2,1), background 180ms ease;
+  }
+
+  /* ✅ done: checkpoint “pieno” del colore e resta */
+  .whoAPL-dot.isDone .whoAPL-dotRing {
+    border-color: var(--dot-accent);
+    background: var(--dot-accent);
+  }
+
+  /* se vuoi mantenere “minimal”, il core può sparire: resta scale(0) */
+  .whoAPL-dot.isDone .whoAPL-dotCore {
+    transform: translate(-50%, -50%) scale(0);
+  }
+
+  /* active: ring appena accent (ma resta minimale) */
+  .whoAPL-dot.isActive:not(.isDone) .whoAPL-dotRing {
+    border-color: color-mix(in srgb, var(--dot-accent) 70%, rgba(11,17,24,0.22));
+  }
+
+  /* segment container between anchors */
+  .whoAPL-seg {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10px; /* "grassette" */
+  }
+
+  /* dashed base */
+  .whoAPL-segBase {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: repeating-linear-gradient(
+            to bottom,
+            rgba(11, 17, 24, 0.18) 0px,
+            rgba(11, 17, 24, 0.18) 10px,
+            transparent 10px,
+            transparent 18px
+    );
+  }
+
+  /* dashed fill (progressivo) */
+  .whoAPL-segFill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border-radius: 999px;
+
+    /* stesso pattern, ma colorato */
+    background: repeating-linear-gradient(
+            to bottom,
+            var(--seg-accent) 0px,
+            var(--seg-accent) 10px,
+            transparent 10px,
+            transparent 18px
+    );
+
+    /* micro “bloom” super sobrio */
+    filter: drop-shadow(0 0 10px color-mix(in srgb, var(--seg-accent) 20%, transparent));
+    transition: height 180ms cubic-bezier(.2,.8,.2,1);
+  }
+
+  /* responsive */
+  @media (max-width: 980px) {
+    .whoAPL-steps {
+      padding-right: 74px;
+    }
+    .whoAPL-lineLayer {
+      right: 18px;
+    }
+  }
 }
