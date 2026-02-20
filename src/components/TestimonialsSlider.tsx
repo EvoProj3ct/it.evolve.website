@@ -23,26 +23,34 @@ export function TestimonialsSlider() {
             {
                 id: "t1",
                 quote:
-                    "Con Evolve vogliamo portare i nostri anni di esperienza lavorativa nel settore dello sviluppo informatico a disposizione delle piccole e medie imprese.",
-                name: "Emanuele I.",
-                role: "Consulente per l'Innovazione",
+                    "La nostra missione è rendere le nuove tecnologie accessibili alle Piccole e Medie Imprese.",
+                name: "Emanuele Ienna",
+                role: "Project Manager",
                 accent: "purple",
             },
             {
                 id: "t2",
                 quote:
-                    "Evolve nasce da lontano, da uno sguardo al futuro che non ha mai smesso di fissare l'orizzonte. L'attenzione all'innovazione è cruciale per noi.",
-                name: "Gianmarco M.",
-                role: "Consulente per i Sistemi",
+                    "Evolve nasce dalla passione per la tecnologia e dall'evoluzione che può portare con un utilizzo consapevole.",
+                name: "Gian Marco Marinelli",
+                role: "Consulente informatico",
                 accent: "yellow",
             },
             {
                 id: "t3",
                 quote:
-                    "Molte volte mi sono trovato di fronte a imprese soverchiate dalla quantità di lavoro disorganizzato che si trovavano ad affrontare. Evolve vuole aiutarle a gestirlo al meglio.",
-                name: "Luca D.",
-                role: "Amministratore Delegato",
+                    "Ho visto negli anni molte imprese alle prese con attività disorganizzate e ripetitive. Evolve vuole aiutarle a gestirle al meglio.",
+                name: "Luca De Angelis",
+                role: "Amministratore e progettista 3D",
                 accent: "blue",
+            },
+            {
+                id: "t4",
+                quote:
+                    "Troviamo il punto di incontro tra le esigenze di un'attività e la tecnologia giusta per agevolare il lavoro.",
+                name: "Luca Marinelli",
+                role: "Full Stack Developer",
+                accent: "yellow",
             },
         ],
         []

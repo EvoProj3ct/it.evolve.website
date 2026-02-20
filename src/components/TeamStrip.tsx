@@ -15,9 +15,9 @@ type TeamMember = {
 const TEAM: TeamMember[] = [
     {
         id: "t1",
-        name: "Gianmarco M.",
-        role: "Consulente per i Sistemi",
-        bio: "Mi occupo di infrastrutture, integrazioni e affidabilità: sistemi semplici, robusti e scalabili.",
+        name: "Gian Marco Marinelli",
+        role: "Consulente informatico",
+        bio: "Trasformo processi e idee in soluzioni digitali concrete, veloci da usare e facili da scalare.",
         photo: "/team/team_1.png",
         links: [
             { type: "email", href: "mailto:infoevolvecompany@gmail.com" },
@@ -28,9 +28,9 @@ const TEAM: TeamMember[] = [
     },
     {
         id: "t2",
-        name: "Emanuele I.",
-        role: "Consulente per l’Innovazione",
-        bio: "Trasformo processi e idee in soluzioni digitali concrete, veloci da usare e facili da scalare.",
+        name: "Emanuele Ienna",
+        role: "Project Manager",
+        bio: "Potenzio flussi di lavoro e soluzioni digitali per agevolare sistemi di automazione, sicurezza e controllo.",
         photo: "/team/team_2.png",
         links: [
             { type: "email", href: "mailto:infoevolvecompany@gmail.com" },
@@ -41,9 +41,9 @@ const TEAM: TeamMember[] = [
     },
     {
         id: "t3",
-        name: "Luca D.",
-        role: "Sviluppo & Automazioni",
-        bio: "Automazioni, app e integrazioni su misura: dal prototipo alla produzione con attenzione al dettaglio.",
+        name: "Luca De Angelis",
+        role: "Amministratore e Progettista 3D",
+        bio: "Realizzo soluzioni elettroniche integrate a stampa 3D per unire il fisico con il digitale. ",
         photo: "/team/team_3.png",
         links: [
             { type: "email", href: "mailto:infoevolvecompany@gmail.com" },
@@ -55,8 +55,8 @@ const TEAM: TeamMember[] = [
     {
         id: "t4",
         name: "Luca M.",
-        role: "Design & Prodotto",
-        bio: "Interfacce pulite, UX pragmatica e sistemi visivi coerenti: bello, chiaro, immediato.",
+        role: "Full Stack Developer",
+        bio: "Sviluppo automazioni, app e integrazioni su misura: dal prototipo alla produzione con attenzione al dettaglio.",
         photo: "/team/team_4.png",
         links: [
             { type: "email", href: "mailto:infoevolvecompany@gmail.com" },
@@ -81,7 +81,7 @@ export function TeamStrip() {
             <div className="teamStrip-wrap">
                 <div className="teamStrip-head">
                     <div className="teamStrip-kicker">IL NOSTRO TEAM</div>
-                    <h2 className="teamStrip-title">Persone dietro il codice.</h2>
+                    <h2 className="teamStrip-title">L'unione fa la soluzione.</h2>
                     <div className="teamStrip-title">----</div>
                 </div>
 
