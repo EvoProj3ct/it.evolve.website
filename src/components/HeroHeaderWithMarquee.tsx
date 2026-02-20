@@ -1,62 +1,75 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { RouletteTitle } from "./RouletteTitle"; // ⬅️ metti il path giusto
 
 type Props = {
+    pill?: string;
     title?: string;
     subtitle?: string;
-    /** Testo ripetuto nel banner che scorre */
     tickerText?: string;
-    /** Altezza hero */
-    heightClassName?: string; // es: "h-[420px]"
 };
 
 export default function HeroHeaderWithMarquee({
+                                                  pill = "Portfolio",
                                                   title = "Le Migliori Soluzioni.",
                                                   subtitle = "Di Programmazione Sartoriale",
-                                                  tickerText = "STRATEGY • UX/UI • WEB APPS • AUTOMATION • CLOUD • DEVOPS •",
-                                                  heightClassName = "h-[420px] md:h-[520px]",
+                                                  tickerText = "CONSULENZA • UX/UI • WEB APPS • ATLAS • CLOUD • INNOVAZIONE AI • METODO SCRUM • PROGETTAZIONE 3D • FORMAZIONE • STUDIO TECNICO • SISTEMI COMPLESSI",
                                               }: Props) {
-    // duplichiamo per loop perfetto
     const row = `${tickerText} ${tickerText} ${tickerText}`;
 
-    return (
-        <section className="w-full bg-white text-black">
-            {/* HERO */}
-            <div
-                className={[
-                    "relative w-full overflow-hidden",
-                    "flex items-center justify-center",
-                    heightClassName,
-                ].join(" ")}
-            >
-                {/* background soft */}
-                <div className="absolute inset-0 heroSoftBg" />
+    // ✅ roulette: trigger una volta (no loop ad ogni render)
+    const [rouletteTrigger, setRouletteTrigger] = useState(0);
+    const rouletteStarted = useRef(false);
 
-                <div className="relative z-10 mx-auto w-full max-w-5xl px-6 text-center">
-                    <h1 className="font-display font-extrabold tracking-[-0.03em] leading-[0.98] text-[44px] sm:text-[56px] md:text-[78px] lg:text-[92px] whitespace-pre-line">
-                        {title}
+    useEffect(() => {
+        if (rouletteStarted.current) return;
+        rouletteStarted.current = true;
+
+        const id = window.setTimeout(() => setRouletteTrigger((v) => v + 1), 240);
+        return () => window.clearTimeout(id);
+    }, []);
+
+    return (
+        <section className="heroMarquee">
+            {/* HERO (stile contact) */}
+            <div className="heroMarquee-hero">
+                {/* bg tipo contact */}
+                <div className="heroMarquee-bg" aria-hidden="true" />
+
+                <div className="heroMarquee-wrap">
+                    <div className="heroMarquee-pill">{pill}</div>
+
+                    {/* ✅ RouletteTitle dentro H1 */}
+                    <h1 className="heroMarquee-title">
+                        <RouletteTitle
+                            text={title}
+                            triggerKey={rouletteTrigger}
+                            picks={3}
+                            durationMs={2600}
+                            tickMinMs={80}
+                            tickMaxMs={420}
+                            stopFractions={[0.64, 0.84, 1]}
+                            className="whitespace-pre-wrap"
+                        />
                     </h1>
 
-                    <p className="mt-8 text-[14px] sm:text-[16px] md:text-[20px] leading-[1.8] text-black/55 whitespace-pre-line">
-                        {subtitle}
-                    </p>
+                    <p className="heroMarquee-subtitle">{subtitle}</p>
                 </div>
             </div>
 
-            {/* MARQUEE MINIMALE */}
-            <div className="w-full border-t border-black/5 bg-white">
-                <div className="relative overflow-hidden">
-                    {/* fade edges */}
-                    <div className="pointer-events-none absolute left-0 top-0 h-full w-14 bg-gradient-to-r from-white to-transparent z-10" />
-                    <div className="pointer-events-none absolute right-0 top-0 h-full w-14 bg-gradient-to-l from-white to-transparent z-10" />
+            {/* MARQUEE nero */}
+            <div className="heroMarquee-band" aria-label="Ticker">
+                <div className="heroMarquee-bandInner">
+                    <div className="heroMarquee-fade heroMarquee-fadeLeft" aria-hidden="true" />
+                    <div className="heroMarquee-fade heroMarquee-fadeRight" aria-hidden="true" />
 
-                    <div className="marqueeTrack py-3">
-                        <div className="marqueeRow text-[11px] md:text-[12px] font-semibold tracking-[0.26em] text-black/35">
-                            {row}
-                        </div>
-                        <div className="marqueeRow text-[11px] md:text-[12px] font-semibold tracking-[0.26em] text-black/35">
-                            {row}
+                    <div className="marquee">
+                        <div className="marqueeInner">
+                            <span className="marqueeItem">{row}</span>
+                            <span className="marqueeItem" aria-hidden="true">
+                {row}
+              </span>
                         </div>
                     </div>
                 </div>
