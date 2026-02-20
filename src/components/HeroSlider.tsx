@@ -6,7 +6,14 @@ import { FillButton } from "./FillButton";
 import { HeroSocials } from "./HeroSocials";
 import { RouletteTitle } from "./RouletteTitle";
 
+type SlidePill = {
+    text: string;
+    href?: string;
+    ariaLabel?: string;
+};
+
 type Slide = {
+    pill: SlidePill; // ✅ pill per slide
     titleTop: string;
     titleBottom: string;
     subtitle: string;
@@ -17,6 +24,7 @@ type Slide = {
 // ====== SLIDES (stabili) ======
 const SLIDES: Slide[] = [
     {
+        pill: { text: "CONSULENZA" },
         titleTop: "Tecnologia",
         titleBottom: "Sartoriale",
         subtitle:
@@ -25,6 +33,7 @@ const SLIDES: Slide[] = [
         imageUrl: "/hero/slide1.png",
     },
     {
+        pill: { text: "ANALISI" },
         titleTop: "La Giusta",
         titleBottom: "Taglia",
         subtitle:
@@ -33,6 +42,7 @@ const SLIDES: Slide[] = [
         imageUrl: "/hero/slide2.png",
     },
     {
+        pill: { text: "SVILUPPO" },
         titleTop: "Disegnato",
         titleBottom: "Per Te",
         subtitle:
@@ -54,7 +64,6 @@ function preloadAndDecode(src: string) {
         const img = new Image();
         img.src = src;
 
-        // prova ad alzare la priorità (non supportato ovunque, ma innocuo)
         try {
             (img as any).fetchPriority = "high";
         } catch {}
@@ -82,8 +91,13 @@ function preloadAndDecode(src: string) {
     return p;
 }
 
-// kick immediato
-const PRELOAD_ALL = Promise.all(IMAGE_URLS.map(preloadAndDecode)).then(() => undefined);
+const PRELOAD_ALL = Promise.all(IMAGE_URLS.map(preloadAndDecode)).then(
+    () => undefined
+);
+
+// --- swipe helpers ---
+const swipePower = (offset: number, velocity: number) =>
+    Math.abs(offset) * velocity;
 
 export function HeroSlider() {
     const slides = useMemo(() => SLIDES, []);
@@ -120,7 +134,34 @@ export function HeroSlider() {
 
     const FIRST_ROULETTE_DELAY = 520;
 
-    // ✅ aspetta il preload (che però è già partito PRIMA del primo render)
+    /**
+     * AUTOPLAY
+     * - cooldown dopo interazione: 10s
+     */
+    const AUTOPLAY_COOLDOWN_MS = 10_000;
+    const autoplayTimerRef = useRef<number | null>(null);
+
+    const clearAutoplayTimer = () => {
+        if (autoplayTimerRef.current) {
+            window.clearTimeout(autoplayTimerRef.current);
+            autoplayTimerRef.current = null;
+        }
+    };
+
+    const scheduleAutoplay = useCallback(() => {
+        clearAutoplayTimer();
+        autoplayTimerRef.current = window.setTimeout(() => {
+            // evita auto-advance mentre sta animando (o immagini non pronte)
+            if (!imagesReady) return;
+            if (isAnimating) {
+                // ripianifica appena finisce l'animazione
+                scheduleAutoplay();
+                return;
+            }
+            go(1, "auto");
+        }, AUTOPLAY_COOLDOWN_MS);
+    }, [imagesReady, isAnimating]); // go è definita sotto ma è stable via useCallback
+
     useEffect(() => {
         let cancelled = false;
         PRELOAD_ALL.finally(() => {
@@ -131,6 +172,13 @@ export function HeroSlider() {
             cancelled = true;
         };
     }, []);
+
+    // start autoplay quando pronto
+    useEffect(() => {
+        if (!imagesReady) return;
+        scheduleAutoplay();
+        return () => clearAutoplayTimer();
+    }, [imagesReady, scheduleAutoplay]);
 
     /**
      * ✅ PUSH con decelerazione
@@ -241,7 +289,6 @@ export function HeroSlider() {
         ease: [0.22, 0.0, 0.15, 1] as any,
     });
 
-    // ✅ prima roulette: parte dopo che le immagini sono davvero pronte (così non “strozza” la prima transizione)
     useEffect(() => {
         if (firstRouletteDoneRef.current) return;
         if (!imagesReady) return;
@@ -255,8 +302,11 @@ export function HeroSlider() {
     }, [imagesReady]);
 
     const go = useCallback(
-        (dir: 1 | -1) => {
+        (dir: 1 | -1, reason: "user" | "auto" = "user") => {
             if (isAnimating) return;
+
+            // ✅ reset autoplay cooldown SOLO se interazione utente
+            if (reason === "user") scheduleAutoplay();
 
             setIsAnimating(true);
             setContentReady(false);
@@ -269,17 +319,17 @@ export function HeroSlider() {
                 setRouletteTrigger((v) => v + 1);
             }
         },
-        [isAnimating, slides.length]
+        [isAnimating, slides.length, scheduleAutoplay]
     );
 
-    const prev = () => go(-1);
-    const next = () => go(1);
+    const prev = () => go(-1, "user");
+    const next = () => go(1, "user");
 
     const titleText = `${slide.titleTop}\n${slide.titleBottom}`;
 
     return (
         <section className="relative h-[100svh] w-full overflow-hidden bg-black">
-            {/* ✅ Preload DOM “visibile ma invisibile”: aiuta alcuni browser a non fare flash con background-image */}
+            {/* ✅ Preload DOM “visibile ma invisibile” */}
             <div
                 aria-hidden
                 className="pointer-events-none absolute -left-[9999px] -top-[9999px] h-px w-px opacity-0"
@@ -315,8 +365,41 @@ export function HeroSlider() {
                     onAnimationComplete={() => {
                         setIsAnimating(false);
                         setContentReady(true);
+                        // ✅ se autoplay è attivo, ripianifica a fine animazione (cooldown già gestito)
+                        scheduleAutoplay();
                     }}
                 >
+                    {/* ✅ SWIPE LAYER: drag su mobile (anche desktop funziona ma va bene) */}
+                    <motion.div
+                        className="absolute inset-0 z-0"
+                        drag="x"
+                        dragConstraints={{ left: 0, right: 0 }}
+                        dragElastic={0.08}
+                        onPointerDown={() => scheduleAutoplay()} // qualsiasi tap resetta cooldown
+                        onDragEnd={(_, info) => {
+                            // evita swipe mentre animando
+                            if (isAnimating) return;
+
+                            const offset = info.offset.x;
+                            const velocity = info.velocity.x;
+
+                            // soglia combinata offset + velocity
+                            const power = swipePower(offset, velocity);
+
+                            // taratura: puoi alzare/abbassare
+                            const SWIPE_THRESHOLD = 650;
+
+                            if (power > SWIPE_THRESHOLD) {
+                                // se offset è positivo, swipe verso destra => prev (vai indietro)
+                                if (offset > 0) prev();
+                                else next();
+                            } else {
+                                // niente swipe valido: comunque resetta cooldown
+                                scheduleAutoplay();
+                            }
+                        }}
+                    />
+
                     <motion.div
                         custom={direction}
                         variants={wipeVariants}
@@ -327,11 +410,11 @@ export function HeroSlider() {
                         className="absolute inset-0 overflow-hidden"
                         style={{ willChange: "clip-path" }}
                     >
-                        {/* ✅ OVERSCAN: elimina la riga nera all’inizio del wipe (gap/antialias) */}
+                        {/* BG */}
                         <motion.div
                             className="absolute bg-cover bg-center"
                             style={{
-                                inset: "-2px", // <— importantissimo per eliminare il “pezzetto nero” al bordo del clip
+                                inset: "-2px",
                                 backgroundColor: "#000",
                                 backgroundImage: `url(${slide.imageUrl})`,
                                 willChange: "transform",
@@ -352,9 +435,9 @@ export function HeroSlider() {
                         <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0)_52%,rgba(255,255,255,0.10)_52%,rgba(255,255,255,0.10)_64%,rgba(255,255,255,0)_64%,rgba(255,255,255,0)_100%)]" />
                         <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0)_68%,rgba(255,255,255,0.08)_68%,rgba(255,255,255,0.08)_78%,rgba(255,255,255,0)_78%,rgba(255,255,255,0)_100%)]" />
 
-                        {/* Content */}
+                        {/* Content (✅ stessa posizione verticale del Contact: “hero” top padding) */}
                         <motion.div
-                            className="relative z-10 mx-auto flex h-full max-w-6xl items-center px-8 md:px-10"
+                            className="relative z-10 mx-auto h-full w-full"
                             custom={direction}
                             variants={contentParallaxVariants}
                             initial="enter"
@@ -362,15 +445,33 @@ export function HeroSlider() {
                             exit="exit"
                             transition={bgTransition as any}
                         >
-                            <div className="w-full -translate-y-2 md:-translate-y-6">
-                                <div className="max-w-[760px]">
-                                    <div className="flex flex-col gap-10 md:gap-12">
+                            <div className="h-full w-full pt-[clamp(90px,12vh,150px)] pb-[clamp(60px,8vh,90px)]">
+                                {/* ✅ wrap identico al Contact: width: min(92vw, 1180px) */}
+                                <div className="mx-auto w-[min(92vw,1180px)]">
+                                    {/* ✅ PILL configurabile per slide */}
+                                    {slide.pill.href ? (
+                                        <a
+                                            href={slide.pill.href}
+                                            aria-label={slide.pill.ariaLabel ?? slide.pill.text}
+                                            onClick={() => scheduleAutoplay()}
+                                            className="contactMini-pill !border-white/30 !bg-transparent !text-white/90 inline-flex"
+                                        >
+                                            {slide.pill.text}
+                                        </a>
+                                    ) : (
+                                        <div className="contactMini-pill !border-white/30 !bg-transparent !text-white/90">
+                                            {slide.pill.text}
+                                        </div>
+                                    )}
+
+                                    <div className="mt-[22px] max-w-[900px]">
                                         <motion.h1
                                             className="
                         font-display font-extrabold text-white
-                        text-6xl md:text-7xl
-                        leading-[1.06] md:leading-[1.08]
-                        tracking-[-0.015em]
+                        tracking-[-0.04em]
+                        leading-[0.98]
+                        text-[clamp(44px,6.2vw,92px)]
+                        max-w-[18ch]
                       "
                                             variants={titleVariants}
                                             initial="enter"
@@ -405,11 +506,11 @@ export function HeroSlider() {
                                                         : { duration: 0.12 }
                                                 }
                                                 className="
-                          max-w-[640px]
-                          text-white/80
-                          text-base md:text-lg
-                          leading-[1.8] md:leading-[1.9]
-                          font-light
+                          mt-[22px]
+                          max-w-[70ch]
+                          text-white/65
+                          text-[16px] md:text-[18px]
+                          leading-[1.9]
                           tracking-[0.01em]
                         "
                                             >
@@ -431,7 +532,9 @@ export function HeroSlider() {
                                                 }
                                                 className="pt-8 md:pt-10"
                                             >
-                                                <FillButton>{slide.cta}</FillButton>
+                                                <div onClick={() => scheduleAutoplay()}>
+                                                    <FillButton>{slide.cta}</FillButton>
+                                                </div>
                                             </motion.div>
                                         </div>
                                     </div>
