@@ -133,7 +133,7 @@ export default function ContactPage() {
                     {/* ✅ RouletteTitle dentro l'h1 (stessa logica del tuo slider) */}
                     <h1 className="contactMini-title">
                         <RouletteTitle
-                            text={"Let's Keep\nin Touch."}
+                            text={"Parliamo della tua idea."}
                             triggerKey={rouletteTrigger}
                             picks={3}
                             durationMs={2600}

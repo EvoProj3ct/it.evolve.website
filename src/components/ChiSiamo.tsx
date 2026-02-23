@@ -26,7 +26,7 @@ function clamp01(v: number) {
 
 export default function ChiSiamoTimelineSection({
                                                     pill = "CHI SIAMO",
-                                                    title = "Context Driven\nAnalysis",
+                                                    title = "Una giovane realtà",
                                                     steps,
                                                 }: Props) {
     const [rouletteTrigger, setRouletteTrigger] = useState(0);
@@ -41,30 +41,44 @@ export default function ChiSiamoTimelineSection({
     const STEPS: Step[] = useMemo(
         () =>
             steps ?? [
+
                 {
-                    title: "Consulenza & Analisi",
+                    title: "Un approccio Sartoriale",
                     body:
-                        "Partiamo dall’osservazione sul campo e dalla mappa dei processi.\n" +
-                        "Disegniamo flussi, ruoli, colli di bottiglia e dipendenze.\n" +
-                        "Obiettivo: trasformare caos operativo in un sistema misurabile.\n\n" +
-                        "Qui puoi mettere parecchio testo: descrizioni, esempi, risultati, ecc.\n" +
-                        "Più è lungo, più si vede bene l’effetto timeline e l’highlight.",
+                        "Al centro di ogni progetto c’è un’analisi approfondita del \n" +
+                        "contesto operativo del cliente.\n" +
+                        "Ogni intervento viene progettato su misura e cucito sui\n" +
+                        "processi reali e sugli obiettivi concreti dell’organizzazione.\n\n" +
+                        "Lavoriamo con un approccio strutturato e iterativo, ispirato \n" +
+                        "ai principi Agile (in particolare Scrum) per garantire \n" +
+                        "operatività continua, misurabilità dei risultati e chiarezza nella \n" +
+                        "comunicazione lungo tutto il ciclo di vita del progetto. \n",
                 },
                 {
-                    title: "Sviluppo su Misura",
+                    title: "Pianificazione strutturata",
                     body:
-                        "Traduciamo il contesto in un prodotto solido: web app, CRM, integrazioni.\n" +
-                        "Architettura modulare, componenti riutilizzabili, scalabilità.\n" +
-                        "No sprechi: scegliamo la ‘taglia’ giusta e cresciamo con te.\n\n" +
-                        "La linea blu finisce ESATTAMENTE a fine box 1 e poi prosegue verso il box 2.",
+                        "Nelle fasi iniziali definiamo con precisione obiettivi,\n" +
+                        "priorità e roadmap operative.\n" +
+                        "Il lavoro viene suddiviso in incrementi misurabili,\n" +
+                        "ciascuno orientato al rilascio di valore concreto.\n\n" +
+                        "Al termine di ogni incremento è prevista una fase di \n" +
+                        "verifica e revisione con il cliente, utile a validare quanto \n" +
+                        "realizzato e ad apportare eventuali correzioni o miglioramenti.\n\n" +
+                        "In questo modo modifiche, integrazioni e nuove esigenze \n" +
+                        "Il lavoro viene suddiviso in incrementi misurabili,\n" +
+                        "vengono gestite in modo ordinato e coerente con la roadmap,\n" +
+                        "evitando dispersioni e mantenendo il controllo su tempi e costi.\n",
                 },
                 {
-                    title: "Fisico + Digitale",
+                    title: "Trasparenza continua",
                     body:
-                        "Quando serve, portiamo i dati nel mondo reale: stampa 3D, prototipi,\n" +
-                        "strumenti e componenti personalizzati.\n" +
-                        "Integriamo asset fisici e flussi digitali in modo naturale.\n\n" +
-                        "Ogni checkpoint diventa pieno del suo colore quando viene raggiunto (e resta così).",
+                        "Adottiamo cicli di lavoro brevi con coinvolgimento diretto\n" +
+                        "del cliente in ogni fase rilevante.\n" +
+                        "Questo consente una condivisione costante di avanzamenti,\n\n" +
+                        "decisioni e criticità, garantendo piena visibilità sull’intero processo.\n." +
+                        "Ogni ciclo produce un risultato tangibile e verificabile,\n" +
+                        "rendendo chiaro lo stato dei lavori e facilitando pianificazioni\n" +
+                        "e integrazioni future.\n\n"
                 },
             ],
         [steps]
