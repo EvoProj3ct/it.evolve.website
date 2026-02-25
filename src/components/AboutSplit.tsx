@@ -147,17 +147,7 @@ export function AboutSplit() {
                             />
                         )}
 
-                        {/* Toggle audio (visibile solo quando il player è montato) */}
-                        {isInView && (
-                            <button
-                                type="button"
-                                className={["about-audio-toggle", audioOn ? "is-on" : ""].join(" ")}
-                                onClick={toggleAudio}
-                                aria-label={audioOn ? "Disattiva audio" : "Attiva audio"}
-                            >
-                                {audioOn ? "AUDIO ON" : "AUDIO OFF"}
-                            </button>
-                        )}
+
                     </div>
                 </div>
             </div>

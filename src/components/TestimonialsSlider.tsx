@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type Testimonial = {
     id: string;
@@ -16,6 +16,82 @@ const ACCENT_VAR: Record<NonNullable<Testimonial["accent"]>, string> = {
     blue: "var(--accent-blue)",
     purple: "var(--accent-purple)",
 };
+
+/* -------------------------------------------
+   TechType (inline)
+   - typewriter per-char + micro “electric glow”
+   - re-trigger via triggerKey (use active.id)
+------------------------------------------- */
+function TechType({
+                      text,
+                      triggerKey,
+                      stepMs = 14,
+                      jitterMs = 22,
+                      className = "",
+                  }: {
+    text: string;
+    triggerKey: string | number;
+    stepMs?: number;
+    jitterMs?: number;
+    className?: string;
+}) {
+    const tokens = useMemo(() => text.split(/(\s+)/), [text]);
+
+    // progressivo vero (non esplode)
+    let charIndex = 0;
+
+    return (
+        <motion.span
+            key={triggerKey}
+            className={`techType ${className}`}
+            style={{
+                whiteSpace: "normal",
+                wordBreak: "keep-all",
+                overflowWrap: "normal",
+                hyphens: "none",
+            }}
+        >
+            <span className="techType-scan" />
+
+            {tokens.map((tok, tIdx) => {
+                // whitespace: render immediato (e mantiene wrap)
+                if (/^\s+$/.test(tok)) {
+                    return (
+                        <span key={`ws-${tIdx}`} className="techType-ws">
+              {tok}
+            </span>
+                    );
+                }
+
+                // parola: NO wrap dentro la parola
+                const chars = Array.from(tok);
+
+                return (
+                    <span
+                        key={`w-${tIdx}`}
+                        className="techType-word"
+                        style={{ display: "inline-block", whiteSpace: "nowrap" }}
+                    >
+            {chars.map((ch, cIdx) => {
+                const delayMs = charIndex * stepMs + Math.random() * jitterMs;
+                charIndex += 1;
+
+                return (
+                    <span
+                        key={`${tIdx}-${cIdx}-${ch}`}
+                        className="techType-char"
+                        style={{ animationDelay: `${delayMs}ms, ${delayMs}ms` }}
+                    >
+                  {ch}
+                </span>
+                );
+            })}
+          </span>
+                );
+            })}
+        </motion.span>
+    );
+}
 
 export function TestimonialsSlider() {
     const items: Testimonial[] = useMemo(
@@ -61,7 +137,7 @@ export function TestimonialsSlider() {
     const [i, setI] = useState(0);
     const [dir, setDir] = useState<1 | -1>(1);
 
-    // ✅ lock anti-overlap (niente bug di closure)
+    // ✅ lock anti-overlap
     const lockRef = useRef(false);
     const timerRef = useRef<number | null>(null);
 
@@ -82,21 +158,19 @@ export function TestimonialsSlider() {
     const prev = () => go(-1);
     const next = () => go(1);
 
-    // ✅ autoplay sempre attivo
+    // ✅ autoplay
     useEffect(() => {
         const AUTOPLAY_MS = 12000;
 
         if (timerRef.current) window.clearInterval(timerRef.current);
-        timerRef.current = window.setInterval(() => {
-            next();
-        }, AUTOPLAY_MS);
+        timerRef.current = window.setInterval(() => next(), AUTOPLAY_MS);
 
         return () => {
             if (timerRef.current) window.clearInterval(timerRef.current);
         };
     }, [next]);
 
-    // ✅ se navighi manualmente, resetta timer (opzionale ma “premium”)
+    // ✅ manual nav resets timer
     const restartTimer = useCallback(() => {
         const AUTOPLAY_MS = 5000;
         if (timerRef.current) window.clearInterval(timerRef.current);
@@ -124,7 +198,10 @@ export function TestimonialsSlider() {
                 <div className="testi2-grid">
                     {/* LEFT */}
                     <div className="testi2-left">
-                        <div className="testi2-quoteCircle" style={{ ["--testi-accent" as any]: accent }}>
+                        <div
+                            className="testi2-quoteCircle"
+                            style={{ ["--testi-accent" as any]: accent }}
+                        >
                             <svg className="testi2-quoteSvg" viewBox="0 0 120 90" aria-hidden>
                                 <path d="M52 80H18c-2 0-4-2-4-4V50c0-17 9-30 26-38l7 11c-11 6-16 14-16 24v3h21c2 0 4 2 4 4v22c0 2-2 4-4 4Z" />
                                 <path d="M106 80H72c-2 0-4-2-4-4V50c0-17 9-30 26-38l7 11c-11 6-16 14-16 24v3h21c2 0 4 2 4 4v22c0 2-2 4-4 4Z" />
@@ -146,16 +223,36 @@ export function TestimonialsSlider() {
                                     lockRef.current = false;
                                 }}
                             >
-                                <p className="testi2-quote">{active.quote}</p>
+                                {/* tech type + scanline (green electric) */}
+                                <p
+                                    className="testi2-quote"
+                                    style={{ ["--tech-accent" as any]: accent }}
+                                >
+                                    <TechType
+                                        text={active.quote}
+                                        triggerKey={active.id}
+                                        stepMs={14}
+                                        jitterMs={22}
+                                    />
+                                </p>
 
                                 <div className="testi2-author">
                   <span className="testi2-dash" aria-hidden>
                     —
                   </span>
+
                                     <span className="testi2-name" style={{ color: accent }}>
-                    {active.name}
+                    <TechType
+                        text={active.name}
+                        triggerKey={`${active.id}-name`}
+                        stepMs={22}
+                        jitterMs={16}
+                    />
                   </span>
-                                    {active.role ? <span className="testi2-role"> · {active.role}</span> : null}
+
+                                    {active.role ? (
+                                        <span className="testi2-role"> · {active.role}</span>
+                                    ) : null}
                                 </div>
                             </motion.div>
                         </AnimatePresence>

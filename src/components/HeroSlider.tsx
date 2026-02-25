@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { FillButton } from "./FillButton";
 import { HeroSocials } from "./HeroSocials";
@@ -28,7 +28,7 @@ const SLIDES: Slide[] = [
         titleTop: "Tecnologia",
         titleBottom: "Sartoriale",
         subtitle:
-            "Studiamo, strutturiamo e digitalizziamo i processi aziendali con soluzioni ---scalabili su misura.",
+            "Studiamo, strutturiamo e digitalizziamo i processi aziendali con soluzioni scalabili su misura.",
         cta: "SCOPRI COME",
         imageUrl: "/hero/slide1.png",
     },
@@ -37,7 +37,7 @@ const SLIDES: Slide[] = [
         titleTop: "La Giusta",
         titleBottom: "Taglia",
         subtitle:
-            "Niente spese superflue. Analizziamo il tuo progetto per offrirti la taglia di ---sviluppo, dalla S alla XL, proporzionata alle tue reali esigenze.",
+            "Niente spese superflue. Analizziamo il tuo progetto per offrirti la taglia di sviluppo, dalla S alla XL, proporzionata alle tue reali esigenze.",
         cta: "IL NOSTRO METODO",
         imageUrl: "/hero/slide2.png",
     },
@@ -46,7 +46,7 @@ const SLIDES: Slide[] = [
         titleTop: "Disegnato",
         titleBottom: "Per Te",
         subtitle:
-            "Grazie ad ATLAS, il nostro ecosistema modulare e scalabile, ti forniamo un ---prodotto solo tuo: dati, processi, operatività, tutto pensato per farti sentire a casa.",
+            "Grazie ad ATLAS, il nostro ecosistema modulare e scalabile, ti forniamo un prodotto solo tuo: dati, processi, operatività, tutto pensato per farti sentire a casa.",
         cta: "SCOPRI ATLAS",
         imageUrl: "/hero/slide3.png",
     },
@@ -475,7 +475,7 @@ export function HeroSlider() {
                             transition={bgTransition as any}
                         >
                             <div className="h-full w-full pt-[clamp(90px,12vh,150px)] pb-[clamp(60px,8vh,90px)]">
-                                <div className="mx-auto w-[min(92vw,1180px)]">
+                                <div className="mx-auto w-[min(94vw,1180px)]">
                                     {/* Pill */}
                                     {slide.pill.href ? (
                                         <a
@@ -502,18 +502,19 @@ export function HeroSlider() {
                                         </div>
                                     )}
 
-                                    {/* ✅ UPDATED TEXT LAYOUT (desktop down + mobile bigger + no mid-word break) */}
-                                    <div className="mt-[22px] max-w-[980px] flex flex-col min-h-[62svh] md:min-h-[66svh]">
+                                    {/* ✅ UPDATED TEXT LAYOUT */}
+                                    <div className="mt-[22px] max-w-[1020px] flex flex-col min-h-[62svh] md:min-h-[66svh]">
                                         <motion.h1
                                             className="
                         font-display font-extrabold
                         tracking-[-0.04em]
                         leading-[0.98]
-                        text-[clamp(52px,6.6vw,92px)]
+                        text-[clamp(60px,7.8vw,98px)] md:text-[clamp(52px,6.6vw,92px)]
                         max-w-[18ch]
-                        [word-break:normal]
+                        [white-space:normal]
+                        [word-break:keep-all]
                         [overflow-wrap:normal]
-                        [hyphens:auto]
+                        [hyphens:none]
                       "
                                             style={glowTitleStyle}
                                             variants={titleVariants}
@@ -534,7 +535,8 @@ export function HeroSlider() {
                                             />
                                         </motion.h1>
 
-                                        <div className="mt-auto pt-[clamp(26px,6vh,72px)] md:pt-[clamp(80px,16vh,180px)]">
+                                        {/* ✅ Desktop: un pelino più sotto */}
+                                        <div className="mt-auto pt-[clamp(26px,6vh,72px)] md:pt-[clamp(112px,20vh,240px)]">
                                             <motion.p
                                                 key={`sub-${navId}`}
                                                 initial={{ opacity: 0, y: rise }}
@@ -549,13 +551,14 @@ export function HeroSlider() {
                                                         : { duration: 0.12 }
                                                 }
                                                 className="
-                          max-w-[72ch] md:max-w-[66ch]
-                          text-[clamp(18px,4.4vw,20px)] md:text-[18px]
+                          max-w-[74ch] md:max-w-[66ch]
+                          text-[clamp(18px,4.6vw,22px)] md:text-[18px]
                           leading-[1.75] md:leading-[1.9]
                           tracking-[0.01em]
-                          [word-break:normal]
+                          [white-space:normal]
+                          [word-break:keep-all]
                           [overflow-wrap:normal]
-                          [hyphens:auto]
+                          [hyphens:none]
                         "
                                                 style={glowBodyStyle}
                                             >
@@ -591,9 +594,7 @@ export function HeroSlider() {
             </AnimatePresence>
 
             {/* Socials */}
-            <div className="absolute bottom-10 left-10 z-20 hidden md:flex items-center gap-3">
-                <HeroSocials isDisabled={isAnimating} />
-            </div>
+            <HeroSocials isDisabled={isAnimating} />
 
             {/* Controls */}
             <div className="absolute left-6 top-1/2 z-20 hidden -translate-y-1/2 md:block">
@@ -642,7 +643,7 @@ export function HeroSlider() {
                 <span className="ml-2 text-2xl">{slides.length}</span>
             </div>
 
-            {/* (opzionale) debug: colore glow */}
+            {/* debug */}
             <span className="sr-only">{GLOW_HEX}</span>
         </section>
     );
