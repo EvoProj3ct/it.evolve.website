@@ -90,7 +90,7 @@ export function Navbar() {
                 }}
                 transition={{ duration: 0.22, ease: "easeOut" }}
             >
-                <div className="bg-white/70 backdrop-blur-md ring-1 ring-black/5">
+                <div className="bg-[#72C94F]/50 backdrop-blur-md ring-1 ring-black/5">
                     <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
                         <Link
                             href="/"

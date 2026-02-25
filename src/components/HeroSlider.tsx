@@ -13,7 +13,7 @@ type SlidePill = {
 };
 
 type Slide = {
-    pill: SlidePill; // ✅ pill per slide
+    pill: SlidePill;
     titleTop: string;
     titleBottom: string;
     subtitle: string;
@@ -135,6 +135,46 @@ export function HeroSlider() {
     const FIRST_ROULETTE_DELAY = 520;
 
     /**
+     * ✅ GLOW (radiazione) verde — ULTRA intensa
+     * Nota: qui spingiamo sia stroke (contorno) che glow (ombre multiple).
+     */
+    const GLOW_HEX = "#72C94F";
+
+    const glowTitleStyle: React.CSSProperties = {
+        color: "#0b0b0b",
+        WebkitTextStroke: "1.6px rgba(114,201,79,0.72)",
+        textShadow: `
+    0 0 6px  rgba(114,201,79,0.85),
+    0 0 14px rgba(114,201,79,0.70),
+    0 0 28px rgba(114,201,79,0.55),
+    0 0 46px rgba(114,201,79,0.38),
+    0 0 70px rgba(114,201,79,0.24)
+  `,
+    };
+
+    const glowBodyStyle: React.CSSProperties = {
+        color: "rgba(11,11,11,0.94)",
+        WebkitTextStroke: "1.1px rgba(114,201,79,0.58)",
+        textShadow: `
+    0 0 5px  rgba(114,201,79,0.70),
+    0 0 12px rgba(114,201,79,0.55),
+    0 0 24px rgba(114,201,79,0.40),
+    0 0 40px rgba(114,201,79,0.28)
+  `,
+    };
+
+    const glowUIStyle: React.CSSProperties = {
+        color: "#0b0b0b",
+        WebkitTextStroke: "0.95px rgba(114,201,79,0.52)",
+        textShadow: `
+    0 0 5px  rgba(114,201,79,0.78),
+    0 0 12px rgba(114,201,79,0.58),
+    0 0 24px rgba(114,201,79,0.40),
+    0 0 40px rgba(114,201,79,0.26)
+  `,
+    };
+
+    /**
      * AUTOPLAY
      * - cooldown dopo interazione: 10s
      */
@@ -151,16 +191,14 @@ export function HeroSlider() {
     const scheduleAutoplay = useCallback(() => {
         clearAutoplayTimer();
         autoplayTimerRef.current = window.setTimeout(() => {
-            // evita auto-advance mentre sta animando (o immagini non pronte)
             if (!imagesReady) return;
             if (isAnimating) {
-                // ripianifica appena finisce l'animazione
                 scheduleAutoplay();
                 return;
             }
             go(1, "auto");
         }, AUTOPLAY_COOLDOWN_MS);
-    }, [imagesReady, isAnimating]); // go è definita sotto ma è stable via useCallback
+    }, [imagesReady, isAnimating]);
 
     useEffect(() => {
         let cancelled = false;
@@ -173,7 +211,6 @@ export function HeroSlider() {
         };
     }, []);
 
-    // start autoplay quando pronto
     useEffect(() => {
         if (!imagesReady) return;
         scheduleAutoplay();
@@ -200,7 +237,9 @@ export function HeroSlider() {
             x: [
                 "0%",
                 dir === 1 ? `-${SHOVE}%` : `${SHOVE}%`,
-                dir === 1 ? `-${Math.round(PUSH * 0.72)}%` : `${Math.round(PUSH * 0.72)}%`,
+                dir === 1
+                    ? `-${Math.round(PUSH * 0.72)}%`
+                    : `${Math.round(PUSH * 0.72)}%`,
                 dir === 1 ? `-${PUSH}%` : `${PUSH}%`,
             ],
             scale: [1, 0.996, 0.992, 0.988],
@@ -249,7 +288,8 @@ export function HeroSlider() {
      */
     const wipeVariants = {
         enter: (dir: 1 | -1) => ({
-            clipPath: dir === 1 ? "inset(0% 0% 0% 100%)" : "inset(0% 100% 0% 0%)",
+            clipPath:
+                dir === 1 ? "inset(0% 0% 0% 100%)" : "inset(0% 100% 0% 0%)",
         }),
         center: { clipPath: "inset(0% 0% 0% 0%)" },
         exit: (_dir: 1 | -1) => ({ clipPath: "inset(0% 0% 0% 0%)" }),
@@ -305,7 +345,6 @@ export function HeroSlider() {
         (dir: 1 | -1, reason: "user" | "auto" = "user") => {
             if (isAnimating) return;
 
-            // ✅ reset autoplay cooldown SOLO se interazione utente
             if (reason === "user") scheduleAutoplay();
 
             setIsAnimating(true);
@@ -365,36 +404,29 @@ export function HeroSlider() {
                     onAnimationComplete={() => {
                         setIsAnimating(false);
                         setContentReady(true);
-                        // ✅ se autoplay è attivo, ripianifica a fine animazione (cooldown già gestito)
                         scheduleAutoplay();
                     }}
                 >
-                    {/* ✅ SWIPE LAYER: drag su mobile (anche desktop funziona ma va bene) */}
+                    {/* ✅ SWIPE LAYER */}
                     <motion.div
                         className="absolute inset-0 z-0"
                         drag="x"
                         dragConstraints={{ left: 0, right: 0 }}
                         dragElastic={0.08}
-                        onPointerDown={() => scheduleAutoplay()} // qualsiasi tap resetta cooldown
+                        onPointerDown={() => scheduleAutoplay()}
                         onDragEnd={(_, info) => {
-                            // evita swipe mentre animando
                             if (isAnimating) return;
 
                             const offset = info.offset.x;
                             const velocity = info.velocity.x;
 
-                            // soglia combinata offset + velocity
                             const power = swipePower(offset, velocity);
-
-                            // taratura: puoi alzare/abbassare
                             const SWIPE_THRESHOLD = 650;
 
                             if (power > SWIPE_THRESHOLD) {
-                                // se offset è positivo, swipe verso destra => prev (vai indietro)
                                 if (offset > 0) prev();
                                 else next();
                             } else {
-                                // niente swipe valido: comunque resetta cooldown
                                 scheduleAutoplay();
                             }
                         }}
@@ -429,13 +461,11 @@ export function HeroSlider() {
                             transition={bgTransition as any}
                         />
 
-                        {/* Overlay */}
-                        <div className="absolute inset-0 bg-black/35" />
-                        <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.55)_0%,rgba(0,0,0,0.35)_45%,rgba(0,0,0,0.10)_75%,rgba(0,0,0,0)_100%)]" />
+                        {/* Overlay (restano solo le “lamelle” bianche) */}
                         <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0)_52%,rgba(255,255,255,0.10)_52%,rgba(255,255,255,0.10)_64%,rgba(255,255,255,0)_64%,rgba(255,255,255,0)_100%)]" />
                         <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0)_68%,rgba(255,255,255,0.08)_68%,rgba(255,255,255,0.08)_78%,rgba(255,255,255,0)_78%,rgba(255,255,255,0)_100%)]" />
 
-                        {/* Content (✅ stessa posizione verticale del Contact: “hero” top padding) */}
+                        {/* Content */}
                         <motion.div
                             className="relative z-10 mx-auto h-full w-full"
                             custom={direction}
@@ -446,20 +476,29 @@ export function HeroSlider() {
                             transition={bgTransition as any}
                         >
                             <div className="h-full w-full pt-[clamp(90px,12vh,150px)] pb-[clamp(60px,8vh,90px)]">
-                                {/* ✅ wrap identico al Contact: width: min(92vw, 1180px) */}
                                 <div className="mx-auto w-[min(92vw,1180px)]">
-                                    {/* ✅ PILL configurabile per slide */}
+                                    {/* Pill */}
                                     {slide.pill.href ? (
                                         <a
                                             href={slide.pill.href}
                                             aria-label={slide.pill.ariaLabel ?? slide.pill.text}
                                             onClick={() => scheduleAutoplay()}
-                                            className="contactMini-pill !border-white/30 !bg-transparent !text-white/90 inline-flex"
+                                            className="contactMini-pill !border-black/30 !bg-transparent !text-black/90 inline-flex"
+                                            style={{
+                                                ...glowUIStyle,
+                                                WebkitTextStroke: "0.6px rgba(114,201,79,0.20)",
+                                            }}
                                         >
                                             {slide.pill.text}
                                         </a>
                                     ) : (
-                                        <div className="contactMini-pill !border-white/30 !bg-transparent !text-white/90">
+                                        <div
+                                            className="contactMini-pill !border-black/30 !bg-transparent !text-black/90"
+                                            style={{
+                                                ...glowUIStyle,
+                                                WebkitTextStroke: "0.6px rgba(114,201,79,0.20)",
+                                            }}
+                                        >
                                             {slide.pill.text}
                                         </div>
                                     )}
@@ -467,12 +506,13 @@ export function HeroSlider() {
                                     <div className="mt-[22px] max-w-[900px]">
                                         <motion.h1
                                             className="
-                        font-display font-extrabold text-white
+                        font-display font-extrabold
                         tracking-[-0.04em]
                         leading-[0.98]
                         text-[clamp(44px,6.2vw,92px)]
                         max-w-[18ch]
                       "
+                                            style={glowTitleStyle}
                                             variants={titleVariants}
                                             initial="enter"
                                             animate="center"
@@ -508,11 +548,11 @@ export function HeroSlider() {
                                                 className="
                           mt-[22px]
                           max-w-[70ch]
-                          text-white/65
                           text-[16px] md:text-[18px]
                           leading-[1.9]
                           tracking-[0.01em]
                         "
+                                                style={glowBodyStyle}
                                             >
                                                 {slide.subtitle}
                                             </motion.p>
@@ -554,9 +594,14 @@ export function HeroSlider() {
             <div className="absolute left-6 top-1/2 z-20 hidden -translate-y-1/2 md:block">
                 <button
                     onClick={prev}
-                    className="grid h-12 w-12 place-items-center rounded-full border border-white/30 bg-transparent text-white hover:bg-white/10"
+                    className="grid h-12 w-12 place-items-center rounded-full border bg-transparent hover:bg-black/10"
                     aria-label="Previous"
-                    style={{ opacity: isAnimating ? 0.55 : 1, cursor: "pointer" }}
+                    style={{
+                        opacity: isAnimating ? 0.55 : 1,
+                        cursor: "pointer",
+                        borderColor: "rgba(0,0,0,0.30)",
+                        ...glowUIStyle,
+                    }}
                 >
                     ‹
                 </button>
@@ -565,20 +610,35 @@ export function HeroSlider() {
             <div className="absolute right-6 top-1/2 z-20 hidden -translate-y-1/2 md:block">
                 <button
                     onClick={next}
-                    className="grid h-12 w-12 place-items-center rounded-full border border-white/30 bg-transparent text-white hover:bg-white/10"
+                    className="grid h-12 w-12 place-items-center rounded-full border bg-transparent hover:bg-black/10"
                     aria-label="Next"
-                    style={{ opacity: isAnimating ? 0.55 : 1, cursor: "pointer" }}
+                    style={{
+                        opacity: isAnimating ? 0.55 : 1,
+                        cursor: "pointer",
+                        borderColor: "rgba(0,0,0,0.30)",
+                        ...glowUIStyle,
+                    }}
                 >
                     ›
                 </button>
             </div>
 
             {/* Counter */}
-            <div className="absolute bottom-8 right-10 z-20 font-display text-white/80">
+            <div
+                className="absolute bottom-8 right-10 z-20 font-display"
+                style={{
+                    ...glowUIStyle,
+                    color: "rgba(11,11,11,0.85)",
+                    WebkitTextStroke: "0.6px rgba(114,201,79,0.18)",
+                }}
+            >
                 <span className="text-4xl font-semibold">{i + 1}</span>
                 <span className="ml-2 text-2xl">,</span>
                 <span className="ml-2 text-2xl">{slides.length}</span>
             </div>
+
+            {/* (opzionale) debug: colore glow */}
+            <span className="sr-only">{GLOW_HEX}</span>
         </section>
     );
 }

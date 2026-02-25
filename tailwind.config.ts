@@ -5,8 +5,8 @@ export default {
     theme: {
         extend: {
             fontFamily: {
-                sans: ["var(--font-sans)"],
-                display: ["var(--font-display)"],
+                sans: ["var(--fonts-sans)"],
+                display: ["var(--fonts-display)"],
             },
             colors: {
                 background: "var(--color-background)",
@@ -14,6 +14,7 @@ export default {
                 muted: "var(--color-muted)",
                 glass: "var(--color-glass)",
                 accent: "var(--color-accent)",
+                evolve: "var(--color-evolve)",
             },
         },
     },

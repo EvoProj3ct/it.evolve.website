@@ -7,13 +7,13 @@ import { Navbar } from "@/components/Navbar";
 
 const montserrat = Montserrat({
     subsets: ["latin"],
-    variable: "--font-display",
+    variable: "--fonts-display",
     weight: ["300", "400", "600", "700", "800"],
 });
 
 const inter = Inter({
     subsets: ["latin"],
-    variable: "--font-body",
+    variable: "--fonts-body",
     weight: ["300", "400", "500", "600", "700"],
 });
 

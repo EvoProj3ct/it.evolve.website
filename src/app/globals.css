@@ -1,20 +1,71 @@
 @import "tailwindcss";
 
+/* =========================
+   FONTS: HelveticaLocal
+   ========================= */
+
+/* Regular */
+@font-face {
+  font-family: "HelveticaLocal";
+  src: url("/fonts/Helvetica.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Italic / Oblique */
+@font-face {
+  font-family: "HelveticaLocal";
+  src: url("/fonts/Helvetica-Oblique.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Bold */
+@font-face {
+  font-family: "HelveticaLocal";
+  src: url("/fonts/Helvetica-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Bold Italic */
+@font-face {
+  font-family: "HelveticaLocal";
+  src: url("/fonts/Helvetica-BoldOblique.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
+/* Light (se vuoi usarlo nel body) */
+@font-face {
+  font-family: "HelveticaLocal";
+  src: url("/fonts/helvetica-light-587ebe5a59211.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --background: #0b1118; /* scuro elegante */
   --foreground: #eef2f7;
 
-  --muted: rgba(255, 255, 255, 0.75);
-  --glass: rgba(17, 24, 39, 0.65);
+  --evolve: #72C94F;
 
-  --accent: #3b82f6;
+  --muted: rgba(255, 255, 255, 0.75);
+  --glass: #CDE8D1;
+
+  --accent: #FF6666;
 
   /* ✅ 3 colori secondari ricorrenti */
-  --accent-yellow: #facc15;
-  --accent-blue: #3b82f6;
-  --accent-purple: #a855f7;
+  --accent-purple: #2C7A62;
+  --accent-blue:   #72C94F;
+  --accent-yellow: #CDE8D1;
 
-  /* ✅ fallback per editor (next/font sovrascrive via className html) */
+  /* ✅ fallback per editor (next/fonts sovrascrive via className html) */
   --font-body: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial,
   "Apple Color Emoji", "Segoe UI Emoji";
   --font-display: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
@@ -115,8 +166,9 @@ body {
   }
 
   /* ---------------------------------------------------------
-     Services Section (reference-like on WHITE)
-     --------------------------------------------------------- */
+       Services Section (reference-like on MINT)
+       (layout invariato: stessi @apply, cambiamo solo colori + neon)
+       --------------------------------------------------------- */
   .services-wrap {
     @apply mx-auto max-w-6xl px-6;
   }
@@ -131,58 +183,177 @@ body {
 
   .service-card {
     @apply relative;
+    isolation: isolate;
   }
 
+  /* ✅ NUMERO: più contrasto sul mint */
   .service-n {
-    @apply text-[13px] tracking-[0.22em] text-slate-500;
+    @apply text-[13px] tracking-[0.22em];
+    color: rgba(6, 20, 12, 0.70);
   }
 
+  /* ✅ TITOLO: “ink” più scuro e leggibile */
   .service-title {
-    @apply mt-6 font-display text-[22px] md:text-[24px] font-semibold text-slate-900;
+    @apply mt-6 font-display text-[22px] md:text-[24px] font-semibold;
+    color: rgba(6, 16, 10, 0.94);
+    transition: color 170ms ease, text-shadow 170ms ease, transform 170ms ease; /* più veloce */
   }
 
+  /* ✅ DESC: “ink soft” ma più visibile */
   .service-desc {
-    @apply mt-6 max-w-[40ch] text-[15px] leading-[2.05] text-slate-500;
+    @apply mt-6 max-w-[40ch] text-[15px] leading-[2.05];
+    color: rgba(7, 22, 14, 0.74);
   }
 
   .service-ghost-layer {
     @apply pointer-events-none absolute inset-0 flex items-center justify-center;
   }
 
+  /* ✅ GHOST base */
   .service-ghost-text {
     @apply select-none font-display font-extrabold tracking-[-0.06em]
     text-[190px] md:text-[240px] leading-none;
 
-    color: rgba(11, 17, 24, 0.065);
+    color: rgba(10, 28, 18, 0.085);
+
+    filter: saturate(1.02);
+    opacity: 1;
 
     transition:
-            color 220ms ease,
-            filter 220ms ease,
-            opacity 220ms ease,
-            text-shadow 220ms ease;
+            color 170ms ease,
+            filter 170ms ease,
+            opacity 170ms ease,
+            text-shadow 170ms ease,
+            transform 170ms ease;
+    will-change: text-shadow, filter, transform;
   }
 
+  /* ✅ HOVER ghost: glow serio */
   .service-card.group:hover .service-ghost-text {
     color: var(--ghost-accent);
-    filter: saturate(1.05);
-    text-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+    opacity: 1;
+    transform: translateZ(0) scale(1.015);
+    filter: saturate(1.30) contrast(1.10)
+    drop-shadow(0 0 18px color-mix(in srgb, var(--ghost-accent) 55%, transparent))
+    drop-shadow(0 0 46px color-mix(in srgb, var(--ghost-accent) 35%, transparent))
+    drop-shadow(0 16px 40px rgba(0, 0, 0, 0.12));
+
+    text-shadow:
+            0 0 2px  color-mix(in srgb, white 70%, var(--ghost-accent)),
+            0 0 10px color-mix(in srgb, white 45%, var(--ghost-accent)),
+            0 0 22px color-mix(in srgb, var(--ghost-accent) 65%, transparent),
+            0 0 46px color-mix(in srgb, var(--ghost-accent) 48%, transparent),
+            0 0 86px color-mix(in srgb, var(--ghost-accent) 30%, transparent),
+            0 18px 50px rgba(0, 0, 0, 0.12);
   }
 
+  /* ✅ underline */
   .service-ghost-underline {
     @apply absolute left-1/2 -translate-x-1/2 -bottom-2 h-[3px] w-[70%];
-    background: rgba(11, 17, 24, 0.10);
+    background: rgba(8, 22, 14, 0.18);
     transform-origin: center;
-    transition: background 220ms ease, opacity 220ms ease;
+    transition: background 170ms ease, opacity 170ms ease, filter 170ms ease; /* più veloce */
   }
 
   .service-card.group:hover .service-ghost-underline {
     background: var(--ghost-accent);
-    opacity: 0.28;
+    opacity: 0.45;
+    filter: drop-shadow(0 0 16px color-mix(in srgb, var(--ghost-accent) 40%, transparent));
+  }
+
+  /* micro glow su titolo quando hover */
+  .service-card.group:hover .service-title {
+    color: rgba(5, 14, 9, 0.98);
+    transform: translateY(-1px);
+    text-shadow:
+            0 0 12px color-mix(in srgb, var(--ghost-accent) 20%, transparent),
+            0 0 26px color-mix(in srgb, var(--ghost-accent) 12%, transparent);
   }
 
   /* ---------------------------------------------------------
-     About Split Section (FULL WIDTH)
+     TECH NETWORK (griglia quadrata + biforcazione 2–3 path)
+     - Overlay SVG assoluto
+     - Base grid “faint” in hover
+     - Tronco + rami: scie precise + dot che si fermano
+     - transizioni più fluide e più veloci
      --------------------------------------------------------- */
+
+  .service-tech {
+    position: absolute;
+    inset: -26px;
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0;
+    transform: translateZ(0);
+    mix-blend-mode: screen;
+    transition: opacity 150ms ease, filter 150ms ease; /* più veloce */
+    filter: drop-shadow(0 0 14px color-mix(in srgb, var(--ghost-accent) 16%, transparent));
+  }
+
+  .service-card.group:hover .service-tech {
+    opacity: 1;
+    filter:
+            drop-shadow(0 0 18px color-mix(in srgb, var(--ghost-accent) 22%, transparent))
+            drop-shadow(0 0 44px color-mix(in srgb, var(--ghost-accent) 12%, transparent));
+  }
+
+  .service-tech svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* Base grid */
+  .tech-net {
+    stroke: var(--ghost-accent);
+    stroke-opacity: 0.14;
+    stroke-width: 1.0;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+  }
+
+  /* Nodi */
+  .tech-node {
+    fill: color-mix(in srgb, var(--ghost-accent) 55%, white 15%);
+    fill-opacity: 0.14;
+  }
+
+  /* Tracce animate (tronco/rami) */
+  .tech-route-active {
+    stroke: color-mix(in srgb, var(--ghost-accent) 82%, white 18%);
+    stroke-opacity: 1;
+    stroke-width: 2.1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+
+    animation-name: route-draw;
+    animation-timing-function: cubic-bezier(.18,.95,.25,1); /* più “snappy” ma morbido */
+    animation-fill-mode: forwards;
+
+    filter:
+            drop-shadow(0 0 10px color-mix(in srgb, var(--ghost-accent) 45%, transparent))
+            drop-shadow(0 0 28px color-mix(in srgb, var(--ghost-accent) 25%, transparent));
+  }
+
+  /* Dot */
+  .tech-dot {
+    filter:
+            drop-shadow(0 0 10px color-mix(in srgb, var(--ghost-accent) 55%, transparent))
+            drop-shadow(0 0 26px color-mix(in srgb, var(--ghost-accent) 32%, transparent));
+  }
+
+  @keyframes route-draw {
+    to { stroke-dashoffset: 0; }
+  }
+
+  /* ---------------------------------------------------------
+       About Split Section (FULL WIDTH)
+       --------------------------------------------------------- */
   .about-split {
     @apply relative w-full min-h-[100svh] overflow-hidden;
     background: var(--background);
@@ -261,7 +432,6 @@ body {
     background: rgba(255, 255, 255, 0.08);
     pointer-events: none;
   }
-
   /* ---------------------------------------------------------
      Portfolio Collage (WHITE top + DARK bottom, symmetric)
      --------------------------------------------------------- */
@@ -1591,19 +1761,36 @@ body {
 
 @layer components {
   .portfolio {
+    position: relative;          /* ✅ per split bg */
+    overflow: hidden;
+    isolation: isolate;
+
     background: #fff;
     color: #0b1118;
     padding: clamp(72px, 9vh, 120px) 0;
   }
 
+  /* ✅ metà destra nera */
+  .portfolio::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    left: 50%;
+    background: #CDE8D1;            /* oppure #070b10 */
+    z-index: 0;
+  }
+
   .portfolio-wrap {
     width: min(90vw, 1120px);
     margin: 0 auto;
+    position: relative;
+    z-index: 1;                  /* sopra lo split */
   }
 
   /* la griglia è il “palco” */
   .portfolio-grid {
     position: relative;
+    z-index: 1;                  /* sopra lo split */
     display: grid;
     grid-template-columns: 0.9fr 1.35fr;
     gap: clamp(28px, 3.8vw, 60px);
@@ -1621,7 +1808,7 @@ body {
     margin-top: 10px;
   }
 
-  /* ---------------- MENU SINISTRA (immy-like) ---------------- */
+  /* ---------------- MENU SINISTRA ---------------- */
   .portfolio-list {
     margin-top: 24px;
     display: grid;
@@ -1644,12 +1831,11 @@ body {
     text-align: left;
   }
 
-  /* più piccoli + più “thin” */
   .portfolio-label {
     font-family: var(--font-display, system-ui);
     font-weight: 450;
     letter-spacing: -0.01em;
-    font-size: clamp(21px, 1.75vw, 32px); /* <- leggermente più piccoli */
+    font-size: clamp(21px, 1.75vw, 32px);
     line-height: 1.12;
     color: rgba(11, 17, 24, 0.23);
     transition: color 180ms ease;
@@ -1665,7 +1851,6 @@ body {
     transition: opacity 180ms ease;
   }
 
-  /* underline hairline */
   .portfolio-underline {
     position: absolute;
     left: 0;
@@ -1695,7 +1880,6 @@ body {
     color: rgba(11, 17, 24, 0.15);
   }
 
-  /* ✅ hover: più scuro anche sui non selezionati */
   .portfolio-item:hover .portfolio-label {
     color: rgba(11, 17, 24, 0.62);
   }
@@ -1711,32 +1895,28 @@ body {
 
   .portfolio-media{
     width: 100%;
-    height: clamp(520px, 90vh, 720px); /* formato predefinito */
+    height: clamp(520px, 90vh, 720px);
     max-width: 100%;
     overflow: hidden;
-    background: #f4f6fb;
+    background: #000; /* ✅ meglio sul lato nero */
   }
 
   .portfolio-media img{
     width: 100%;
     height: auto;
-    object-fit: cover;   /* riempie il box */
+    object-fit: cover;
     display: block;
   }
 
-
-  /* ---------------- CARD: piccola + tra menu e immagine ----------------
-     - left:50% = confine tra colonna sx e dx
-     - translateX positivo = entra nella foto, ma resta “tra” i due mondi
-  */
+  /* ---------------- CARD ---------------- */
   .portfolio-card {
     position: absolute;
 
     left: 50%;
     top: 52%;
-    transform: translate(18px, -50%); /* <- meno spinta, più fine */
+    transform: translate(18px, -50%);
 
-    width: min(340px, 30vw);          /* <- PIÙ PICCOLA */
+    width: min(340px, 30vw);
     background: #fff;
     border: 1px solid rgba(11, 17, 24, 0.08);
     box-shadow: 0 18px 52px rgba(0, 0, 0, 0.12);
@@ -1766,7 +1946,7 @@ body {
     gap: 10px;
   }
 
-  /* Responsive */
+  /* ---------------- Responsive ---------------- */
   @media (max-width: 980px) {
     .portfolio-grid {
       grid-template-columns: 1fr;
@@ -1777,7 +1957,6 @@ body {
       min-height: 56vh;
     }
 
-    /* su mobile: card dentro immagine */
     .portfolio-card {
       left: 50%;
       top: auto;
@@ -1786,9 +1965,17 @@ body {
       width: min(520px, calc(100% - 44px));
       padding: 22px;
     }
+
+    /* (opzionale) su mobile lo split verticale può risultare strano:
+       se vuoi, lo trasformiamo in split orizzontale */
+    /*
+    .portfolio::after {
+      left: 0;
+      top: 50%;
+    }
+    */
   }
 }
-
 
 @layer components {
   /* =========================

@@ -23,7 +23,7 @@ export function FillButton({ children }: { children: React.ReactNode }) {
             {/* FILL: scende dall'alto, base leggermente diagonale (sinistra avanti) */}
             <span
                 className="
-          absolute inset-0 bg-white
+          absolute inset-0 bg-[#72C94F]
           [clip-path:polygon(0_0,100%_0,100%_0,0_0)]
           transition-[clip-path] duration-450 ease-out
           will-change-[clip-path]
@@ -37,7 +37,7 @@ export function FillButton({ children }: { children: React.ReactNode }) {
           relative z-10
           font-bold tracking-[0.18em]
           text-[11px] md:text-xs
-          text-white
+          text-[#72C94F]
           transition-colors duration-200
           group-hover:text-black
         "
@@ -46,7 +46,7 @@ export function FillButton({ children }: { children: React.ReactNode }) {
       </span>
 
             {/* bordo sopra (più spesso) */}
-            <span className="pointer-events-none absolute inset-0 z-20 border-2 border-white/70" />
+            <span className="pointer-events-none absolute inset-0 z-20 border-3 border-[#72C94F]/70" />
         </button>
     );
 }
