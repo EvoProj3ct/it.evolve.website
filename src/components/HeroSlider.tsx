@@ -28,7 +28,7 @@ const SLIDES: Slide[] = [
         titleTop: "Tecnologia",
         titleBottom: "Sartoriale",
         subtitle:
-            "Studiamo, strutturiamo e digitalizziamo i processi aziendali con soluzioni scalabili su misura.",
+            "Studiamo, strutturiamo e digitalizziamo i processi aziendali con soluzioni ---scalabili su misura.",
         cta: "SCOPRI COME",
         imageUrl: "/hero/slide1.png",
     },
@@ -37,7 +37,7 @@ const SLIDES: Slide[] = [
         titleTop: "La Giusta",
         titleBottom: "Taglia",
         subtitle:
-            "Niente spese superflue. Analizziamo il tuo progetto per offrirti la taglia di sviluppo, dalla S alla XL, proporzionata alle tue reali esigenze.",
+            "Niente spese superflue. Analizziamo il tuo progetto per offrirti la taglia di ---sviluppo, dalla S alla XL, proporzionata alle tue reali esigenze.",
         cta: "IL NOSTRO METODO",
         imageUrl: "/hero/slide2.png",
     },
@@ -46,7 +46,7 @@ const SLIDES: Slide[] = [
         titleTop: "Disegnato",
         titleBottom: "Per Te",
         subtitle:
-            "Grazie ad ATLAS, il nostro ecosistema modulare e scalabile, ti forniamo un prodotto solo tuo: dati, processi, operatività, tutto pensato per farti sentire a casa.",
+            "Grazie ad ATLAS, il nostro ecosistema modulare e scalabile, ti forniamo un ---prodotto solo tuo: dati, processi, operatività, tutto pensato per farti sentire a casa.",
         cta: "SCOPRI ATLAS",
         imageUrl: "/hero/slide3.png",
     },
@@ -136,7 +136,6 @@ export function HeroSlider() {
 
     /**
      * ✅ GLOW (radiazione) verde — ULTRA intensa
-     * Nota: qui spingiamo sia stroke (contorno) che glow (ombre multiple).
      */
     const GLOW_HEX = "#72C94F";
 
@@ -144,34 +143,34 @@ export function HeroSlider() {
         color: "#0b0b0b",
         WebkitTextStroke: "1.6px rgba(114,201,79,0.72)",
         textShadow: `
-    0 0 6px  rgba(114,201,79,0.85),
-    0 0 14px rgba(114,201,79,0.70),
-    0 0 28px rgba(114,201,79,0.55),
-    0 0 46px rgba(114,201,79,0.38),
-    0 0 70px rgba(114,201,79,0.24)
-  `,
+      0 0 6px  rgba(114,201,79,0.85),
+      0 0 14px rgba(114,201,79,0.70),
+      0 0 28px rgba(114,201,79,0.55),
+      0 0 46px rgba(114,201,79,0.38),
+      0 0 70px rgba(114,201,79,0.24)
+    `,
     };
 
     const glowBodyStyle: React.CSSProperties = {
         color: "rgba(11,11,11,0.94)",
         WebkitTextStroke: "1.1px rgba(114,201,79,0.58)",
         textShadow: `
-    0 0 5px  rgba(114,201,79,0.70),
-    0 0 12px rgba(114,201,79,0.55),
-    0 0 24px rgba(114,201,79,0.40),
-    0 0 40px rgba(114,201,79,0.28)
-  `,
+      0 0 5px  rgba(114,201,79,0.70),
+      0 0 12px rgba(114,201,79,0.55),
+      0 0 24px rgba(114,201,79,0.40),
+      0 0 40px rgba(114,201,79,0.28)
+    `,
     };
 
     const glowUIStyle: React.CSSProperties = {
         color: "#0b0b0b",
         WebkitTextStroke: "0.95px rgba(114,201,79,0.52)",
         textShadow: `
-    0 0 5px  rgba(114,201,79,0.78),
-    0 0 12px rgba(114,201,79,0.58),
-    0 0 24px rgba(114,201,79,0.40),
-    0 0 40px rgba(114,201,79,0.26)
-  `,
+      0 0 5px  rgba(114,201,79,0.78),
+      0 0 12px rgba(114,201,79,0.58),
+      0 0 24px rgba(114,201,79,0.40),
+      0 0 40px rgba(114,201,79,0.26)
+    `,
     };
 
     /**
@@ -461,7 +460,7 @@ export function HeroSlider() {
                             transition={bgTransition as any}
                         />
 
-                        {/* Overlay (restano solo le “lamelle” bianche) */}
+                        {/* Overlay (lamelle bianche) */}
                         <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0)_52%,rgba(255,255,255,0.10)_52%,rgba(255,255,255,0.10)_64%,rgba(255,255,255,0)_64%,rgba(255,255,255,0)_100%)]" />
                         <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0)_0%,rgba(255,255,255,0)_68%,rgba(255,255,255,0.08)_68%,rgba(255,255,255,0.08)_78%,rgba(255,255,255,0)_78%,rgba(255,255,255,0)_100%)]" />
 
@@ -503,14 +502,18 @@ export function HeroSlider() {
                                         </div>
                                     )}
 
-                                    <div className="mt-[22px] max-w-[900px]">
+                                    {/* ✅ UPDATED TEXT LAYOUT (desktop down + mobile bigger + no mid-word break) */}
+                                    <div className="mt-[22px] max-w-[980px] flex flex-col min-h-[62svh] md:min-h-[66svh]">
                                         <motion.h1
                                             className="
                         font-display font-extrabold
                         tracking-[-0.04em]
                         leading-[0.98]
-                        text-[clamp(44px,6.2vw,92px)]
+                        text-[clamp(52px,6.6vw,92px)]
                         max-w-[18ch]
+                        [word-break:normal]
+                        [overflow-wrap:normal]
+                        [hyphens:auto]
                       "
                                             style={glowTitleStyle}
                                             variants={titleVariants}
@@ -531,7 +534,7 @@ export function HeroSlider() {
                                             />
                                         </motion.h1>
 
-                                        <div className="min-h-[170px] md:min-h-[190px]">
+                                        <div className="mt-auto pt-[clamp(26px,6vh,72px)] md:pt-[clamp(80px,16vh,180px)]">
                                             <motion.p
                                                 key={`sub-${navId}`}
                                                 initial={{ opacity: 0, y: rise }}
@@ -546,11 +549,13 @@ export function HeroSlider() {
                                                         : { duration: 0.12 }
                                                 }
                                                 className="
-                          mt-[22px]
-                          max-w-[70ch]
-                          text-[16px] md:text-[18px]
-                          leading-[1.9]
+                          max-w-[72ch] md:max-w-[66ch]
+                          text-[clamp(18px,4.4vw,20px)] md:text-[18px]
+                          leading-[1.75] md:leading-[1.9]
                           tracking-[0.01em]
+                          [word-break:normal]
+                          [overflow-wrap:normal]
+                          [hyphens:auto]
                         "
                                                 style={glowBodyStyle}
                                             >
@@ -570,7 +575,7 @@ export function HeroSlider() {
                                                         ? fadeInText(btnDelayAfterStop)
                                                         : { duration: 0.12 }
                                                 }
-                                                className="pt-8 md:pt-10"
+                                                className="pt-7 md:pt-10"
                                             >
                                                 <div onClick={() => scheduleAutoplay()}>
                                                     <FillButton>{slide.cta}</FillButton>

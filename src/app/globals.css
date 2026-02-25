@@ -457,6 +457,43 @@ body {
   }
 
 
+  /* bottone audio minimal sopra video */
+  .about-audio-toggle {
+    position: absolute;
+    right: 18px;
+    bottom: 18px;
+    z-index: 5;
+
+    padding: 10px 12px;
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    font-size: 11px;
+    text-transform: uppercase;
+
+    background: rgba(11, 17, 24, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    color: rgba(255, 255, 255, 0.88);
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    border-radius: 999px;
+    cursor: pointer;
+    transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+  }
+
+  .about-audio-toggle:hover {
+    transform: translateY(-1px);
+    background: rgba(11, 17, 24, 0.68);
+    border-color: rgba(255, 255, 255, 0.32);
+  }
+
+  .about-audio-toggle.is-on {
+    background: rgba(114, 201, 79, 0.22);
+    border-color: rgba(114, 201, 79, 0.55);
+  }
+
+
 
 
   /* ---------------------------------------------------------

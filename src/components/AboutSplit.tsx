@@ -5,80 +5,81 @@ import { FillButton } from "@/components/FillButton";
 
 export function AboutSplit() {
     const sectionRef = useRef<HTMLElement | null>(null);
-    const videoRef = useRef<HTMLVideoElement | null>(null);
 
-    const [hasPlayed, setHasPlayed] = useState(false);
+    const [isInView, setIsInView] = useState(false);
+
+    // rimonta il player quando rientra
+    const [mountKey, setMountKey] = useState(0);
+
+    // crossfade
+    const [playerReady, setPlayerReady] = useState(false);
+
+    // audio
+    const [audioOn, setAudioOn] = useState(false);
+
+    // refs
+    const posterRef = useRef<HTMLVideoElement | null>(null);
+    const playerRef = useRef<HTMLVideoElement | null>(null);
 
     useEffect(() => {
         const sectionEl = sectionRef.current;
-        const videoEl = videoRef.current;
-        if (!sectionEl || !videoEl) return;
-
-        // Hard set per Safari/iOS: meglio impostarli anche via JS
-        videoEl.muted = true;
-        videoEl.playsInline = true;
-        videoEl.pause();
-
-        const playWhenReady = async () => {
-            if (!videoEl) return;
-
-            // forziamo caricamento quando entra in viewport
-            try {
-                videoEl.preload = "auto";
-                videoEl.load();
-            } catch {}
-
-            // se non è pronto, aspetta canplay poi play
-            const tryPlay = async () => {
-                try {
-                    // se era già finito per qualche motivo
-                    if (videoEl.ended || videoEl.currentTime >= (videoEl.duration || 0)) {
-                        videoEl.currentTime = 0;
-                    }
-                    await videoEl.play();
-                    setHasPlayed(true);
-                } catch {
-                    // fallback: aspetta un attimo e riprova (alcuni browser sono rognosi)
-                    setTimeout(async () => {
-                        try {
-                            await videoEl.play();
-                            setHasPlayed(true);
-                        } catch {}
-                    }, 120);
-                }
-            };
-
-            if (videoEl.readyState >= 2) {
-                // HAVE_CURRENT_DATA
-                void tryPlay();
-            } else {
-                const onCanPlay = () => {
-                    videoEl.removeEventListener("canplay", onCanPlay);
-                    void tryPlay();
-                };
-                videoEl.addEventListener("canplay", onCanPlay, { once: true });
-            }
-        };
+        if (!sectionEl) return;
 
         const io = new IntersectionObserver(
             (entries) => {
                 const entry = entries[0];
                 if (!entry) return;
 
-                // appena la sezione è visibile, parte (una sola volta)
-                if (entry.isIntersecting && !hasPlayed) {
-                    void playWhenReady();
+                if (entry.isIntersecting) {
+                    setIsInView(true);
+                    setPlayerReady(false);
+                    setMountKey((k) => k + 1);
+                } else {
+                    // esci → reset così al rientro riparte
+                    setIsInView(false);
+                    setPlayerReady(false);
                 }
             },
-            {
-                threshold: 0.15,           // più permissivo: parte “subito quando la vedi”
-                rootMargin: "0px 0px -5% 0px",
-            }
+            { threshold: 0.2, rootMargin: "0px 0px -10% 0px" }
         );
 
         io.observe(sectionEl);
         return () => io.disconnect();
-    }, [hasPlayed]);
+    }, []);
+
+    // Se l’utente fa un gesto qualsiasi, possiamo sbloccare audio (se lo desidera)
+    useEffect(() => {
+        const unlock = async () => {
+            if (!audioOn) return;
+            const v = playerRef.current;
+            if (!v) return;
+
+            try {
+                v.muted = false;
+                // se era stato bloccato per qualche motivo, riprova play dopo gesture
+                await v.play().catch(() => {});
+            } catch {}
+        };
+
+        window.addEventListener("pointerdown", unlock, { once: true });
+        return () => window.removeEventListener("pointerdown", unlock);
+    }, [audioOn]);
+
+    const toggleAudio = async () => {
+        setAudioOn((cur) => !cur);
+
+        const v = playerRef.current;
+        if (!v) return;
+
+        const next = !audioOn;
+        try {
+            v.muted = !next;
+            if (next) {
+                // dopo click dell’utente: possiamo anche forzare play (in caso fosse in pausa)
+                await v.play().catch(() => {});
+            }
+        } catch {}
+    };
 
     return (
         <section ref={sectionRef} className="about-split">
@@ -104,28 +105,59 @@ export function AboutSplit() {
                     </div>
                 </div>
 
-                {/* RIGHT: VIDEO */}
+                {/* RIGHT */}
                 <div className="about-split-right">
                     <div className="about-media">
+                        {/* POSTER layer: sempre visibile, niente nero */}
                         <video
-                            ref={videoRef}
-                            className="about-video"
+                            ref={posterRef}
+                            className={["about-video", "about-video-poster", isInView && playerReady ? "is-hidden" : ""].join(" ")}
                             src="/video/phantoms.mp4"
                             muted
                             playsInline
-                            preload="metadata"   // IMPORTANT: mostra frame ma permette avvio rapido
+                            preload="metadata"
                             controls={false}
-                            loop={false}
-                            // iOS/Safari: a volte aiuta avere poster implicito (prende il primo frame comunque)
-                            onEnded={() => {
-                                const v = videoRef.current;
-                                if (!v) return;
-                                v.pause();
-                                try {
-                                    v.currentTime = Math.max(0, v.duration - 0.05);
-                                } catch {}
-                            }}
                         />
+
+                        {/* PLAYER layer: viene montato solo quando in viewport; fade-in quando playing */}
+                        {isInView && (
+                            <video
+                                key={mountKey}
+                                ref={playerRef}
+                                className={["about-video", "about-video-player", playerReady ? "is-ready" : ""].join(" ")}
+                                src="/video/phantoms.mp4"
+                                playsInline
+                                preload="auto"
+                                controls={false}
+                                loop={false}
+                                autoPlay
+                                muted={!audioOn} // autoplay richiede muted, poi lo togliamo via click
+                                onPlaying={() => setPlayerReady(true)}
+                                onCanPlay={() => {
+                                    // a volte playing arriva tardi: canplay aiuta a preparare il fade
+                                    // non settiamo ready qui per evitare flash: ready quando parte davvero
+                                }}
+                                onEnded={(e) => {
+                                    const v = e.currentTarget;
+                                    v.pause();
+                                    try {
+                                        v.currentTime = Math.max(0, v.duration - 0.05);
+                                    } catch {}
+                                }}
+                            />
+                        )}
+
+                        {/* Toggle audio (visibile solo quando il player è montato) */}
+                        {isInView && (
+                            <button
+                                type="button"
+                                className={["about-audio-toggle", audioOn ? "is-on" : ""].join(" ")}
+                                onClick={toggleAudio}
+                                aria-label={audioOn ? "Disattiva audio" : "Attiva audio"}
+                            >
+                                {audioOn ? "AUDIO ON" : "AUDIO OFF"}
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
