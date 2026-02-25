@@ -59,7 +59,7 @@ export function SiteFooter() {
 
                     {/* COL 2 */}
                     <div className="footer-col">
-                        <h3 className="footer-title">Gioca con Noi</h3>
+                        <h3 className="footer-title">Sfidaci!</h3>
 
                         {/* Mini gioco 8-bit */}
                         <FooterMiniGame />
@@ -80,7 +80,7 @@ export function SiteFooter() {
                                 ⌁
                             </Link>
                             <Link className="footer-socialBtn" href="#" aria-label="YouTube">
-                                ▶
+                                A
                             </Link>
                         </div>
 
