@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import FooterMiniGame from "@/components/FooterMiniGame"; // <-- assicurati che il path sia giusto
 
 function pickAccent() {
     const accents = ["var(--accent-blue)", "var(--accent-purple)", "var(--accent-yellow)"];
@@ -58,39 +59,10 @@ export function SiteFooter() {
 
                     {/* COL 2 */}
                     <div className="footer-col">
-                        <h3 className="footer-title">Dicono di Noi</h3>
+                        <h3 className="footer-title">Gioca con Noi</h3>
 
-                        <div className="footer-news">
-                            <a className="footer-newsRow" href="#" target="_blank" rel="noreferrer">
-                                <div className="footer-thumb" />
-                                <div>
-                                    <div className="footer-newsTitle">
-                                        Risoluzione di un problema di etichettatura prodotto grazie ad Evolve.
-                                    </div>
-                                    <div className="footer-newsDate">14 Gen 2026</div>
-                                </div>
-                            </a>
-
-                            <a className="footer-newsRow" href="#" target="_blank" rel="noreferrer">
-                                <div className="footer-thumb" />
-                                <div>
-                                    <div className="footer-newsTitle">Corso di Automazioni di Evolve svolto con successo.</div>
-                                    <div className="footer-newsDate">10 Gen 2026</div>
-                                </div>
-                            </a>
-                        </div>
-
-                        <form className="footer-form" onSubmit={(e) => e.preventDefault()}>
-                            <input
-                                className="footer-input"
-                                type="email"
-                                placeholder="Inserisci la tua email"
-                                aria-label="Inserisci la tua email"
-                            />
-                            <button className="footer-send" type="submit" aria-label="Iscriviti">
-                                ➤
-                            </button>
-                        </form>
+                        {/* Mini gioco 8-bit */}
+                        <FooterMiniGame />
                     </div>
 
                     {/* COL 3 */}

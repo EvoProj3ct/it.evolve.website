@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { RouletteTitle } from "./RouletteTitle"; // ⬅️ metti il path giusto
+import { RouletteTitle } from "./RouletteTitle";
 
 type Accent = "blue" | "purple" | "yellow";
 
@@ -54,30 +54,25 @@ function IconPin() {
 }
 
 export default function ContactPage() {
-    // ✅ dati
     const email = "infoevolvecompany@gmail.com";
     const phone = "+39 3928440618";
     const address1 = "Roma — Italia";
     const address2 = "Disponibili da remoto in tutta Europa.";
 
-    // refs misure
     const cardsWrapRef = useRef<HTMLDivElement | null>(null);
     const firstCardRef = useRef<HTMLDivElement | null>(null);
 
-    // top 2ª card (firstCardH + gap)
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+
     const [padTop, setPadTop] = useState(0);
-    // altezza “binario” che arriva al bottom della 2ª card
     const [railH, setRailH] = useState(0);
 
-    // ✅ roulette: trigger una volta
     const [rouletteTrigger, setRouletteTrigger] = useState(0);
     const rouletteStarted = useRef(false);
 
     useEffect(() => {
         if (rouletteStarted.current) return;
         rouletteStarted.current = true;
-
-        // micro-delay per evitare “jank” al primo paint
         const id = window.setTimeout(() => setRouletteTrigger((v) => v + 1), 260);
         return () => window.clearTimeout(id);
     }, []);
@@ -88,7 +83,6 @@ export default function ContactPage() {
         if (!wrap || !first) return;
 
         const readGapPx = () => {
-            // row-gap / gap dal CSS: ".contactMini-cards { gap: 18px; }"
             const cs = window.getComputedStyle(wrap);
             const rowGap = cs.rowGap || cs.gap || "0px";
             const n = Number.parseFloat(rowGap);
@@ -97,14 +91,11 @@ export default function ContactPage() {
 
         const compute = () => {
             const gapPx = readGapPx();
-
             const firstH = first.getBoundingClientRect().height;
             const wrapH = wrap.getBoundingClientRect().height;
 
-            const p = Math.ceil(firstH + gapPx); // top seconda card
+            const p = Math.ceil(firstH + gapPx);
             setPadTop(p);
-
-            // binario sinistra: dalla 2ª card (top) fino al suo fondo
             setRailH(Math.max(0, Math.ceil(wrapH - p)));
         };
 
@@ -121,6 +112,13 @@ export default function ContactPage() {
         };
     }, []);
 
+    useEffect(() => {
+        const v = videoRef.current;
+        if (!v) return;
+        v.currentTime = 0;
+        v.play().catch(() => {});
+    }, []);
+
     return (
         <main className="contactMini">
             {/* HERO */}
@@ -130,7 +128,6 @@ export default function ContactPage() {
                 <div className="contactMini-wrap">
                     <div className="contactMini-pill">CONTATTI</div>
 
-                    {/* ✅ RouletteTitle dentro l'h1 (stessa logica del tuo slider) */}
                     <h1 className="contactMini-title">
                         <RouletteTitle
                             text={"Parliamo della tua idea."}
@@ -149,9 +146,9 @@ export default function ContactPage() {
             {/* BODY */}
             <section className="contactMini-body" aria-label="Dettagli contatto">
                 <div className="contactMini-wrap contactMini-grid">
-                    {/* LEFT */}
+                    {/* LEFT (✅ video incasellato sopra Scrivici...) */}
                     <div
-                        className="contactMini-left"
+                        className="contactMini-left contactLeftWithVideo"
                         style={
                             padTop
                                 ? ({
@@ -164,24 +161,37 @@ export default function ContactPage() {
                                 : undefined
                         }
                     >
-                        {/* sopra */}
+                        {/* ✅ video header della colonna sinistra */}
+                        <div className="contactLeftVideo" aria-hidden="true">
+                            <div className="contactLeftVideo-media">
+                                <video
+                                    ref={videoRef}
+                                    className="contactLeftVideo-video"
+                                    src="/video/phantomsend.mp4"
+                                    autoPlay
+                                    muted
+                                    playsInline
+                                    preload="auto"
+                                    loop={false}
+                                />
+                                <div className="contactLeftVideo-whiteMask" aria-hidden="true" />
+                            </div>
+                        </div>
+
+                        {/* contenuto che deve “partire sotto” */}
                         <div style={{ display: "grid", gap: 12 }}>
                             <h2 className="contactMini-h2">Scrivici quando vuoi.</h2>
                             <p className="contactMini-p">
-                                Portiamo il tuo lavoro e quello della tua azienda a tutto un
-                                altro livello.
+                                Portiamo il tuo lavoro e quello della tua azienda a tutto un altro livello.
                             </p>
                             <p className="contactMini-p">Sei pronto a fare il salto di qualità?</p>
                         </div>
 
-                        {/* sotto: allineato al bottom della 2ª card */}
                         <div className="contactMini-ctaRow" style={{ marginTop: 18 }}>
                             <Link
                                 className="contactMini-cta"
                                 href={`mailto:${email}`}
-                                style={
-                                    { ["--cta-accent" as any]: accentToCss("blue") } as React.CSSProperties
-                                }
+                                style={{ ["--cta-accent" as any]: accentToCss("blue") } as React.CSSProperties}
                             >
                                 Scrivi una mail
                             </Link>
@@ -189,23 +199,19 @@ export default function ContactPage() {
                             <Link
                                 className="contactMini-cta isGhost"
                                 href="/portfolio"
-                                style={
-                                    { ["--cta-accent" as any]: accentToCss("purple") } as React.CSSProperties
-                                }
+                                style={{ ["--cta-accent" as any]: accentToCss("purple") } as React.CSSProperties}
                             >
                                 Vedi portfolio
                             </Link>
                         </div>
                     </div>
 
-                    {/* RIGHT */}
+                    {/* RIGHT (solo cards, come prima) */}
                     <div ref={cardsWrapRef} className="contactMini-cards">
                         <div
                             ref={firstCardRef}
                             className="contactMini-card"
-                            style={
-                                { ["--card-accent" as any]: accentToCss("yellow") } as React.CSSProperties
-                            }
+                            style={{ ["--card-accent" as any]: accentToCss("yellow") } as React.CSSProperties}
                         >
                             <div className="contactMini-cardTop">
                                 <IconMail />
@@ -216,10 +222,7 @@ export default function ContactPage() {
                                 <a className="contactMini-link" href={`mailto:${email}`}>
                                     {email}
                                 </a>
-                                <a
-                                    className="contactMini-link"
-                                    href={`tel:${phone.replace(/\s+/g, "")}`}
-                                >
+                                <a className="contactMini-link" href={`tel:${phone.replace(/\s+/g, "")}`}>
                                     {phone}
                                 </a>
                             </div>
@@ -229,9 +232,7 @@ export default function ContactPage() {
 
                         <div
                             className="contactMini-card"
-                            style={
-                                { ["--card-accent" as any]: accentToCss("blue") } as React.CSSProperties
-                            }
+                            style={{ ["--card-accent" as any]: accentToCss("blue") } as React.CSSProperties}
                         >
                             <div className="contactMini-cardTop">
                                 <IconPin />
@@ -249,8 +250,8 @@ export default function ContactPage() {
                 </div>
             </section>
 
-            {/* Mobile: niente offset */}
             <style jsx global>{`
+        /* Mobile: niente offset */
         @media (max-width: 1023px) {
           .contactMini-left {
             padding-top: 0 !important;
@@ -260,6 +261,88 @@ export default function ContactPage() {
           .contactMini-ctaRow {
             margin-top: 22px !important;
           }
+        }
+
+        /* ======================================================
+           VIDEO INCASELLATO SOPRA “Scrivici quando vuoi.” (SINISTRA)
+           ====================================================== */
+        :root {
+          --leftVideoH: min(28vh, 240px);
+        }
+
+        .contactLeftWithVideo {
+          position: relative;
+          padding-top: calc(var(--leftVideoH) + 18px);
+        }
+
+        .contactLeftVideo {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 0;
+          height: var(--leftVideoH);
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .contactLeftVideo-media {
+          position: relative;
+          width: 100%;
+          height: 100%;
+          overflow: hidden;
+
+          -webkit-mask-image:
+            linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%),
+            linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
+          mask-image:
+            linear-gradient(to bottom, transparent 0%, #000 12%, #000 88%, transparent 100%),
+            linear-gradient(to right, transparent 0%, #000 8%, #000 92%, transparent 100%);
+          -webkit-mask-composite: source-in;
+          mask-composite: intersect;
+        }
+
+        .contactLeftVideo-video {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: 50% 18%;
+          transform: scale(1.02);
+          transform-origin: center;
+          user-select: none;
+        }
+
+        .contactLeftVideo-whiteMask {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background:
+            linear-gradient(
+              180deg,
+              rgba(255, 255, 255, 0.92) 0%,
+              rgba(255, 255, 255, 0.58) 38%,
+              rgba(255, 255, 255, 0.22) 72%,
+              rgba(255, 255, 255, 0.00) 100%
+            ),
+            radial-gradient(
+              1200px 520px at 50% 35%,
+              rgba(255, 255, 255, 0.55) 0%,
+              rgba(255, 255, 255, 0.00) 70%
+            );
+          mix-blend-mode: screen;
+          opacity: 1;
+        }
+
+        /* contenuto sopra al video */
+        .contactLeftWithVideo > *:not(.contactLeftVideo) {
+          position: relative;
+          z-index: 1;
+        }
+
+        @media (max-width: 640px) {
+          :root { --leftVideoH: min(22vh, 190px); }
+          .contactLeftVideo-video { object-position: 50% 16%; }
         }
       `}</style>
         </main>

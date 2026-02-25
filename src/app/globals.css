@@ -2820,7 +2820,7 @@ body {
   .contactMini-hero {
     position: relative;
     overflow: hidden;
-    padding: clamp(90px, 12vh, 50px) 0 clamp(60px, 8vh, 90px);
+    padding: clamp(90px, 12vh, 0px) 0 clamp(60px, 8vh, 0px);
     background: #fff;
   }
 
