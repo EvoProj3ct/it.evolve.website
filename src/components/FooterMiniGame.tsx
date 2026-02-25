@@ -141,8 +141,7 @@ export default function FooterMiniGame() {
     const frameRef = useRef(0);
     const elapsedRef = useRef(0);
 
-    const blinkRef = useRef(0); // per testo lampeggiante
-
+    const blinkRef = useRef(0);
     const streaksRef = useRef(
         Array.from({ length: 26 }).map((_, i) => ({
             x: (i * 17) % 320,
@@ -190,10 +189,7 @@ export default function FooterMiniGame() {
 
     const checkQualification = (top: LbRow[], finalScore: number, sid: string | null) => {
         if (finalScore <= 0) return false;
-
-        // se già in top con lo stesso sid -> ok (aggiorni nome/avatar)
         if (sid && top.some((r) => r.sessionId === sid)) return true;
-
         const last = top[top.length - 1]?.score ?? -1;
         return top.length < TOP_N || finalScore > last;
     };
@@ -208,13 +204,8 @@ export default function FooterMiniGame() {
             await fetch("/api/score", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    score: scoreRef.current,
-                    name: nm,
-                    ghost: selected.id,
-                }),
+                body: JSON.stringify({ score: scoreRef.current, name: nm, ghost: selected.id }),
             });
-
             await fetchLeaderboard();
             setQualify(false);
         } catch {}
@@ -263,14 +254,8 @@ export default function FooterMiniGame() {
             ctx2.globalAlpha = 0.28;
             ctx2.strokeStyle = "rgba(0,229,255,0.10)";
             for (let i = 0; i <= sizeCss; i += 10) {
-                ctx2.beginPath();
-                ctx2.moveTo(i, 0);
-                ctx2.lineTo(i, sizeCss);
-                ctx2.stroke();
-                ctx2.beginPath();
-                ctx2.moveTo(0, i);
-                ctx2.lineTo(sizeCss, i);
-                ctx2.stroke();
+                ctx2.beginPath(); ctx2.moveTo(i, 0); ctx2.lineTo(i, sizeCss); ctx2.stroke();
+                ctx2.beginPath(); ctx2.moveTo(0, i); ctx2.lineTo(sizeCss, i); ctx2.stroke();
             }
             ctx2.globalAlpha = 1;
 
@@ -314,7 +299,6 @@ export default function FooterMiniGame() {
     // ---------- PICK INTERACTION ----------
     useEffect(() => {
         if (phase !== "pick") return;
-
         const canvas = pickCanvasRef.current;
         if (!canvas) return;
         const c = canvas;
@@ -386,7 +370,6 @@ export default function FooterMiniGame() {
         elapsedRef.current = 0;
         blinkRef.current = 0;
 
-        // leaderboard overlay reset
         setLbOpen(false);
         setLb([]);
         setQualify(false);
@@ -414,7 +397,6 @@ export default function FooterMiniGame() {
         holdingRef.current = true;
     };
 
-    // mappa holdT (0..1) a gained (0..5)
     const gainedFromHold = (t: number) => {
         if (t >= 0.92) return 5;
         if (t >= 0.78) return 4;
@@ -427,12 +409,9 @@ export default function FooterMiniGame() {
     const bankCharge = () => {
         if (!aliveRef.current) return;
         if (!holdingRef.current) return;
-
         holdingRef.current = false;
 
-        const t = holdTRef.current;
-        const gained = gainedFromHold(t);
-
+        const gained = gainedFromHold(holdTRef.current);
         if (gained > 0) {
             energyRef.current = clampInt(energyRef.current + gained, 0, 5);
             setEnergyUI(energyRef.current);
@@ -489,6 +468,7 @@ export default function FooterMiniGame() {
         const onKeyDown = (e: KeyboardEvent) => {
             if (e.code !== "Space" && e.code !== "Enter") return;
 
+            // overlay aperto: Enter salva (se qualify)
             if (!aliveRef.current && lbOpen) {
                 if (e.code === "Enter" && qualify && nameInput.trim().length >= 2) {
                     e.preventDefault();
@@ -501,6 +481,7 @@ export default function FooterMiniGame() {
                 }
             }
 
+            // gameover: apri leaderboard
             if (!aliveRef.current && (e.code === "Enter" || e.code === "Space")) {
                 e.preventDefault();
                 setLbOpen(true);
@@ -723,7 +704,7 @@ export default function FooterMiniGame() {
             ctx2.textBaseline = "middle";
             ctx2.fillText(`SCORE ${scoreRef.current}`, 16, 19);
 
-            // energy bar (5 segments) + live hold preview
+            // energy bar
             const bx = 8;
             const by = 34;
             const bw = 210;
@@ -743,7 +724,6 @@ export default function FooterMiniGame() {
 
             const e = energyRef.current;
             const preview = holdingRef.current ? holdTRef.current : 0;
-
             const previewGain = gainedFromHold(preview);
             const previewFillTo = clampInt(e + previewGain, 0, 5);
 
@@ -801,7 +781,7 @@ export default function FooterMiniGame() {
 
             ctx2.fillText(msg, bx + 6, by + bh + 6);
 
-            // game over overlay
+            // game over overlay (solo testo base)
             if (!aliveRef.current) {
                 blinkRef.current += 1;
 
@@ -828,12 +808,10 @@ export default function FooterMiniGame() {
 
         const onPointerDown = (e: PointerEvent) => {
             e.preventDefault();
-
             if (!aliveRef.current) {
                 setLbOpen(true);
                 return;
             }
-
             if (energyRef.current > 0) fireIfCharged();
             else beginHoldCharge();
         };
@@ -868,7 +846,7 @@ export default function FooterMiniGame() {
                 if (Math.abs(cooldownUI - cooldownRef.current) > 0.05) setCooldownUI(cooldownRef.current);
             }
 
-            // hold meter: veloce all'inizio, poi sempre più lenta (decelerazione)
+            // HOLD: velocissimo all'inizio, poi sempre più lento
             if (aliveRef.current && holdingRef.current && cooldownRef.current <= 0 && energyRef.current < 5) {
                 const t = elapsedRef.current;
                 const base = t < 14 ? 2.6 : 2.2;
@@ -879,7 +857,7 @@ export default function FooterMiniGame() {
                 if (Math.abs(holdUI - holdTRef.current) > 0.015) setHoldUI(holdTRef.current);
             }
 
-            // speed: molto lento early
+            // speed
             const t = elapsedRef.current;
             const base = t < 14 ? 46 : 70;
             const speed = base + Math.min(60, t * 1.05) + Math.min(55, scoreRef.current * 1.55);
@@ -945,7 +923,6 @@ export default function FooterMiniGame() {
             drawRunnerSprite(ctx, runnerX, ry, s, selected, frameRef.current);
             if (wv.active) drawWave(ctx, wv);
 
-            // rim
             ctx.globalAlpha = 0.35;
             ctx.strokeStyle = "rgba(0,255,154,0.35)";
             ctx.lineWidth = 1;
@@ -969,14 +946,13 @@ export default function FooterMiniGame() {
             rafRef.current = null;
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [phase, holdUI, cooldownUI, lbOpen, qualify, nameInput, submitBusy, selected]);
+    }, [phase, holdUI, cooldownUI, selected]);
 
     useEffect(() => {
         if (phase === "run") startGame();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [phase]);
 
-    // Quando muori e apri overlay, carica leaderboard e verifica qualifica
     useEffect(() => {
         if (!lbOpen) return;
         (async () => {
@@ -1000,24 +976,23 @@ export default function FooterMiniGame() {
                     display: "inline-block",
                     width: 14,
                     height: 14,
-                    borderRadius: 4,
+                    borderRadius: 2, // più pixel
                     background: g.c1,
-                    boxShadow: `0 0 0 1px rgba(0,0,0,0.55), 0 0 0 2px ${g.c2} inset`,
+                    boxShadow: `0 0 0 1px rgba(0,0,0,0.70), 0 0 0 2px ${g.c2} inset`,
                     position: "relative",
                 }}
             >
-        {/* mini “pixel face” super schematica */}
-                <span
-                    style={{
-                        position: "absolute",
-                        left: 3,
-                        top: 5,
-                        width: 2,
-                        height: 2,
-                        background: "rgba(0,0,0,0.85)",
-                        boxShadow: "6px 0 rgba(0,0,0,0.85)",
-                    }}
-                />
+        <span
+            style={{
+                position: "absolute",
+                left: 3,
+                top: 5,
+                width: 2,
+                height: 2,
+                background: "rgba(0,0,0,0.90)",
+                boxShadow: "6px 0 rgba(0,0,0,0.90)",
+            }}
+        />
       </span>
         );
     };
@@ -1042,138 +1017,7 @@ export default function FooterMiniGame() {
             ) : (
                 <div style={styles.runBox}>
                     <div style={styles.screen}>
-                        <div style={{ position: "relative" }}>
-                            <canvas ref={runCanvasRef} style={styles.runCanvas} />
-
-                            {lbOpen && !aliveUI && (
-                                <div style={styles.lbOverlay}>
-                                    <div style={styles.lbPanel}>
-                                        <div style={styles.lbTitleRow}>
-                                            <div style={styles.lbTitle}>TOP {TOP_N} — LEADERBOARD</div>
-                                            <button
-                                                type="button"
-                                                style={styles.lbClose}
-                                                onClick={() => {
-                                                    setLbOpen(false);
-                                                    goToPickOnGameOverAction();
-                                                }}
-                                                aria-label="Chiudi e torna alla selezione"
-                                            >
-                                                ✕
-                                            </button>
-                                        </div>
-
-                                        <div style={styles.lbSub}>
-                      <span style={{ opacity: 0.9 }}>
-                        Il tuo score: <b style={{ opacity: 1 }}>{scoreRef.current}</b> <span style={{ opacity: 0.8 }}>({selected.label})</span>
-                      </span>
-                                            <span style={{ opacity: 0.6 }}> — </span>
-                                            <span style={{ opacity: 0.75 }}>{lbLoading ? "Caricamento..." : "Aggiornato"}</span>
-                                        </div>
-
-                                        <div style={styles.lbBox}>
-                                            <div style={styles.lbHeaderRow}>
-                                                <div style={styles.lbGridHeader}>
-                                                    <span style={styles.lbColRank}>#</span>
-                                                    <span style={styles.lbColAvatar}></span>
-                                                    <span style={styles.lbColName}>NOME</span>
-                                                    <span style={styles.lbColScore}>SCORE</span>
-                                                </div>
-                                            </div>
-
-                                            <div style={styles.lbList}>
-                                                {lbRows.map((row, i) => {
-                                                    const isMine = !!row && !!mySessionId && row.sessionId === mySessionId;
-                                                    return (
-                                                        <div
-                                                            key={row ? row.sessionId : `empty-${i}`}
-                                                            style={{
-                                                                ...styles.lbRow,
-                                                                ...(isMine ? styles.lbRowMine : null),
-                                                            }}
-                                                        >
-                                                            <div style={styles.lbGridRow}>
-                                                                <span style={styles.lbColRank}>{String(i + 1).padStart(2, "0")}</span>
-                                                                <span style={styles.lbColAvatar}>{row ? renderAvatar(row.ghost) : null}</span>
-                                                                <span style={styles.lbColName}>{row ? row.name : <span style={{ opacity: 0.35 }}>—</span>}</span>
-                                                                <span style={styles.lbColScore}>{row ? row.score : <span style={{ opacity: 0.35 }}>—</span>}</span>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-
-                                        {qualify ? (
-                                            <div style={styles.lbForm}>
-                                                <div style={{ opacity: 0.9 }}>
-                                                    Sei dentro i <b>TOP {TOP_N}</b> (o la lista non è piena). Inserisci il nome:
-                                                </div>
-
-                                                <div style={styles.lbFormRow}>
-                                                    <div style={styles.lbAvatarBig}>
-                                                        {renderAvatar(selected.id)} <span style={{ opacity: 0.8 }}>{selected.label}</span>
-                                                    </div>
-
-                                                    <input
-                                                        value={nameInput}
-                                                        onChange={(e) => setNameInput(e.target.value)}
-                                                        placeholder="Nome (max 16)"
-                                                        maxLength={16}
-                                                        style={styles.lbInput}
-                                                    />
-
-                                                    <button
-                                                        type="button"
-                                                        style={{
-                                                            ...styles.lbBtn,
-                                                            opacity: submitBusy || nameInput.trim().length < 2 ? 0.55 : 1,
-                                                            cursor: submitBusy || nameInput.trim().length < 2 ? "not-allowed" : "pointer",
-                                                        }}
-                                                        disabled={submitBusy || nameInput.trim().length < 2}
-                                                        onClick={submitScore}
-                                                    >
-                                                        {submitBusy ? "SALVO..." : "SALVA"}
-                                                    </button>
-                                                </div>
-
-                                                <div style={{ fontSize: 11, opacity: 0.6 }}>
-                                                    Tip: premi <b>Enter</b> per salvare.
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div style={{ fontSize: 12, opacity: 0.65 }}>Non sei nei TOP {TOP_N}. Riprova 💾⚡</div>
-                                        )}
-
-                                        <div style={styles.lbFooter}>
-                                            <button type="button" style={styles.lbBtnSecondary} onClick={fetchLeaderboard}>
-                                                ↻ Refresh
-                                            </button>
-                                            <button
-                                                type="button"
-                                                style={styles.lbBtnSecondary}
-                                                onClick={() => {
-                                                    setLbOpen(false);
-                                                    startGame();
-                                                }}
-                                            >
-                                                ▶ Rigioca
-                                            </button>
-                                            <button
-                                                type="button"
-                                                style={styles.lbBtnSecondary}
-                                                onClick={() => {
-                                                    setLbOpen(false);
-                                                    goToPickOnGameOverAction();
-                                                }}
-                                            >
-                                                ↩ Selezione
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                        <canvas ref={runCanvasRef} style={styles.runCanvas} />
                     </div>
 
                     <div style={styles.smallHint}>
@@ -1192,6 +1036,130 @@ export default function FooterMiniGame() {
                     </div>
                 </div>
             )}
+
+            {/* ✅ MODAL OUTSIDE screen (non viene tagliato) */}
+            {lbOpen && !aliveUI && (
+                <div style={styles.lbOverlay}>
+                    <div style={styles.lbPanel}>
+                        <div style={styles.lbTitleRow}>
+                            <div style={styles.lbTitle}>TOP {TOP_N} — LEADERBOARD</div>
+                            <button
+                                type="button"
+                                style={styles.lbClose}
+                                onClick={() => {
+                                    setLbOpen(false);
+                                    goToPickOnGameOverAction();
+                                }}
+                                aria-label="Chiudi e torna alla selezione"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        <div style={styles.lbSub}>
+              <span style={{ opacity: 0.9 }}>
+                Il tuo score: <b style={{ opacity: 1 }}>{scoreRef.current}</b> <span style={{ opacity: 0.8 }}>({selected.label})</span>
+              </span>
+                            <span style={{ opacity: 0.6 }}> — </span>
+                            <span style={{ opacity: 0.75 }}>{lbLoading ? "Caricamento..." : "Aggiornato"}</span>
+                        </div>
+
+                        <div style={styles.lbBox}>
+                            <div style={styles.lbHeaderRow}>
+                                <div style={styles.lbGridHeader}>
+                                    <span style={styles.lbColRank}>#</span>
+                                    <span style={styles.lbColAvatar}></span>
+                                    <span style={styles.lbColName}>NOME</span>
+                                    <span style={styles.lbColScore}>SCORE</span>
+                                </div>
+                            </div>
+
+                            <div style={styles.lbList}>
+                                {lbRows.map((row, i) => {
+                                    const isMine = !!row && !!mySessionId && row.sessionId === mySessionId;
+                                    return (
+                                        <div key={row ? row.sessionId : `empty-${i}`} style={{ ...styles.lbRow, ...(isMine ? styles.lbRowMine : null) }}>
+                                            <div style={styles.lbGridRow}>
+                                                <span style={styles.lbColRank}>{String(i + 1).padStart(2, "0")}</span>
+                                                <span style={styles.lbColAvatar}>{row ? renderAvatar(row.ghost) : null}</span>
+                                                <span style={styles.lbColName}>{row ? row.name : <span style={{ opacity: 0.35 }}>—</span>}</span>
+                                                <span style={styles.lbColScore}>{row ? row.score : <span style={{ opacity: 0.35 }}>—</span>}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {qualify ? (
+                            <div style={styles.lbForm}>
+                                <div style={{ opacity: 0.92 }}>
+                                    Sei dentro i <b>TOP {TOP_N}</b> (o la lista non è piena). Inserisci il nome:
+                                </div>
+
+                                <div style={styles.lbFormRow}>
+                                    <div style={styles.lbAvatarBig}>
+                                        {renderAvatar(selected.id)} <span style={{ opacity: 0.85 }}>{selected.label}</span>
+                                    </div>
+
+                                    <input
+                                        value={nameInput}
+                                        onChange={(e) => setNameInput(e.target.value)}
+                                        placeholder="Nome (max 16)"
+                                        maxLength={16}
+                                        style={styles.lbInput}
+                                    />
+
+                                    <button
+                                        type="button"
+                                        style={{
+                                            ...styles.lbBtn,
+                                            opacity: submitBusy || nameInput.trim().length < 2 ? 0.55 : 1,
+                                            cursor: submitBusy || nameInput.trim().length < 2 ? "not-allowed" : "pointer",
+                                        }}
+                                        disabled={submitBusy || nameInput.trim().length < 2}
+                                        onClick={submitScore}
+                                    >
+                                        {submitBusy ? "SALVO..." : "SALVA"}
+                                    </button>
+                                </div>
+
+                                <div style={{ fontSize: 11, opacity: 0.65 }}>
+                                    Tip: premi <b>Enter</b> per salvare.
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ fontSize: 12, opacity: 0.70 }}>Non sei nei TOP {TOP_N}. Riprova 💾⚡</div>
+                        )}
+
+                        <div style={styles.lbFooter}>
+                            <button type="button" style={styles.lbBtnSecondary} onClick={fetchLeaderboard}>
+                                ↻ Refresh
+                            </button>
+                            <button
+                                type="button"
+                                style={styles.lbBtnSecondary}
+                                onClick={() => {
+                                    setLbOpen(false);
+                                    startGame();
+                                }}
+                            >
+                                ▶ Rigioca
+                            </button>
+                            <button
+                                type="button"
+                                style={styles.lbBtnSecondary}
+                                onClick={() => {
+                                    setLbOpen(false);
+                                    goToPickOnGameOverAction();
+                                }}
+                            >
+                                ↩ Selezione
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -1200,22 +1168,19 @@ export default function FooterMiniGame() {
 function rand(a: number, b: number) {
     return Math.floor(a + Math.random() * (b - a + 1));
 }
-
 function clamp(v: number, a: number, b: number) {
     return Math.max(a, Math.min(b, v));
 }
-
 function clamp01(v: number) {
     return clamp(v, 0, 1);
 }
-
 function clampInt(v: number, a: number, b: number) {
     return Math.max(a, Math.min(b, Math.floor(v)));
 }
 
 // ---------- styles ----------
 const styles: Record<string, React.CSSProperties> = {
-    wrap: { display: "grid", gap: 10 },
+    wrap: { display: "grid", gap: 10, position: "relative" }, // ✅ per overlay
     headerRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 },
     title: {
         fontSize: 13,
@@ -1260,45 +1225,60 @@ const styles: Record<string, React.CSSProperties> = {
     },
     smallHint: { fontSize: 12, opacity: 0.75 },
 
-    // ===== Leaderboard “pixel panel” =====
+    // ===== LEADERBOARD MODAL (fuori dal canvas) =====
     lbOverlay: {
-        position: "absolute",
+        position: "fixed", // ✅ prende viewport, non il 16/9
         inset: 0,
+        zIndex: 9999,
         display: "grid",
         placeItems: "center",
-        padding: 10,
-        background: "rgba(0,0,0,0.35)",
+        padding: 14,
+        background: "rgba(0,0,0,0.55)",
     },
+
+    // stile più "pixel old game"
     lbPanel: {
-        width: "min(560px, 96%)",
-        maxHeight: "92%",
+        width: "min(560px, 96vw)",
+        maxHeight: "calc(100vh - 28px)",
         display: "flex",
         flexDirection: "column",
-        borderRadius: 14,
-        border: "2px solid rgba(0,255,154,0.35)",
-        background: "rgba(0,0,0,0.78)",
-        boxShadow: "0 18px 60px rgba(0,0,0,0.55)",
+        borderRadius: 6, // ✅ meno rounded
+        border: "2px solid rgba(0,255,154,0.55)",
+        background: "rgba(0,0,0,0.88)",
+        boxShadow: "0 0 0 2px rgba(0,0,0,0.85) inset, 0 20px 70px rgba(0,0,0,0.65)",
         padding: 12,
         fontFamily:
             "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
     },
+
     lbTitleRow: { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10 },
-    lbTitle: { fontSize: 12, letterSpacing: 1.2, opacity: 0.95 },
+    lbTitle: { fontSize: 12, letterSpacing: 1.4, opacity: 0.95 },
+
     lbClose: {
         width: 34,
         height: 28,
-        borderRadius: 10,
-        border: "1px solid rgba(231,238,247,0.18)",
-        background: "rgba(0,0,0,0.20)",
-        color: "rgba(231,238,247,0.9)",
+        borderRadius: 4,
+        border: "2px solid rgba(231,238,247,0.22)",
+        background: "rgba(0,0,0,0.35)",
+        color: "rgba(231,238,247,0.95)",
         cursor: "pointer",
     },
-    lbSub: { fontSize: 11, opacity: 0.78, marginTop: 8, marginBottom: 10 },
+
+    lbSub: {
+        fontSize: 11,
+        opacity: 0.82,
+        marginTop: 8,
+        marginBottom: 10,
+        padding: "6px 8px",
+        borderRadius: 4,
+        border: "1px solid rgba(231,238,247,0.10)",
+        background: "rgba(0,0,0,0.35)",
+    },
 
     lbBox: {
-        borderRadius: 12,
-        border: "1px solid rgba(231,238,247,0.14)",
-        background: "rgba(0,0,0,0.26)",
+        borderRadius: 4,
+        border: "2px solid rgba(231,238,247,0.12)",
+        background: "rgba(0,0,0,0.35)",
         padding: 10,
         flex: "1 1 auto",
         minHeight: 0,
@@ -1310,10 +1290,11 @@ const styles: Record<string, React.CSSProperties> = {
         position: "sticky",
         top: 0,
         zIndex: 2,
-        background: "linear-gradient(to bottom, rgba(0,0,0,0.85), rgba(0,0,0,0.55))",
-        borderRadius: 10,
+        background: "rgba(0,0,0,0.92)",
+        borderRadius: 4,
         padding: "6px 8px",
-        border: "1px solid rgba(231,238,247,0.12)",
+        border: "1px solid rgba(57,255,20,0.22)",
+        boxShadow: "0 0 0 1px rgba(0,0,0,0.7) inset",
     },
 
     lbGridHeader: {
@@ -1322,8 +1303,8 @@ const styles: Record<string, React.CSSProperties> = {
         alignItems: "center",
         gap: 10,
         fontSize: 11,
-        letterSpacing: 0.8,
-        opacity: 0.9,
+        letterSpacing: 1.0,
+        opacity: 0.95,
     },
 
     lbList: {
@@ -1331,24 +1312,24 @@ const styles: Record<string, React.CSSProperties> = {
         display: "grid",
         gap: 6,
         overflowY: "auto",
-        paddingRight: 6,
+        paddingRight: 8,
         flex: "1 1 auto",
         minHeight: 0,
         scrollbarWidth: "thin",
-        scrollbarColor: "rgba(0,255,154,0.35) rgba(0,0,0,0.25)",
+        scrollbarColor: "rgba(0,255,154,0.55) rgba(0,0,0,0.35)",
     },
 
     lbRow: {
-        borderRadius: 10,
-        border: "1px solid rgba(231,238,247,0.10)",
-        background: "rgba(0,0,0,0.12)",
+        borderRadius: 4,
+        border: "1px solid rgba(231,238,247,0.12)",
+        background: "rgba(0,0,0,0.18)",
         padding: "6px 8px",
     },
 
     lbRowMine: {
-        background: "rgba(0,229,255,0.12)",
-        border: "1px solid rgba(0,255,154,0.35)",
-        boxShadow: "0 0 0 1px rgba(0,0,0,0.35) inset",
+        background: "rgba(0,229,255,0.14)",
+        border: "1px solid rgba(0,255,154,0.55)",
+        boxShadow: "0 0 0 1px rgba(0,0,0,0.65) inset",
     },
 
     lbGridRow: {
@@ -1361,15 +1342,19 @@ const styles: Record<string, React.CSSProperties> = {
 
     lbColRank: { opacity: 0.9 },
     lbColAvatar: { display: "grid", placeItems: "center" },
-    lbColName: {
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-        whiteSpace: "nowrap",
-        opacity: 0.95,
-    },
+    lbColName: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", opacity: 0.95 },
     lbColScore: { textAlign: "right", opacity: 0.95 },
 
-    lbForm: { display: "grid", gap: 8, marginTop: 10 },
+    lbForm: {
+        display: "grid",
+        gap: 8,
+        marginTop: 10,
+        padding: "8px 10px",
+        borderRadius: 4,
+        border: "1px solid rgba(0,229,255,0.18)",
+        background: "rgba(0,0,0,0.35)",
+    },
+
     lbFormRow: { display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" },
 
     lbAvatarBig: {
@@ -1377,18 +1362,18 @@ const styles: Record<string, React.CSSProperties> = {
         alignItems: "center",
         gap: 8,
         padding: "6px 8px",
-        borderRadius: 10,
+        borderRadius: 4,
         border: "1px solid rgba(231,238,247,0.14)",
-        background: "rgba(0,0,0,0.25)",
+        background: "rgba(0,0,0,0.30)",
         fontSize: 12,
     },
 
     lbInput: {
         flex: "1 1 180px",
         height: 34,
-        borderRadius: 10,
-        border: "1px solid rgba(231,238,247,0.18)",
-        background: "rgba(0,0,0,0.25)",
+        borderRadius: 4,
+        border: "2px solid rgba(231,238,247,0.18)",
+        background: "rgba(0,0,0,0.35)",
         color: "rgba(231,238,247,0.92)",
         padding: "0 10px",
         outline: "none",
@@ -1398,22 +1383,29 @@ const styles: Record<string, React.CSSProperties> = {
     lbBtn: {
         height: 34,
         padding: "0 12px",
-        borderRadius: 10,
-        border: "1px solid rgba(0,255,154,0.35)",
-        background: "rgba(0,0,0,0.22)",
+        borderRadius: 4,
+        border: "2px solid rgba(0,255,154,0.55)",
+        background: "rgba(0,0,0,0.35)",
         color: "rgba(231,238,247,0.95)",
         letterSpacing: 1.0,
         cursor: "pointer",
     },
 
-    lbFooter: { display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 10, flexWrap: "wrap" },
+    lbFooter: {
+        display: "flex",
+        gap: 8,
+        justifyContent: "flex-end",
+        marginTop: 10,
+        flexWrap: "wrap",
+        paddingTop: 6,
+    },
 
     lbBtnSecondary: {
         height: 32,
         padding: "0 10px",
-        borderRadius: 10,
-        border: "1px solid rgba(231,238,247,0.16)",
-        background: "rgba(0,0,0,0.18)",
+        borderRadius: 4,
+        border: "2px solid rgba(231,238,247,0.16)",
+        background: "rgba(0,0,0,0.30)",
         color: "rgba(231,238,247,0.9)",
         cursor: "pointer",
         fontSize: 12,
