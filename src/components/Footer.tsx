@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import FooterMiniGame from "@/components/FooterMiniGame"; // <-- assicurati che il path sia giusto
+
+// ✅ nuovo path (cartella waveBattery)
+import FooterMiniGame from "@/components/waveBattery/FooterMiniGame";
 
 function pickAccent() {
     const accents = ["var(--accent-blue)", "var(--accent-purple)", "var(--accent-yellow)"];
@@ -70,18 +72,10 @@ export function SiteFooter() {
                         <div className="footer-logo"></div>
 
                         <div className="footer-socials" aria-label="Social">
-                            <Link className="footer-socialBtn" href="#" aria-label="Facebook">
-                                f
-                            </Link>
-                            <Link className="footer-socialBtn" href="#" aria-label="X">
-                                𝕏
-                            </Link>
-                            <Link className="footer-socialBtn" href="#" aria-label="Instagram">
-                                ⌁
-                            </Link>
-                            <Link className="footer-socialBtn" href="#" aria-label="YouTube">
-                                A
-                            </Link>
+                            <Link className="footer-socialBtn" href="#" aria-label="Facebook">f</Link>
+                            <Link className="footer-socialBtn" href="#" aria-label="X">𝕏</Link>
+                            <Link className="footer-socialBtn" href="#" aria-label="Instagram">⌁</Link>
+                            <Link className="footer-socialBtn" href="#" aria-label="YouTube">A</Link>
                         </div>
 
                         <div className="footer-copy">

@@ -2,10 +2,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { kv } from "@vercel/kv";
 
+export const runtime = "nodejs"; // ✅ evita edge weirdness
+
 type GhostId = "red" | "green" | "purple" | "white";
 
 const LB_KEY = "lb:wavebattery:global"; // zset: member=sid score=best
-const META_KEY = "lb:wavebattery:meta"; // hash: sid -> json
+const META_PREFIX = "wb:meta:"; // ✅ string key per sid: wb:meta:<sid> -> json
 const RL_PREFIX = "wb:rl:"; // string key per sid (rate-limit)
 
 function clampInt(v: number, a: number, b: number) {
@@ -20,7 +22,7 @@ function cookieOptions() {
     return {
         httpOnly: true,
         sameSite: "lax" as const,
-        secure: process.env.NODE_ENV === "production", // ✅ dev-friendly
+        secure: process.env.NODE_ENV === "production",
         path: "/",
         maxAge: 60 * 60 * 24 * 365,
     };
@@ -66,13 +68,15 @@ export async function POST(req: NextRequest) {
         return res;
     }
 
-    // save meta
-    await kv.hset(META_KEY, { [sid]: JSON.stringify({ name, ghost }) });
+    // ✅ save meta (robust): key-per-sid
+    await kv.set(
+        `${META_PREFIX}${sid}`,
+        JSON.stringify({ name, ghost }),
+        { ex: 60 * 60 * 24 * 365 } // 1 anno
+    );
 
-    // update best score (try GT if supported; fallback otherwise)
+    // ✅ update best score (try GT if supported; fallback otherwise)
     try {
-        // Some KV/Redis wrappers support: zadd(key, {score, member}, { gt: true })
-        // If yours doesn't, it will throw and we fallback to zscore+zadd.
         // @ts-expect-error optional wrapper feature
         await kv.zadd(LB_KEY, { score, member: sid }, { gt: true });
     } catch {

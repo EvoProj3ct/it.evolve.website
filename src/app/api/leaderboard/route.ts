@@ -2,10 +2,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { kv } from "@vercel/kv";
 
+export const runtime = "nodejs";
+
 type GhostId = "red" | "green" | "purple" | "white";
 
 const LB_KEY = "lb:wavebattery:global";
-const META_KEY = "lb:wavebattery:meta";
+const META_PREFIX = "wb:meta:"; // wb:meta:<sid> -> json OR object (a seconda del wrapper)
 const TOP_N = 15;
 
 function cookieOptions() {
@@ -46,8 +48,7 @@ const toPairs = (raw: any): Array<{ member: string; score: number }> => {
         return raw
             .map((t: any) => ({ member: t?.[0], score: Number(t?.[1]) }))
             .filter(
-                (p: any) =>
-                    typeof p.member === "string" && p.member.length > 0 && Number.isFinite(p.score)
+                (p: any) => typeof p.member === "string" && p.member.length > 0 && Number.isFinite(p.score)
             );
     }
 
@@ -55,10 +56,28 @@ const toPairs = (raw: any): Array<{ member: string; score: number }> => {
     return raw
         .map((it: any) => ({ member: it?.member, score: Number(it?.score) }))
         .filter(
-            (p: any) =>
-                typeof p.member === "string" && p.member.length > 0 && Number.isFinite(p.score)
+            (p: any) => typeof p.member === "string" && p.member.length > 0 && Number.isFinite(p.score)
         );
 };
+
+// ✅ FIX: kv.get può tornare string JSON o oggetto già pronto
+function parseMeta(raw: unknown): { name?: string; ghost?: GhostId } | null {
+    if (raw == null) return null;
+
+    if (typeof raw === "object") {
+        return raw as any;
+    }
+
+    if (typeof raw === "string") {
+        try {
+            return JSON.parse(raw);
+        } catch {
+            return null;
+        }
+    }
+
+    return null;
+}
 
 export async function GET(req: NextRequest) {
     const { sid, needSetCookie } = getOrCreateSid(req);
@@ -71,15 +90,12 @@ export async function GET(req: NextRequest) {
     const raw = await kv.zrange(LB_KEY, 0, TOP_N - 1, { rev: true, withScores: true });
     const pairs = toPairs(raw);
 
-    // 2) fetch meta for those members (robust: always hget in parallel)
+    // 2) fetch meta for those members (key-per-sid)
     const members = pairs.map((p) => p.member);
-    const metas = await Promise.all(members.map((m) => kv.hget<string>(META_KEY, m)));
+    const metas = await Promise.all(members.map((m) => kv.get(`${META_PREFIX}${m}`)));
 
     const top = pairs.map((p, i) => {
-        let meta: any = null;
-        try {
-            meta = metas[i] ? JSON.parse(String(metas[i])) : null;
-        } catch {}
+        const meta = parseMeta(metas[i]);
 
         return {
             sessionId: p.member,
@@ -92,13 +108,10 @@ export async function GET(req: NextRequest) {
     // 3) my best + my meta (for prefill + highlight)
     const [myScore, myMetaRaw] = await Promise.all([
         kv.zscore(LB_KEY, sid),
-        kv.hget<string>(META_KEY, sid),
+        kv.get(`${META_PREFIX}${sid}`),
     ]);
 
-    let myMeta: any = null;
-    try {
-        myMeta = myMetaRaw ? JSON.parse(String(myMetaRaw)) : null;
-    } catch {}
+    const myMeta = parseMeta(myMetaRaw);
 
     const res = NextResponse.json(
         {
