@@ -12,9 +12,9 @@ type Props = {
 
 export default function HeroHeaderWithMarquee({
                                                   pill = "Portfolio",
-                                                  title = "Le Migliori Soluzioni.",
-                                                  subtitle = "Di Programmazione Sartoriale",
-                                                  tickerText = "CONSULENZA • UX/UI • WEB APPS • ATLAS • CLOUD • INNOVAZIONE AI • METODO SCRUM • PROGETTAZIONE 3D • FORMAZIONE • STUDIO TECNICO • SISTEMI COMPLESSI",
+                                                  title = "Soluzioni su Misura",
+                                                  subtitle = "Software, integrazioni e sistemi progettati intorno al tuo contesto",
+                                                  tickerText = "CONSULENZA • UX/UI • WEB APPS • ATLAS • CLOUD • INNOVAZIONE AI • METODO SCRUM • PROGETTAZIONE 3D • FORMAZIONE • STUDIO TECNICO • SISTEMI COMPLESSI •",
                                               }: Props) {
     const row = `${tickerText} ${tickerText} ${tickerText}`;
 

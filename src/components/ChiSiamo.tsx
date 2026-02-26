@@ -75,7 +75,7 @@ export default function ChiSiamoTimelineSection({
                         "Adottiamo cicli di lavoro brevi con coinvolgimento diretto\n" +
                         "del cliente in ogni fase rilevante.\n" +
                         "Questo consente una condivisione costante di avanzamenti,\n\n" +
-                        "decisioni e criticità, garantendo piena visibilità sull’intero processo.\n." +
+                        "decisioni e criticità, garantendo piena visibilità sull’intero processo.\n" +
                         "Ogni ciclo produce un risultato tangibile e verificabile,\n" +
                         "rendendo chiaro lo stato dei lavori e facilitando pianificazioni\n" +
                         "e integrazioni future.\n\n"

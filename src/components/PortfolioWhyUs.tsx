@@ -8,33 +8,33 @@ type Feature = {
     title: string;
     desc: string;
     accent: Accent;
-    icon: "corner" | "check" | "grid" | "spark";
+    icon: "sliders" | "scale" | "integration" | "quality";
 };
 
 const FEATURES: Feature[] = [
     {
-        title: "Design su Misura",
-        desc: "Interfacce essenziali e coerenti: brand, UI e UX progettati per essere chiari, veloci e credibili.",
+        title: "Approccio Sartoriale",
+        desc: "Niente pacchetti standard. Costruiamo ed adattiamo soluzioni calibrate su esigenze reali.",
         accent: "yellow",
-        icon: "corner",
+        icon: "sliders",
     },
     {
-        title: "Codice di Qualità",
-        desc: "Architetture pulite, componenti riusabili, test e review: la qualità è un processo, non un desiderio.",
+        title: "Architettura scalabile",
+        desc: "Parti da una base solida e cresci per step. Struttura modulare, roadmap chiara, nessuno spreco.",
         accent: "blue",
-        icon: "check",
+        icon: "scale",
     },
     {
-        title: "Pulito & Minimal",
-        desc: "Meno rumore, più funzione: esperienza elegante, leggibilità e gerarchie tipografiche curate.",
+        title: "Integrazione Digitale–Fisica",
+        desc: "Software, automazioni, NFC, stampa 3D: colleghiamo strumenti e oggetti in un unico ecosistema coerente.",
         accent: "purple",
-        icon: "grid",
+        icon: "integration",
     },
     {
-        title: "Supporto Reale",
-        desc: "Siamo presenti dopo la consegna: monitoraggio, evolutive, performance e priorità sempre sotto controllo.",
+        title: "Controllo e Continuità",
+        desc: "Monitoraggio, ottimizzazione e supporto evolutivo. La consegna non è la fine del progetto.",
         accent: "yellow",
-        icon: "spark",
+        icon: "quality",
     },
 ];
 
@@ -55,29 +55,101 @@ function MiniIcon({ name }: { name: Feature["icon"] }) {
     };
 
     switch (name) {
-        case "corner":
+        case "sliders":
             return (
                 <svg viewBox="0 0 24 24" className="whyUs-iconSvg" aria-hidden="true">
-                    <path {...common} d="M6 18V8a2 2 0 0 1 2-2h10" />
-                    <path {...common} d="M6 18h10a2 2 0 0 0 2-2V6" />
+                    {/* linee */}
+                    <path {...common} d="M4 6h16" />
+                    <path {...common} d="M4 12h16" />
+                    <path {...common} d="M4 18h16" />
+
+                    {/* cerchi */}
+                    <path {...common} d="M8 4a2 2 0 1 0 0.001 0Z" />
+                    <path {...common} d="M14 10a2 2 0 1 0 0.001 0Z" />
+                    <path {...common} d="M10 16a2 2 0 1 0 0.001 0Z" />
                 </svg>
             );
-        case "check":
+        case "scale":
             return (
                 <svg viewBox="0 0 24 24" className="whyUs-iconSvg" aria-hidden="true">
-                    <path {...common} d="M6 12.5 10 16.5 18 8.5" />
+                    {/* cerchio esterno */}
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="9"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                    />
+
+                    {/* cerchio interno */}
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="3.5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                    />
                 </svg>
             );
-        case "grid":
+        case "integration":
             return (
                 <svg viewBox="0 0 24 24" className="whyUs-iconSvg" aria-hidden="true">
-                    <path {...common} d="M6 6h5v5H6zM13 6h5v5h-5zM6 13h5v5H6zM13 13h5v5h-5z" />
+                    {/* elemento fisico (quadrato) */}
+                    <rect
+                        x="4"
+                        y="9"
+                        width="6"
+                        height="6"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                        rx="1"
+                    />
+
+                    {/* elemento digitale (cerchio) */}
+                    <circle
+                        cx="17"
+                        cy="12"
+                        r="3"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                    />
+
+                    {/* collegamento */}
+                    <path
+                        d="M10 12h4"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                        strokeLinecap="round"
+                    />
                 </svg>
             );
-        case "spark":
+        case "quality":
             return (
                 <svg viewBox="0 0 24 24" className="whyUs-iconSvg" aria-hidden="true">
-                    <path {...common} d="M12 3l1.2 5.1L18 10l-4.8 1.9L12 17l-1.2-5.1L6 10l4.8-1.9L12 3Z" />
+                    {/* cerchio controllo */}
+                    <circle
+                        cx="12"
+                        cy="12"
+                        r="7"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                    />
+
+                    {/* check qualità */}
+                    <path
+                        d="M8 12.5 11 15.5 16 9.5"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.75"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    />
                 </svg>
             );
         default:
@@ -92,8 +164,7 @@ export default function PortfolioWhyUs() {
                 <header className="whyUs-head">
                     <h2 className="whyUs-title">Perché scegliere Evolve?</h2>
                     <p className="whyUs-subtitle">
-                        Sviluppiamo prodotti digitali solidi e scalabili: design, ingegneria e consegna lavorano insieme,
-                        senza frizioni.
+                        Software, integrazioni e sistemi progettati intorno al tuo contesto.
                     </p>
                 </header>
 

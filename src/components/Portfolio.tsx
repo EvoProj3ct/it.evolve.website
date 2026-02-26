@@ -25,7 +25,7 @@ const SECTIONS: PortfolioSection[] = [
             "La consulenza è il punto di partenza per prendere decisioni consapevoli: analizziamo il contesto operativo",
             "individuiamo criticità e opportunità. Definiamo insieme a te la giusta direzione tecnologica per la tua crescita.",
         ],
-        cardTitle: "Strategia Digitale",
+        cardTitle: "Consulenza Informatica",
         cardText:
             "Affianchiamo le aziende nella comprensione e strutturazione dei propri processi digitali.",
         image: "/portfolio/portfolio_01.png",
@@ -134,9 +134,9 @@ export default function Portfolio() {
     );
 
     const lead1 =
-        "Siamo un team di sviluppo informatico che unisce strategia, design e ingegneria per costruire prodotti digitali solidi e scalabili.";
+        "Progettiamo e realizziamo soluzioni digitali integrate, combinando sviluppo software, intelligenza artificiale, stampa 3D e sistemi gestionali in un ecosistema coerente e scalabile.";
     const lead2 =
-        "Lavoriamo fianco a fianco con i clienti: iterazione rapida, scelte chiare e attenzione maniacale ai dettagli che contano.";
+        "Un unico partner, un'unica soluzione.";
 
     const accent = accentToCssValue(active.accent);
 
