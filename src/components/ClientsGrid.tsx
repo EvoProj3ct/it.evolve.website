@@ -19,8 +19,8 @@ const CLIENTS: Client[] = [
     { id: "c5", name: "Centro Airone", href: "https://www.instagram.com/centroolistico_airone/", logoSrc: "/clients/logo_airone.png" },
     { id: "c6", name: "Billy's", href: "https://www.instagram.com/billys_ristopub/", logoSrc: "/clients/logo_billys.png" },
     { id: "c7", name: "Eurometal", href: "https://www.eurometalvalmontone.it/", logoSrc: "/clients/logo_eurometal.png" },
-    { id: "c8", name: "Cliente Y", href: "https://example.com" },
-    { id: "c9", name: "Cliente Z", href: "https://example.com" },
+    { id: "c8", name: "japporomano", href: "https://japporomano.com", logoSrc: "/clients/logo_japporomano.png" },
+    { id: "c9", name: "FIMEP", href: "https://fimep.it/", logoSrc: "/clients/logo_fimep.png" },
     { id: "c10", name: "Cliente W", href: "https://example.com" },
 ];
 
