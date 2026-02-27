@@ -103,7 +103,7 @@ const SECTIONS: PortfolioSection[] = [
     {
         id: "siti",
         title: "Siti Web",
-        num: "06",
+        num: "07",
         accent: "blue",
         body: [
             "Ogni scelta è orientata a chiarezza, usabilità e integrazione con altri sistemi aziendali.",
