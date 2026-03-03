@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { RouletteTitle } from "./RouletteTitle";
 
 type Step = {
@@ -11,22 +12,116 @@ type Step = {
 type Props = {
     pill?: string;
     title?: string;
+    intro?: string;
     steps?: Step[];
 };
 
 const ACCENTS = [
-    "var(--accent-yellow)",
-    "var(--accent-blue)",
-    "var(--accent-purple)",
+    "var(--accent-yellow, #eab308)",
+    "var(--accent-blue, #3b82f6)",
+    "var(--accent-purple, #a855f7)",
 ] as const;
 
-function clamp01(v: number) {
-    return Math.max(0, Math.min(1, v));
+const SCRUM_IMGS = ["/aboutus/scrum1.png", "/aboutus/scrum2.png", "/aboutus/scrum3.png"];
+
+function clamp(v: number, a: number, b: number) {
+    return Math.max(a, Math.min(b, v));
+}
+function prefersReducedMotion() {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+}
+
+/**
+ * ✅ LOCK ON DOWN:
+ * - when element enters viewport -> add .isIn and it stays while scrolling down
+ * ✅ REPLAY ONLY ON UP:
+ * - only when scrolling UP and element is fully offscreen ABOVE -> remove .isIn + set data-* to reverse entry
+ */
+function useLockRevealReverse(rootRef?: React.RefObject<HTMLElement | null>) {
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const root = rootRef?.current ?? document.documentElement;
+
+        if (prefersReducedMotion()) {
+            root.querySelectorAll?.(".reveal, .aplLockText, .aplLockMedia").forEach((el) => {
+                (el as HTMLElement).classList.add("isIn");
+            });
+            return;
+        }
+
+        const heroEls = Array.from(root.querySelectorAll<HTMLElement>(".reveal"));
+        const aplTextEls = Array.from(root.querySelectorAll<HTMLElement>(".aplLockText"));
+        const aplMediaEls = Array.from(root.querySelectorAll<HTMLElement>(".aplLockMedia"));
+
+        const allObserved = [...heroEls, ...aplTextEls, ...aplMediaEls];
+        if (!allObserved.length) return;
+
+        let lastY = window.scrollY;
+        let dir: "down" | "up" = "down";
+
+        const io = new IntersectionObserver(
+            (entries) => {
+                for (const e of entries) {
+                    const el = e.target as HTMLElement;
+                    if (!e.isIntersecting) continue;
+
+                    // when it re-enters, just animate in (direction is handled by data attrs)
+                    el.classList.add("isIn");
+
+                    // once it has entered, clear "reverse" flags so it stays stable while going down
+                    if (el.classList.contains("reveal")) {
+                        el.removeAttribute("data-reveal-up");
+                    }
+                    if (el.classList.contains("aplLockText") || el.classList.contains("aplLockMedia")) {
+                        el.removeAttribute("data-up");
+                    }
+                }
+            },
+            { root: null, threshold: 0.12, rootMargin: "0px 0px -12% 0px" }
+        );
+
+        allObserved.forEach((el) => io.observe(el));
+
+        const onScroll = () => {
+            const y = window.scrollY;
+            dir = y < lastY ? "up" : "down";
+            lastY = y;
+
+            if (dir !== "up") return;
+
+            // reset only if fully above viewport (no flicker)
+            for (const el of allObserved) {
+                const r = el.getBoundingClientRect();
+                const offscreenAbove = r.bottom < -24;
+                if (!offscreenAbove) continue;
+
+                el.classList.remove("isIn");
+
+                // mark reverse entry for next time it comes back into view (while scrolling up)
+                if (el.classList.contains("reveal")) {
+                    el.setAttribute("data-reveal-up", "1");
+                }
+                if (el.classList.contains("aplLockText") || el.classList.contains("aplLockMedia")) {
+                    el.setAttribute("data-up", "1");
+                }
+            }
+        };
+
+        window.addEventListener("scroll", onScroll, { passive: true });
+
+        return () => {
+            window.removeEventListener("scroll", onScroll);
+            io.disconnect();
+        };
+    }, [rootRef]);
 }
 
 export default function ChiSiamoTimelineSection({
                                                     pill = "CHI SIAMO",
                                                     title = "Una giovane realtà",
+                                                    intro = "Evolve nasce nel 2025 dalla passione per le nuove tecnologie e per la visione di un'evoluzione sostenibile che esse possono portare se accompagnate da un utilizzo consapevole. La nostra Mission è quella di creare innovazione e rendere la digitalizzazione alla portata di tutte le Piccole e Medie Imprese attraverso sistemi homemade modulari, flessibili e scalabili.",
                                                     steps,
                                                 }: Props) {
     const [rouletteTrigger, setRouletteTrigger] = useState(0);
@@ -41,65 +136,44 @@ export default function ChiSiamoTimelineSection({
     const STEPS: Step[] = useMemo(
         () =>
             steps ?? [
-
                 {
-                    title: "Un approccio Sartoriale",
+                    title: "Un approccio sartoriale",
                     body:
-                        "Al centro di ogni progetto c’è un’analisi approfondita del \n" +
-                        "contesto operativo del cliente.\n" +
-                        "Ogni intervento viene progettato su misura e cucito sui\n" +
-                        "processi reali e sugli obiettivi concreti dell’organizzazione.\n\n" +
-                        "Lavoriamo con un approccio strutturato e iterativo, ispirato \n" +
-                        "ai principi Agile (in particolare Scrum) per garantire \n" +
-                        "operatività continua, misurabilità dei risultati e chiarezza nella \n" +
-                        "comunicazione lungo tutto il ciclo di vita del progetto. \n",
+                        "Partiamo sempre dal contesto: persone, processi e obiettivi reali.\n" +
+                        "Costruiamo soluzioni su misura, con iterazioni rapide e feedback continuo.\n\n" +
+                        "Il risultato è un lavoro solido, misurabile e chiaro: roadmap trasparenti, rilasci frequenti e priorità sempre allineate al valore.",
                 },
                 {
                     title: "Pianificazione strutturata",
                     body:
-                        "Nelle fasi iniziali definiamo con precisione obiettivi,\n" +
-                        "priorità e roadmap operative.\n" +
-                        "Il lavoro viene suddiviso in incrementi misurabili,\n" +
-                        "ciascuno orientato al rilascio di valore concreto.\n\n" +
-                        "Al termine di ogni incremento è prevista una fase di \n" +
-                        "verifica e revisione con il cliente, utile a validare quanto \n" +
-                        "realizzato e ad apportare eventuali correzioni o miglioramenti.\n\n" +
-                        "In questo modo modifiche, integrazioni e nuove esigenze \n" +
-                        "Il lavoro viene suddiviso in incrementi misurabili,\n" +
-                        "vengono gestite in modo ordinato e coerente con la roadmap,\n" +
-                        "evitando dispersioni e mantenendo il controllo su tempi e costi.\n",
+                        "Definiamo obiettivi, priorità e una roadmap pragmatica.\n" +
+                        "Scomponiamo il lavoro in incrementi piccoli e verificabili, riducendo rischi e sorprese.\n\n" +
+                        "Ogni step si chiude con una revisione: validiamo insieme e decidiamo la mossa successiva con ordine e controllo su tempi e costi.",
                 },
                 {
                     title: "Trasparenza continua",
                     body:
-                        "Adottiamo cicli di lavoro brevi con coinvolgimento diretto\n" +
-                        "del cliente in ogni fase rilevante.\n" +
-                        "Questo consente una condivisione costante di avanzamenti,\n\n" +
-                        "decisioni e criticità, garantendo piena visibilità sull’intero processo.\n" +
-                        "Ogni ciclo produce un risultato tangibile e verificabile,\n" +
-                        "rendendo chiaro lo stato dei lavori e facilitando pianificazioni\n" +
-                        "e integrazioni future.\n\n"
+                        "Cicli brevi, aggiornamenti costanti e decisioni documentate.\n" +
+                        "Niente “scatole nere”: sai sempre cosa stiamo facendo, perché e cosa arriva dopo.\n\n" +
+                        "Ogni ciclo produce un output tangibile, pronto per evolvere senza attrito.",
                 },
             ],
         [steps]
     );
 
+    // HERO + TIMELINE lock/replay behavior
+    const outerRef = useRef<HTMLDivElement | null>(null);
+    useLockRevealReverse(outerRef);
+
+    // TIMELINE refs for line geometry
     const containerRef = useRef<HTMLDivElement | null>(null);
-    const stepRefs = useRef<(HTMLElement | null)[]>([]);
+    const stepTextRefs = useRef<(HTMLElement | null)[]>([]);
 
-    // Anchor y relativi al container:
-    // - startY: top del primo box
-    // - endY[i]: bottom del box i (checkpoint)
     const [startY, setStartY] = useState<number>(0);
-    const [endY, setEndY] = useState<number[]>([]);
+    const [endY, setEndY] = useState<number>(0);
+    const [fillH, setFillH] = useState<number>(0);
 
-    // progress per segmento: [start->end0] e poi [end0->end1] ...
-    const [segP, setSegP] = useState<number[]>([]);
-    const [activeIdx, setActiveIdx] = useState(0);
-
-    // parallax per box (px)
-    const [parallax, setParallax] = useState<number[]>([]);
-
+    /** Measure timeline bounds (single continuous line). */
     useEffect(() => {
         let raf = 0;
 
@@ -109,79 +183,23 @@ export default function ChiSiamoTimelineSection({
 
             const contRect = cont.getBoundingClientRect();
             const contTopDoc = window.scrollY + contRect.top;
-            const contH = contRect.height || 1;
 
-            const rectsDoc = stepRefs.current.map((el) => {
-                if (!el) return null;
-                const r = el.getBoundingClientRect();
-                return {
-                    top: window.scrollY + r.top,
-                    bottom: window.scrollY + r.bottom,
-                    height: r.height,
-                };
-            });
+            const first = stepTextRefs.current[0];
+            const last = stepTextRefs.current[STEPS.length - 1];
+            if (!first || !last) return;
 
-            if (rectsDoc.some((r) => r == null)) return;
-            const rects = rectsDoc as { top: number; bottom: number; height: number }[];
+            const r1 = first.getBoundingClientRect();
+            const rN = last.getBoundingClientRect();
 
-            // start = top del primo box
-            const start = rects[0].top - contTopDoc;
-
-            // checkpoint = bottom di ogni box
-            const ends = rects.map((r) => r.bottom - contTopDoc);
+            const start = window.scrollY + r1.top - contTopDoc;
+            const end = window.scrollY + rN.bottom - contTopDoc;
 
             setStartY(start);
-            setEndY(ends);
+            setEndY(end);
 
-            // viewport progress anchor: una “linea” dentro lo schermo (leggermente sopra il centro)
             const anchorDoc = window.scrollY + window.innerHeight * 0.56;
-
-            // active: quello che contiene l’anchor, altrimenti quello più vicino
-            let aIdx = 0;
-            let bestDist = Infinity;
-
-            for (let i = 0; i < rects.length; i++) {
-                const { top, bottom } = rects[i];
-                if (anchorDoc >= top && anchorDoc <= bottom) {
-                    aIdx = i;
-                    bestDist = 0;
-                    break;
-                } else {
-                    const d = Math.min(Math.abs(anchorDoc - top), Math.abs(anchorDoc - bottom));
-                    if (d < bestDist) {
-                        bestDist = d;
-                        aIdx = i;
-                    }
-                }
-            }
-            setActiveIdx(aIdx);
-
-            // progress segmenti:
-            // seg0: start -> end0
-            // seg1: end0 -> end1
-            // seg2: end1 -> end2
-            const anchors: number[] = [rects[0].top, ...rects.map((r) => r.bottom)]; // in doc coords
-            const ps: number[] = [];
-            // segment count = STEPS.length (start->end0 + between ends)
-            for (let i = 0; i < STEPS.length; i++) {
-                const A = anchors[i]; // doc y
-                const B = anchors[i + 1]; // doc y
-                const t = clamp01((anchorDoc - A) / (B - A));
-                ps.push(t);
-            }
-            setSegP(ps);
-
-            // parallax: micro shift in base a distanza dal centro viewport
-            const midDoc = window.scrollY + window.innerHeight * 0.52;
-            const amp = 10; // px, molto leggero
-            const par = rects.map((r) => {
-                const center = (r.top + r.bottom) / 2;
-                const norm = clamp01(Math.abs(center - midDoc) / (window.innerHeight * 0.9));
-                // vicino al centro => 0, lontano => +/- amp
-                const dir = center < midDoc ? -1 : 1;
-                return dir * norm * amp;
-            });
-            setParallax(par);
+            const fillDoc = clamp(anchorDoc, contTopDoc + start, contTopDoc + end);
+            setFillH(Math.max(0, fillDoc - (contTopDoc + start)));
         };
 
         const onScrollOrResize = () => {
@@ -190,7 +208,6 @@ export default function ChiSiamoTimelineSection({
         };
 
         onScrollOrResize();
-
         window.addEventListener("scroll", onScrollOrResize, { passive: true });
         window.addEventListener("resize", onScrollOrResize);
 
@@ -204,159 +221,113 @@ export default function ChiSiamoTimelineSection({
         };
     }, [STEPS.length]);
 
-    // checkpoint pieno quando “raggiunto” = quando seg fino a quel checkpoint è completato
-    // checkpoint i (endY[i]) è raggiunto se segP[i] === 1 (per i=0) oppure segP[i] (segmento end(i-1)->end(i)) === 1
-    const checkpointDone = (idx: number) => {
-        // idx=0: guardo seg0 (start->end0)
-        if (idx === 0) return (segP[0] ?? 0) >= 0.999;
-        // idx>0: guardo seg idx (end(idx-1)->end(idx))
-        return (segP[idx] ?? 0) >= 0.999;
-    };
-
     return (
         <section className="whoMini whoAPL" aria-label="Chi siamo - Timeline">
-            <div className="whoMini-hero">
-                <div className="whoMini-bg" aria-hidden="true" />
-
+            <div ref={outerRef} className="whoMini-hero">
                 <div className="whoMini-wrap">
-                    <div className="whoMini-pill">{pill}</div>
+                    {/* =========================
+              HERO
+             ========================= */}
+                    <div className="whoMini-header">
+                        <div className="whoMini-pill reveal" data-reveal="left">
+                            {pill}
+                        </div>
 
-                    <h1 className="whoMini-title">
-                        <RouletteTitle
-                            text={titleText}
-                            triggerKey={rouletteTrigger}
-                            picks={3}
-                            durationMs={3200}
-                            tickMinMs={85}
-                            tickMaxMs={460}
-                            stopFractions={[0.62, 0.82, 1]}
-                            className="whitespace-pre-wrap"
-                        />
-                    </h1>
+                        <h1 className="whoMini-title reveal" data-reveal="left">
+                            <RouletteTitle
+                                text={titleText}
+                                triggerKey={rouletteTrigger}
+                                picks={3}
+                                durationMs={3200}
+                                tickMinMs={85}
+                                tickMaxMs={460}
+                                stopFractions={[0.62, 0.82, 1]}
+                                className="whitespace-pre-wrap"
+                            />
+                        </h1>
+                    </div>
 
-                    {/* ===== APPLE TIMELINE (anchored) ===== */}
+                    <div className="whoMini-underTitleImgWrap reveal" data-reveal="right" aria-hidden="true">
+                        <div className="whoMini-underTitleImgFrame">
+                            <Image src="/aboutus/aboutus.png" alt="" fill priority className="whoMini-underTitleImgEl" sizes="100vw" />
+                        </div>
+                    </div>
+
+                    <p className="whoMini-subtitle reveal" data-reveal="left">
+                        {intro}
+                    </p>
+
+                    <div className="whoMini-afterHeroGap" />
+
+                    {/* =========================
+              TIMELINE (LOCKED)
+             ========================= */}
                     <div ref={containerRef} className="whoAPL-wrap">
-                        {/* STEPS */}
                         <div className="whoAPL-steps">
                             {STEPS.map((s, idx) => {
-                                const side = idx % 2 === 0 ? "right" : "left";
-                                const isActive = idx === activeIdx;
+                                const textLeft = idx % 2 === 1;
+                                const accent = ACCENTS[idx % ACCENTS.length];
+                                const imgSrc = SCRUM_IMGS[idx % SCRUM_IMGS.length];
 
                                 return (
-                                    <article
+                                    <div
                                         key={idx}
-                                        ref={(el) => {
-                                            stepRefs.current[idx] = el;
-                                        }}
-                                        className={[
-                                            "whoAPL-step",
-                                            side === "right" ? "isRight" : "isLeft",
-                                            isActive ? "isActive" : "isDim",
-                                        ].join(" ")}
-                                        style={
-                                            {
-                                                // micro parallax (solo translateY)
-                                                transform: `translateY(${Math.round((parallax[idx] ?? 0) * 1)}px)`,
-                                            } as React.CSSProperties
-                                        }
+                                        className={["whoAPL-row", textLeft ? "isTextLeft" : "isTextRight"].join(" ")}
+                                        style={{ ["--row-accent" as any]: accent } as React.CSSProperties}
                                     >
-                                        <h3 className="whoAPL-title">{s.title}</h3>
-                                        <p className="whoAPL-body">{s.body}</p>
-                                    </article>
+                                        {/* MEDIA */}
+                                        <div className="whoAPL-mediaCell">
+                                            <div className="aplLockMedia">
+                                                <Image
+                                                    src={imgSrc}
+                                                    alt={`Scrum phase ${idx + 1}`}
+                                                    fill
+                                                    priority={idx === 0}
+                                                    className="whoAPL-mediaImg"
+                                                    sizes="(max-width: 980px) 92vw, 520px"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {/* TEXT */}
+                                        <article
+                                            ref={(el) => {
+                                                stepTextRefs.current[idx] = el;
+                                            }}
+                                            className="aplLockText"
+                                            data-side={textLeft ? "left" : "right"}
+                                        >
+                                            <h3 className="whoAPL-title">{s.title}</h3>
+                                            <p className="whoAPL-body">{s.body}</p>
+                                        </article>
+                                    </div>
                                 );
                             })}
                         </div>
 
-                        {/* TIMELINE OVERLAY */}
+                        {/* LINE ONLY */}
                         <div className="whoAPL-lineLayer" aria-hidden="true">
-                            {/* segment 0: start (top first box) -> end0 */}
-                            {endY.length === STEPS.length && (
+                            {endY > startY && (
                                 <>
                                     <div
-                                        className="whoAPL-seg"
-                                        style={
-                                            {
-                                                top: `${startY}px`,
-                                                height: `${Math.max(0, endY[0] - startY)}px`,
-                                            } as React.CSSProperties
-                                        }
-                                    >
-                                        <div className="whoAPL-segBase" />
-                                        <div
-                                            className="whoAPL-segFill"
-                                            style={
-                                                {
-                                                    height: `${Math.round(((segP[0] ?? 0) * 100))}%`,
-                                                    ["--seg-accent" as any]: ACCENTS[0 % ACCENTS.length],
-                                                } as React.CSSProperties
-                                            }
-                                        />
-                                    </div>
-
-                                    {/* segments i: end(i-1) -> end(i) */}
-                                    {STEPS.slice(1).map((_, i1) => {
-                                        const i = i1 + 1; // segment index
-                                        const top = endY[i - 1];
-                                        const h = Math.max(0, endY[i] - endY[i - 1]);
-                                        const accent = ACCENTS[i % ACCENTS.length];
-                                        const p = segP[i] ?? 0;
-
-                                        return (
-                                            <div
-                                                key={`seg-${i}`}
-                                                className="whoAPL-seg"
-                                                style={
-                                                    {
-                                                        top: `${top}px`,
-                                                        height: `${h}px`,
-                                                    } as React.CSSProperties
-                                                }
-                                            >
-                                                <div className="whoAPL-segBase" />
-                                                <div
-                                                    className="whoAPL-segFill"
-                                                    style={
-                                                        {
-                                                            height: `${Math.round(p * 100)}%`,
-                                                            ["--seg-accent" as any]: accent,
-                                                        } as React.CSSProperties
-                                                    }
-                                                />
-                                            </div>
-                                        );
-                                    })}
-
-                                    {/* checkpoint dots at exact END of each box */}
-                                    {endY.map((y, idx) => {
-                                        const accent = ACCENTS[idx % ACCENTS.length];
-                                        const done = checkpointDone(idx);
-                                        const isActive = idx === activeIdx;
-
-                                        return (
-                                            <div
-                                                key={`dot-${idx}`}
-                                                className={[
-                                                    "whoAPL-dot",
-                                                    done ? "isDone" : "",
-                                                    isActive ? "isActive" : "",
-                                                ].join(" ")}
-                                                style={
-                                                    {
-                                                        top: `${y}px`,
-                                                        ["--dot-accent" as any]: accent,
-                                                    } as React.CSSProperties
-                                                }
-                                            >
-                                                <span className="whoAPL-dotRing" />
-                                                <span className="whoAPL-dotCore" />
-                                            </div>
-                                        );
-                                    })}
+                                        className="whoAPL-segBaseLine"
+                                        style={{
+                                            top: `${startY}px`,
+                                            height: `${Math.max(0, endY - startY)}px`,
+                                        }}
+                                    />
+                                    <div
+                                        className="whoAPL-segFillLine"
+                                        style={{
+                                            top: `${startY}px`,
+                                            height: `${clamp(fillH, 0, Math.max(0, endY - startY))}px`,
+                                        }}
+                                    />
                                 </>
                             )}
                         </div>
                     </div>
-                    {/* ===== /APPLE TIMELINE ===== */}
+                    {/* /TIMELINE */}
                 </div>
             </div>
         </section>

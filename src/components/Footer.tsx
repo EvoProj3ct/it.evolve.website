@@ -79,7 +79,7 @@ export function SiteFooter() {
                         </div>
 
                         <div className="footer-copy">
-                            © {new Date().getFullYear()}, <span className="footer-copyBrand">Evolve</span>. Think Different{" "}
+                            © {new Date().getFullYear()}, <span className="footer-copyBrand">Evolve</span>. Think Deeper{" "}
                             <span className="footer-copyAccent">Think to Evolve</span>.
                         </div>
                     </div>
