@@ -4338,102 +4338,92 @@ body {
   }
 }
 
+/* =========================================
+   PATCH: NO BREAK MID-WORD ON TITLES
+   ========================================= */
 
-/* =========================================================
-   ADD-ONS / PATCHES (incolla in fondo)
-   ========================================================= */
-
-/* 1) Fallback utili + smoothing */
-html {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: geometricPrecision;
-}
-
-/* 2) Variabili mancanti (nel file usi --accent-green e ghost-accent ma non sono definite sempre) */
-:root{
-  --accent-green: var(--accent-blue); /* fallback coerente col tuo verde */
-  --ghost-accent: var(--accent-blue); /* fallback default per hover ghost */
-}
-
-/* 3) Utility: nasconde overflow laterale (utile su layout con absolute / scale) */
-.no-x {
-  overflow-x: clip;
-}
-@supports not (overflow: clip) {
-  .no-x { overflow-x: hidden; }
+/* Forza wrap SOLO su spazi/punteggiatura, MAI nel mezzo delle parole */
+h1, h2, h3,
+.heroMarquee-title,
+.about-title,
+.collage-title,
+.teamStrip-title,
+.teamStrip-name,
+.whoMini-title,
+.contactMini-title,
+.whyUs-title,
+.footer-title,
+.portfolio-label {
+  overflow-wrap: normal !important; /* disabilita 'anywhere' */
+  word-break: normal !important;    /* disabilita break-word/break-all */
+  hyphens: none !important;         /* disabilita sillabazione */
+  white-space: normal;
 }
 
-/* 4) Scrollbar minimale (non invasiva) */
-* {
-  scrollbar-width: thin;               /* Firefox */
-  scrollbar-color: rgba(255,255,255,0.22) transparent;
-}
-*::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-*::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.16);
-  border-radius: 999px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
-}
-*::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.24);
-  border: 2px solid transparent;
-  background-clip: padding-box;
+/* Se qualche classe tailwind tipo 'break-words' ti colpisce comunque */
+.break-words, .break-all {
+  overflow-wrap: normal !important;
+  word-break: normal !important;
+  hyphens: none !important;
 }
 
-/* 5) Accessibilità: focus ring coerente (quando non lo gestisci via Tailwind) */
-:where(a, button, input, textarea, select):focus-visible{
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(255,255,255,0.18), 0 0 0 7px rgba(114,201,79,0.18);
-  border-radius: 12px;
-}
-
-/* 6) Riduci motion (hai molte animazioni: stop globale safe) */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
+/* (opzionale ma bello) bilanciamento righe dove supportato */
+@supports (text-wrap: balance) {
+  h1, h2, h3,
+  .heroMarquee-title,
+  .about-title,
+  .collage-title,
+  .teamStrip-title,
+  .whoMini-title,
+  .contactMini-title,
+  .whyUs-title {
+    text-wrap: balance;
   }
 }
 
-/* 7) Fix: route-draw clash (se lo usi anche altrove) */
-@keyframes service-route-draw {
-  to { stroke-dashoffset: 0; }
-}
-.tech-route-active {
-  animation-name: service-route-draw;
+
+/* =========================================
+   PATCH: IMAGE OVERLAP MOBILE
+   ========================================= */
+
+/* Regola base: immagini/video non devono creare layout strani */
+img, video {
+  display: block;
+  max-width: 100%;
+  height: auto;
 }
 
-/* 8) Fix: hero socials su mobile (se vuoi sempre visibili ma non sopra il contenuto) */
-@media (max-width: 640px) {
-  .hero-socials{
-    right: 14px;
-    top: calc(var(--header-h, 72px) + 10px);
-    gap: 10px;
-  }
-  .hero-social-btn{
-    @apply h-10 w-10;
-  }
+/* Portfolio: il media deve essere un box “chiuso”, l’immagine deve riempirlo */
+.portfolio-right { min-width: 0; }
+.portfolio-media {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
 }
-
-/* 9) Fix: immagini in portfolio-media (nel tuo css hai height auto, meglio cover per evitare layout jump) */
-.portfolio-media img{
-  height: 100%;
+.portfolio-media img {
+  width: 100%;
+  height: 100% !important;
   object-fit: cover;
 }
 
-/* 10) Patch: theme-light / theme-dark applicate anche a selection */
-.theme-light{
-  --selection-bg: rgba(11,17,24,0.20);
-  --selection-fg: #0b1118;
+/* Hero banner: evita che layer assoluti “schiaccino” e creino sovrapposizioni su mobile */
+@media (max-width: 640px) {
+  .heroMarquee-hero { overflow: hidden; }
+
+  /* Se la bannerBg ti invade il contenuto, la rendiamo più “contenuta” */
+  .heroMarquee-bannerBg {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Il content layer deve stare sopra e avere spazio reale */
+  .heroMarquee-contentLayer {
+    position: relative;
+    z-index: 3;
+  }
 }
-.theme-dark{
-  --selection-bg: var(--accent-blue);
-  --selection-fg: #0b1118;
-}
+
+/* Collage tiles: sicurezza contro overlay che coprono immagini/label */
+.collage-tile { position: relative; }
+.collage-img { width: 100%; height: 100%; object-fit: cover; }
+
