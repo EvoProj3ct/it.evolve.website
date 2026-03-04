@@ -112,7 +112,7 @@ function IconPin() {
 
 export default function ContactPage() {
     const email = "infoevolvecompany@gmail.com";
-    const phone = "+39 3928440618";
+    const phone = "+39 3920377932 Gianmarco";
 
     const cardsWrapRef = useRef<HTMLDivElement | null>(null);
     const firstCardRef = useRef<HTMLDivElement | null>(null);
