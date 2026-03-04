@@ -4338,70 +4338,15 @@ body {
   }
 }
 
-/* =========================
-   PATCH: NO MID-WORD WRAP ON TITLES (MOBILE)
-   incolla in fondo al file
-   ========================= */
-@media (max-width: 640px) {
-  /* metti qui tutti i tuoi title principali */
-  .heroMarquee-title,
-  .whoMini-title,
-  .contactMini-title,
-  .collage-title,
-  .teamStrip-title,
-  .about-title,
-  .whyUs-title,
-  .service-title,
-  .portfolio-label {
-    /* 🔥 stop spezzatura a metà parola */
-    word-break: normal !important;
-    overflow-wrap: normal !important;   /* importantissimo: uccide "anywhere" */
-    hyphens: none !important;
+/* =========================================================
+   NUCLEAR: STOP MID-WORD WRAP (GLOBAL)
+   INCOLLA IN FONDO AL FILE
+   ========================================================= */
 
-    /* safe */
-    white-space: normal !important;
-  }
-}
-
-/* =========================
-   PATCH: IMAGES/BANNERS MUST NOT OVERLAP TITLES (MOBILE)
-   incolla in fondo al file
-   ========================= */
-@media (max-width: 640px) {
-  /* 1) il contenitore hero deve isolare gli z-index */
-  .heroMarquee-hero,
-  .whoMini-hero,
-  .contactMini-hero {
-    isolation: isolate !important;
-  }
-
-  /* 2) TITOLI SEMPRE SOPRA */
-  .heroMarquee-pill,
-  .heroMarquee-title,
-  .heroMarquee-subtitle,
-  .whoMini-pill,
-  .whoMini-title,
-  .whoMini-subtitle,
-  .contactMini-pill,
-  .contactMini-title,
-  .contactMini-subtitle {
-    position: relative !important;
-    z-index: 20 !important;
-  }
-
-  /* 3) LAYER IMMAGINI/BG SEMPRE SOTTO */
-  .heroMarquee-bg,
-  .heroMarquee-bannerBg,
-  .contactMini-bg,
-  .whoMini-bg {
-    z-index: 1 !important;
-    pointer-events: none;
-  }
-
-  /* 4) se hai un wrapper immagine “sotto al titolo” (tipo who underTitle) */
-  .whoMini-underTitleImgWrap {
-    position: relative !important;
-    z-index: 5 !important;     /* sotto ai titoli (20), ma sopra ai bg (1) */
-    margin-top: 18px !important;
-  }
+/* 1) reset globale: nessun "anywhere", nessun "break-all" */
+html, body, body * {
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  word-wrap: normal !important; /* legacy */
+  hyphens: none !important;
 }
