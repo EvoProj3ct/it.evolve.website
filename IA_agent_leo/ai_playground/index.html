@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="it">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Evolve Groq Chatbot Designer-Tool</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="./styles.css" />
+</head>
+
+<body>
+<div class="app">
+    <div class="console" id="consoleRoot">
+        <header class="topbar">
+            <div class="titleWindow">
+                <div class="titleRow">
+                    <div class="titleText">EVOLVE • Groq Chatbot Designer Tool</div>
+                    <span class="chip" id="statusChip">offline</span>
+                </div>
+                <div class="titleSub">Canvas chat + agent pipeline (LongMemory + Checkpointer) • Debug sidebar</div>
+            </div>
+
+            <div class="actions">
+                <button class="btn" id="btnExport" title="Esporta report stampabile (HTML/PDF)">Export</button>
+                <button class="btn" id="btnSettings">Impostazioni</button>
+            </div>
+        </header>
+
+        <main class="main">
+            <div class="canvasWrap">
+                <canvas id="chatCanvas"></canvas>
+                <div class="crtOverlay" id="crtOverlay" aria-hidden="true"></div>
+            </div>
+
+            <!-- ✅ DEBUG SIDEBAR (sempre disponibile, collassabile) -->
+            <aside class="debugSide" id="debugSide" aria-label="Debug sidebar">
+                <div class="debugHeader">
+                    <div class="debugTitle">DEBUG</div>
+                    <div class="debugActions">
+                        <button class="btn" id="btnClearDebug" type="button">Clear</button>
+                        <button class="btn" id="btnToggleDebug" type="button" title="Collapse/Expand">Hide</button>
+                    </div>
+                </div>
+                <textarea id="debugLog" class="input" readonly placeholder="Debug log..."></textarea>
+            </aside>
+        </main>
+
+        <footer class="bottombar">
+            <div class="inputWrap">
+                <input class="input" id="msgInput" placeholder="Scrivi qui…" autocomplete="off" />
+                <div class="caret" id="fakeCaret" aria-hidden="true"></div>
+            </div>
+            <button class="btn primary" id="btnSend">Invia</button>
+        </footer>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modalBackdrop" id="settingsBackdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-label="Impostazioni">
+        <div class="modalHeader">
+            <div>Impostazioni</div>
+            <div class="row">
+                <button class="btn" id="btnReloadModels" title="Carica modelli da /models">Reload models</button>
+                <button class="btn" id="btnCloseSettings">Chiudi</button>
+            </div>
+        </div>
+
+        <div class="modalBody">
+            <div class="grid">
+
+                <!-- UI -->
+                <section class="field">
+                    <label>UI / Debug</label>
+
+                    <div class="row wrap">
+                        <label class="toggle"><input type="checkbox" id="toggleCRT" checked /><span>CRT</span></label>
+                        <label class="toggle"><input type="checkbox" id="toggleSFX" checked /><span>SFX</span></label>
+                        <label class="toggle"><input type="checkbox" id="toggleBoot" checked /><span>Boot</span></label>
+                        <label class="toggle"><input type="checkbox" id="debugSteps" checked /><span>Debug steps (🧩)</span></label>
+                    </div>
+
+                    <div class="row" style="margin-top:10px;">
+                        <div>
+                            <div class="miniLabel">Sfondo</div>
+                            <input type="color" id="bgColor" value="#0b1020" />
+                        </div>
+                        <div>
+                            <div class="miniLabel">Testo</div>
+                            <input type="color" id="fgColor" value="#b9ffb2" />
+                        </div>
+                        <div>
+                            <div class="miniLabel">Accent</div>
+                            <input type="color" id="accentColor" value="#ffd166" />
+                        </div>
+                    </div>
+
+                    <div class="row" style="margin-top:10px;">
+                        <div class="grow">
+                            <div class="miniLabel">Scala pixel (<span id="scaleVal">2</span>x)</div>
+                            <input type="range" id="scaleRange" min="1" max="4" step="1" value="2" />
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Groq -->
+                <section class="field">
+                    <label>Groq</label>
+
+                    <div class="row wrap">
+                        <div style="flex:1; min-width:240px;">
+                            <div class="miniLabel">API Key</div>
+                            <input class="input" id="apiKey" placeholder="gsk_..." />
+                        </div>
+                    </div>
+
+                    <div class="row wrap" style="margin-top:10px;">
+                        <div style="flex:1; min-width:240px;">
+                            <div class="miniLabel">Main model</div>
+                            <select class="input" id="modelId"></select>
+                        </div>
+
+                        <label class="toggle">
+                            <input type="checkbox" id="stream" checked />
+                            <span>Streaming</span>
+                        </label>
+                    </div>
+
+                    <div class="row wrap" style="margin-top:10px;">
+                        <div style="flex:1; min-width:160px;">
+                            <div class="miniLabel">temperature</div>
+                            <input class="input" id="temperature" type="number" step="0.1" min="0" max="2" value="0.7"/>
+                        </div>
+                        <div style="flex:1; min-width:160px;">
+                            <div class="miniLabel">top_p</div>
+                            <input class="input" id="top_p" type="number" step="0.05" min="0" max="1" value="1"/>
+                        </div>
+                        <div style="flex:1; min-width:200px;">
+                            <div class="miniLabel">max_completion_tokens</div>
+                            <input class="input" id="max_completion_tokens" type="number" min="1" step="1" value="512"/>
+                        </div>
+                    </div>
+
+                    <div class="row wrap" style="margin-top:10px;">
+                        <div style="flex:1; min-width:160px;">
+                            <div class="miniLabel">seed (opz.)</div>
+                            <input class="input" id="seed" placeholder="es: 42"/>
+                        </div>
+                        <div style="flex:2; min-width:240px;">
+                            <div class="miniLabel">stop</div>
+                            <input class="input" id="stop" placeholder="es: \nUSER:, \nASSISTANT:"/>
+                        </div>
+                    </div>
+
+                    <div class="row wrap" style="margin-top:10px;">
+                        <div style="flex:1; min-width:220px;">
+                            <div class="miniLabel">History turns</div>
+                            <input class="input" id="historyTurns" type="number" min="0" step="1" value="8" />
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Prompts main -->
+                <section class="field">
+                    <label>Prompts (main)</label>
+
+                    <div class="row wrap">
+                        <div style="flex:1; min-width:240px;">
+                            <div class="miniLabel">Preset</div>
+                            <select class="input" id="promptPreset"></select>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:10px;">
+                        <div class="miniLabel">System prompt</div>
+                        <textarea class="input" id="systemPrompt" rows="7" style="resize:vertical;"></textarea>
+                    </div>
+
+                    <div style="margin-top:10px;">
+                        <div class="miniLabel">Pre-assistant (opzionale)</div>
+                        <textarea class="input" id="preAssistant" rows="3" style="resize:vertical;"></textarea>
+                    </div>
+                </section>
+
+                <!-- LongMemory -->
+                <section class="field">
+                    <label>Agent: Long Memory</label>
+
+                    <div class="row wrap">
+                        <label class="toggle">
+                            <input type="checkbox" id="enableLongMemory" />
+                            <span>Enable</span>
+                        </label>
+
+                        <div style="flex:1; min-width:240px;">
+                            <div class="miniLabel">Model</div>
+                            <select class="input" id="longMemoryModel"></select>
+                        </div>
+                    </div>
+
+                    <div class="row wrap" style="margin-top:10px;">
+                        <div style="flex:1; min-width:220px;">
+                            <div class="miniLabel">Decay extra turns</div>
+                            <input class="input" id="longMemoryDecayTurns" type="number" min="0" step="1" value="8" />
+                        </div>
+
+                        <button class="btn" id="btnResetLongMemory">Reset OLD_CONTEXT</button>
+                    </div>
+
+                    <div style="margin-top:10px;">
+                        <div class="miniLabel">LongMemory prompt</div>
+                        <textarea class="input" id="longMemoryPrompt" rows="9" style="resize:vertical;"></textarea>
+                    </div>
+
+                    <div style="margin-top:10px;">
+                        <div class="miniLabel">OLD_CONTEXT (read-only)</div>
+                        <textarea class="input" id="oldContextView" rows="6" readonly style="opacity:.85;"></textarea>
+                    </div>
+                </section>
+
+                <!-- Checkpointer -->
+                <section class="field">
+                    <label>Agent: Checkpointer</label>
+
+                    <div class="row wrap">
+                        <label class="toggle">
+                            <input type="checkbox" id="enableCheckpoint" />
+                            <span>Enable</span>
+                        </label>
+
+                        <label class="toggle">
+                            <input type="checkbox" id="checkpointUseModel" checked />
+                            <span>Use model</span>
+                        </label>
+
+                        <div style="flex:1; min-width:240px;">
+                            <div class="miniLabel">Model</div>
+                            <select class="input" id="checkpointModel"></select>
+                        </div>
+                    </div>
+
+                    <div class="row wrap" style="margin-top:10px;">
+                        <div style="flex:1; min-width:220px;">
+                            <div class="miniLabel">Orange limit</div>
+                            <input class="input" id="orangeLimit" type="number" min="1" step="1" value="2" />
+                        </div>
+
+                        <button class="btn" id="btnResetCheckpoint">Reset checkpoint</button>
+                    </div>
+
+                    <div style="margin-top:10px;">
+                        <div class="miniLabel">ORANGE message</div>
+                        <textarea class="input" id="orangeMessage" rows="3" style="resize:vertical;"></textarea>
+                    </div>
+
+                    <div style="margin-top:10px;">
+                        <div class="miniLabel">RED message</div>
+                        <textarea class="input" id="redMessage" rows="3" style="resize:vertical;"></textarea>
+                    </div>
+
+                    <div style="margin-top:10px;">
+                        <div class="miniLabel">Checkpointer prompt</div>
+                        <textarea class="input" id="checkpointPrompt" rows="10" style="resize:vertical;"></textarea>
+                    </div>
+                </section>
+
+                <!-- Actions -->
+                <section class="field">
+                    <label>Azioni</label>
+                    <div class="row wrap">
+                        <button class="btn" id="btnClear">Pulisci chat</button>
+                        <button class="btn" id="btnDemo">Demo</button>
+                    </div>
+                    <div class="hint">Tip: “Export” in alto genera un report HTML stampabile (Stampa → Salva come PDF).</div>
+                </section>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module" src="./app.js"></script>
+</body>
+</html>
