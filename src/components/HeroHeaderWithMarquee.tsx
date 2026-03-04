@@ -78,7 +78,7 @@ function useLockRevealReverse(rootRef: React.RefObject<HTMLElement | null>) {
 export default function HeroHeaderWithMarquee({
                                                   pill = "Portfolio",
                                                   title = "Soluzioni su Misura",
-                                                  subtitle = "Software, integrazioni e sistemi progettati intorno al tuo contesto",
+                                                  subtitle = "",
                                                   tickerText = "CONSULENZA • UX/UI • WEB APPS • ATLAS • CLOUD • INNOVAZIONE AI • METODO SCRUM • PROGETTAZIONE 3D • FORMAZIONE • STUDIO TECNICO • SISTEMI COMPLESSI •",
                                                   bannerSrc = "/portfolio/portfolio_banner1.png",
                                               }: Props) {
