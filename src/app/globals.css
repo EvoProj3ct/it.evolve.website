@@ -4338,92 +4338,70 @@ body {
   }
 }
 
-/* =========================================
-   PATCH: NO BREAK MID-WORD ON TITLES
-   ========================================= */
-
-/* Forza wrap SOLO su spazi/punteggiatura, MAI nel mezzo delle parole */
-h1, h2, h3,
-.heroMarquee-title,
-.about-title,
-.collage-title,
-.teamStrip-title,
-.teamStrip-name,
-.whoMini-title,
-.contactMini-title,
-.whyUs-title,
-.footer-title,
-.portfolio-label {
-  overflow-wrap: normal !important; /* disabilita 'anywhere' */
-  word-break: normal !important;    /* disabilita break-word/break-all */
-  hyphens: none !important;         /* disabilita sillabazione */
-  white-space: normal;
-}
-
-/* Se qualche classe tailwind tipo 'break-words' ti colpisce comunque */
-.break-words, .break-all {
-  overflow-wrap: normal !important;
-  word-break: normal !important;
-  hyphens: none !important;
-}
-
-/* (opzionale ma bello) bilanciamento righe dove supportato */
-@supports (text-wrap: balance) {
-  h1, h2, h3,
+/* =========================
+   PATCH: NO MID-WORD WRAP ON TITLES (MOBILE)
+   incolla in fondo al file
+   ========================= */
+@media (max-width: 640px) {
+  /* metti qui tutti i tuoi title principali */
   .heroMarquee-title,
-  .about-title,
-  .collage-title,
-  .teamStrip-title,
   .whoMini-title,
   .contactMini-title,
-  .whyUs-title {
-    text-wrap: balance;
+  .collage-title,
+  .teamStrip-title,
+  .about-title,
+  .whyUs-title,
+  .service-title,
+  .portfolio-label {
+    /* 🔥 stop spezzatura a metà parola */
+    word-break: normal !important;
+    overflow-wrap: normal !important;   /* importantissimo: uccide "anywhere" */
+    hyphens: none !important;
+
+    /* safe */
+    white-space: normal !important;
   }
 }
 
-
-/* =========================================
-   PATCH: IMAGE OVERLAP MOBILE
-   ========================================= */
-
-/* Regola base: immagini/video non devono creare layout strani */
-img, video {
-  display: block;
-  max-width: 100%;
-  height: auto;
-}
-
-/* Portfolio: il media deve essere un box “chiuso”, l’immagine deve riempirlo */
-.portfolio-right { min-width: 0; }
-.portfolio-media {
-  position: relative;
-  width: 100%;
-  overflow: hidden;
-}
-.portfolio-media img {
-  width: 100%;
-  height: 100% !important;
-  object-fit: cover;
-}
-
-/* Hero banner: evita che layer assoluti “schiaccino” e creino sovrapposizioni su mobile */
+/* =========================
+   PATCH: IMAGES/BANNERS MUST NOT OVERLAP TITLES (MOBILE)
+   incolla in fondo al file
+   ========================= */
 @media (max-width: 640px) {
-  .heroMarquee-hero { overflow: hidden; }
-
-  /* Se la bannerBg ti invade il contenuto, la rendiamo più “contenuta” */
-  .heroMarquee-bannerBg {
-    position: absolute;
-    inset: 0;
+  /* 1) il contenitore hero deve isolare gli z-index */
+  .heroMarquee-hero,
+  .whoMini-hero,
+  .contactMini-hero {
+    isolation: isolate !important;
   }
 
-  /* Il content layer deve stare sopra e avere spazio reale */
-  .heroMarquee-contentLayer {
-    position: relative;
-    z-index: 3;
+  /* 2) TITOLI SEMPRE SOPRA */
+  .heroMarquee-pill,
+  .heroMarquee-title,
+  .heroMarquee-subtitle,
+  .whoMini-pill,
+  .whoMini-title,
+  .whoMini-subtitle,
+  .contactMini-pill,
+  .contactMini-title,
+  .contactMini-subtitle {
+    position: relative !important;
+    z-index: 20 !important;
+  }
+
+  /* 3) LAYER IMMAGINI/BG SEMPRE SOTTO */
+  .heroMarquee-bg,
+  .heroMarquee-bannerBg,
+  .contactMini-bg,
+  .whoMini-bg {
+    z-index: 1 !important;
+    pointer-events: none;
+  }
+
+  /* 4) se hai un wrapper immagine “sotto al titolo” (tipo who underTitle) */
+  .whoMini-underTitleImgWrap {
+    position: relative !important;
+    z-index: 5 !important;     /* sotto ai titoli (20), ma sopra ai bg (1) */
+    margin-top: 18px !important;
   }
 }
-
-/* Collage tiles: sicurezza contro overlay che coprono immagini/label */
-.collage-tile { position: relative; }
-.collage-img { width: 100%; height: 100%; object-fit: cover; }
-
