@@ -4408,3 +4408,15 @@ body {
   }
 }
 
+.rtWord {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.rtChar {
+  display: inline-block;
+}
+
+.rtSpace {
+  white-space: normal;
+}
