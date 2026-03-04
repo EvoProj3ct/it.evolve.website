@@ -164,7 +164,7 @@ export default function FooterMiniGame() {
         };
     }, [phase]);
 
-    const title = phase === "pick" ? "Scegli un fantasmino" : snap.alive ? "WAVE BATTERY" : "GAME OVER";
+    const title = phase === "pick" ? "Scegli un fantasmino" : snap.alive ? "KATANA BATTERY" : "GAME OVER";
 
     return (
         <div style={styles.wrap}>
@@ -178,7 +178,7 @@ export default function FooterMiniGame() {
                         onClick={() => setPhase("pick")}
                         aria-label="Torna alla selezione"
                     >
-                        ↩
+                        Sel
                     </button>
                 )}
             </div>
@@ -194,7 +194,7 @@ export default function FooterMiniGame() {
                             setPhase("run");
                         }}
                     />
-                    <div style={styles.hint}>Hover per evidenziare, click per selezionare.</div>
+                    <div style={styles.hint}>Se fai il nuovo record ti offriamo una birra!</div>
                 </div>
             ) : (
                 <div style={styles.runBox}>
