@@ -2730,6 +2730,63 @@ body {
       max-width: none;
     }
   }
+
+  /* 1) STOP spezzare parole nel titolo (soprattutto su mobile e dentro RouletteTitle) */
+  .heroMarquee-titleNoMidWordBreak,
+  .heroMarquee-titleNoMidWordBreak * {
+    word-break: normal;          /* evita break “aggressivi” */
+    overflow-wrap: normal;       /* NO anywhere/break-word */
+    hyphens: none;               /* evita sillabazione */
+    white-space: normal;         /* wrap solo su spazi */
+  }
+
+  /* Se avevi un global tipo: overflow-wrap:anywhere; su heading o container,
+     questo lo “neutralizza” per il titolo. */
+
+
+  /* 2) MOBILE: l'immagine NON deve stare dietro al titolo, ma sotto */
+  @media (max-width: 768px) {
+    /* layout a colonna */
+    .heroMarquee-hero {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* su mobile lo spacer non serve (evita spazi strani) */
+    .heroMarquee-bannerSpacer {
+      display: none;
+    }
+
+    /* contenuto prima */
+    .heroMarquee-contentLayer {
+      order: 1;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* immagine sotto (non più background/absolute dietro) */
+    .heroMarquee-bannerBg {
+      order: 2;
+      position: relative;
+      inset: auto;
+      z-index: 1;
+      width: 100%;
+      height: auto; /* se avevi height fissa, qui la sblocchi */
+    }
+
+    .heroMarquee-bannerBgImg {
+      display: block;
+      width: 100%;
+      height: auto;
+      object-fit: cover;
+    }
+
+    /* overlay opzionale: se ti dà fastidio sotto al titolo, puoi attenuarlo o toglierlo */
+    .heroMarquee-bannerBgOverlay {
+      /* esempio: più leggero oppure disattiva */
+      /* opacity: 0.15; */
+    }
+  }
 }
 
 @layer components {
@@ -3213,6 +3270,19 @@ body {
     position: relative;
     z-index: 1;
     white-space: pre-line; /* supporta la stringa multilinea */
+  }
+
+  .whoMini-titleNoMidWordBreak,
+  .whoMini-titleNoMidWordBreak * {
+    word-break: normal;
+    overflow-wrap: normal;
+    hyphens: none;
+    white-space: normal;
+  }
+
+  .whoMini-title {
+    overflow-wrap: normal;
+    word-break: normal;
   }
 
   @media (max-width: 640px) {
@@ -4338,15 +4408,3 @@ body {
   }
 }
 
-/* =========================================================
-   NUCLEAR: STOP MID-WORD WRAP (GLOBAL)
-   INCOLLA IN FONDO AL FILE
-   ========================================================= */
-
-/* 1) reset globale: nessun "anywhere", nessun "break-all" */
-html, body, body * {
-  word-break: normal !important;
-  overflow-wrap: normal !important;
-  word-wrap: normal !important; /* legacy */
-  hyphens: none !important;
-}

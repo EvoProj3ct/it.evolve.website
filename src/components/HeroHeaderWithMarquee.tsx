@@ -103,7 +103,7 @@ export default function HeroHeaderWithMarquee({
             <div className="heroMarquee-hero">
                 <div className="heroMarquee-bg" aria-hidden="true" />
 
-                {/* ✅ Spacer IN FLOW: determina l’altezza, MA NON spinge il contenuto (grid layering) */}
+                {/* Spacer IN FLOW (desktop) */}
                 <div className="heroMarquee-bannerSpacer" aria-hidden="true">
                     <img
                         className="heroMarquee-bannerSpacerImg"
@@ -114,7 +114,7 @@ export default function HeroHeaderWithMarquee({
                     />
                 </div>
 
-                {/* ✅ Banner VISIVO: absolute + reveal identico al tuo originale */}
+                {/* Banner VISIVO */}
                 <div className="heroMarquee-bannerBg reveal" data-reveal="right" aria-hidden="true">
                     <img
                         className="heroMarquee-bannerBgImg"
@@ -126,7 +126,7 @@ export default function HeroHeaderWithMarquee({
                     <div className="heroMarquee-bannerBgOverlay" aria-hidden="true" />
                 </div>
 
-                {/* ✅ Contenuto sopra: posizione IDENTICA a prima (padding rimesso qui) */}
+                {/* Contenuto sopra */}
                 <div className="heroMarquee-contentLayer">
                     <div className="heroMarquee-wrap heroMarquee-wrapRel">
                         <div className="heroMarquee-content">
@@ -134,7 +134,8 @@ export default function HeroHeaderWithMarquee({
                                 {pill}
                             </div>
 
-                            <h1 className="heroMarquee-title reveal" data-reveal="left">
+                            {/* 👇 aggiungo una classe “fix wrap” al titolo */}
+                            <h1 className="heroMarquee-title heroMarquee-titleNoMidWordBreak reveal" data-reveal="left">
                                 <RouletteTitle
                                     text={title}
                                     triggerKey={rouletteTrigger}
@@ -143,7 +144,8 @@ export default function HeroHeaderWithMarquee({
                                     tickMinMs={80}
                                     tickMaxMs={420}
                                     stopFractions={[0.64, 0.84, 1]}
-                                    className="whitespace-pre-wrap"
+                                    // 👇 meglio di whitespace-pre-wrap: evita comportamenti strani di wrap
+                                    className="heroMarquee-titleText"
                                 />
                             </h1>
 

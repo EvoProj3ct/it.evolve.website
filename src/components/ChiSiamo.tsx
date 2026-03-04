@@ -233,7 +233,8 @@ export default function ChiSiamoTimelineSection({
                             {pill}
                         </div>
 
-                        <h1 className="whoMini-title reveal" data-reveal="left">
+                        {/* ✅ FIX: niente spezzate a metà parola */}
+                        <h1 className="whoMini-title whoMini-titleNoMidWordBreak reveal" data-reveal="left">
                             <RouletteTitle
                                 text={titleText}
                                 triggerKey={rouletteTrigger}
@@ -242,14 +243,21 @@ export default function ChiSiamoTimelineSection({
                                 tickMinMs={85}
                                 tickMaxMs={460}
                                 stopFractions={[0.62, 0.82, 1]}
-                                className="whitespace-pre-wrap"
+                                className="whoMini-titleText"
                             />
                         </h1>
                     </div>
 
                     <div className="whoMini-underTitleImgWrap reveal" data-reveal="right" aria-hidden="true">
                         <div className="whoMini-underTitleImgFrame">
-                            <Image src="/aboutus/aboutus.png" alt="" fill priority className="whoMini-underTitleImgEl" sizes="100vw" />
+                            <Image
+                                src="/aboutus/aboutus.png"
+                                alt=""
+                                fill
+                                priority
+                                className="whoMini-underTitleImgEl"
+                                sizes="100vw"
+                            />
                         </div>
                     </div>
 
