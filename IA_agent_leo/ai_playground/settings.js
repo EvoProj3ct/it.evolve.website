@@ -54,8 +54,8 @@ export function defaultConfig(){
         checkpointUseModel: true,
         checkpointModel: "llama-3.1-8b-instant",
         orangeLimit: 2,
-        orangeMessage: "⚠️ ARANCIONE: quasi fuori contesto. Riformula e riprova a digitare.",
-        redMessage: "⛔ ROSSO: fuori contesto. Conversazione chiusa.",
+        orangeMessage: "Puoi darmi maggiori dettagli sulla richiesta?",
+        redMessage: "Mi dispiace, non posso aiutarti. Per ulteriori informazioni, puoi contattarci su infoevolvecompany@gmail.com.",
         checkpointPrompt: AGENT_PROMPTS.checkpointDefault,
     };
 }
