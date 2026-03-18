@@ -4420,3 +4420,86 @@ body {
 .rtSpace {
   white-space: normal;
 }
+
+.supportChatPanel {
+  overflow: hidden;
+}
+
+.supportChatBody {
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-width: 0;
+
+  /* nasconde la scrollbar ma lascia scrollabile */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.supportChatBody::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}
+
+.supportChatRow {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
+  gap: 12px;
+  align-items: end;
+  width: 100%;
+}
+
+.supportChatSpacer,
+.supportChatAvatar,
+.supportChatBubble {
+  min-width: 0;
+}
+
+.supportChatBubble {
+  max-width: min(100%, 560px);
+  width: fit-content;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.supportChatBubble.isUser {
+  margin-left: auto;
+}
+
+.supportChatBubbleText {
+  min-width: 0;
+  max-width: 100%;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.5;
+}
+
+.supportChatBubbleText p {
+  margin: 0;
+}
+
+.supportChatBubbleText p + p {
+  margin-top: 10px;
+}
+
+.supportChatBubbleText ul,
+.supportChatBubbleText ol {
+  margin: 8px 0 0 18px;
+  padding: 0;
+}
+
+.supportChatBubbleText li + li {
+  margin-top: 4px;
+}
+
+.supportChatComposer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 52px;
+  gap: 12px;
+  align-items: center;
+}
+
+.supportChatInput {
+  min-width: 0;
+}

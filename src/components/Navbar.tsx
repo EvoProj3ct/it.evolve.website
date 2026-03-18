@@ -9,7 +9,7 @@ import { SupportChat } from "@/components/SupportChat"; // ✅ aggiusta path se 
 const NAV_ITEMS = [
     { label: "Home", href: "/" },
     { label: "Chi Siamo", href: "/about" },
-    { label: "Portfolio", href: "/portfolio" },
+    { label: "Servizi", href: "/portfolio" },
     { label: "Contatti", href: "/contact" },
 ];
 

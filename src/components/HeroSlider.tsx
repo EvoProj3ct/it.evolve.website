@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { FillButton } from "./FillButton";
 import { HeroSocials } from "./HeroSocials";
@@ -18,6 +19,7 @@ type Slide = {
     titleBottom: string;
     subtitle: string;
     cta: string;
+    ctaHref: string;
     imageUrl: string;
 };
 
@@ -30,6 +32,7 @@ const SLIDES: Slide[] = [
         subtitle:
             "Studiamo, strutturiamo e digitalizziamo i processi aziendali con soluzioni scalabili su misura.",
         cta: "SCOPRI COME",
+        ctaHref: "/about",
         imageUrl: "/hero/slide1.png",
     },
     {
@@ -39,6 +42,7 @@ const SLIDES: Slide[] = [
         subtitle:
             "Niente spese superflue. Analizziamo il tuo progetto per offrirti la taglia di sviluppo, dalla S alla XL, proporzionata alle tue reali esigenze.",
         cta: "IL NOSTRO METODO",
+        ctaHref: "/about",
         imageUrl: "/hero/slide2.png",
     },
     {
@@ -48,6 +52,7 @@ const SLIDES: Slide[] = [
         subtitle:
             "Grazie ad ATLAS, il nostro ecosistema modulare e scalabile, ti forniamo un prodotto solo tuo: dati, processi, operatività, tutto pensato per farti sentire a casa.",
         cta: "SCOPRI ATLAS",
+        ctaHref: "/portfolio",
         imageUrl: "/hero/slide3.png",
     },
 ];
@@ -478,7 +483,7 @@ export function HeroSlider() {
                                 <div className="mx-auto w-[min(94vw,1180px)]">
                                     {/* Pill */}
                                     {slide.pill.href ? (
-                                        <a
+                                        <Link
                                             href={slide.pill.href}
                                             aria-label={slide.pill.ariaLabel ?? slide.pill.text}
                                             onClick={() => scheduleAutoplay()}
@@ -489,7 +494,7 @@ export function HeroSlider() {
                                             }}
                                         >
                                             {slide.pill.text}
-                                        </a>
+                                        </Link>
                                     ) : (
                                         <div
                                             className="contactMini-pill !border-black/30 !bg-transparent !text-black/90"
@@ -535,7 +540,6 @@ export function HeroSlider() {
                                             />
                                         </motion.h1>
 
-                                        {/* ✅ Desktop: un pelino più sotto */}
                                         <div className="mt-auto pt-[clamp(26px,6vh,72px)] md:pt-[clamp(112px,20vh,240px)]">
                                             <motion.p
                                                 key={`sub-${navId}`}
@@ -580,9 +584,9 @@ export function HeroSlider() {
                                                 }
                                                 className="pt-7 md:pt-10"
                                             >
-                                                <div onClick={() => scheduleAutoplay()}>
+                                                <Link href={slide.ctaHref} onClick={() => scheduleAutoplay()}>
                                                     <FillButton>{slide.cta}</FillButton>
-                                                </div>
+                                                </Link>
                                             </motion.div>
                                         </div>
                                     </div>
