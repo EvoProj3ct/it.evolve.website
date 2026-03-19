@@ -33,7 +33,7 @@ export function defaultConfig(){
         stream: true,
 
         // short memory
-        historyTurns: 3,
+        historyTurns: 2,
 
         // prompts
         promptPreset: "console_default",
