@@ -447,12 +447,17 @@ export function HeroSlider() {
                         style={{ willChange: "clip-path" }}
                     >
                         {/* BG */}
-                        <motion.div
-                            className="absolute bg-cover bg-center"
+                        <motion.img
+                            src={slide.imageUrl}
+                            alt=""
+                            draggable={false}
+                            className="
+      absolute inset-0 h-full w-full
+      object-contain object-center
+      md:object-cover md:object-center
+      bg-black
+    "
                             style={{
-                                inset: "-2px",
-                                backgroundColor: "#000",
-                                backgroundImage: `url(${slide.imageUrl})`,
                                 willChange: "transform",
                                 transform: "translateZ(0)",
                                 backfaceVisibility: "hidden",
