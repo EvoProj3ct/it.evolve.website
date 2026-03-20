@@ -371,7 +371,7 @@ export function HeroSlider() {
     const titleText = `${slide.titleTop}\n${slide.titleBottom}`;
 
     return (
-        <section className="relative h-[100svh] w-full overflow-hidden bg-black">
+        <section className="relative h-[100svh] w-full overflow-hidden bg-white">
             {/* ✅ Preload DOM “visibile ma invisibile” */}
             <div
                 aria-hidden
@@ -452,11 +452,11 @@ export function HeroSlider() {
                             alt=""
                             draggable={false}
                             className="
-      absolute inset-0 h-full w-full
-      object-contain object-center
-      md:object-cover md:object-center
-      bg-black
-    "
+                              absolute inset-0 h-full w-full
+                              object-contain object-center
+                              md:object-cover md:object-center
+                              bg-white
+                            "
                             style={{
                                 willChange: "transform",
                                 transform: "translateZ(0)",
