@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     try {
         const body = (await req.json()) as RequestBody;
         const messages = Array.isArray(body.messages) ? body.messages : [];
-        const oldContext = body.oldContext ?? "";
+        const oldContext = String(body.oldContext ?? "");
         const cfg = supportChatConfig;
 
         const systemWithMemory = withOldContext(cfg.systemPrompt, oldContext);
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
         const res = await groqChatOnce({ payload });
 
         return NextResponse.json({
-            text: res.content || "(vuoto)",
+            text: String(res.content || "").trim() || "(vuoto)",
         });
     } catch (error) {
         const message =

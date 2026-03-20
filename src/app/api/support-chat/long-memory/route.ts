@@ -10,6 +10,22 @@ type RequestBody = {
     memory: LongMemoryState;
 };
 
+function normalizeMemoryText(value: string) {
+    const normalized = String(value ?? "")
+        .replace(/\r\n/g, "\n")
+        .trim();
+
+    if (!normalized) return "";
+
+    return normalized
+        .split("\n")
+        .map((line) => line.trimEnd())
+        .filter((line) => line.length > 0)
+        .slice(0, 5)
+        .join("\n")
+        .slice(0, 350);
+}
+
 export async function POST(req: Request) {
     try {
         const body = (await req.json()) as RequestBody;
@@ -37,7 +53,7 @@ export async function POST(req: Request) {
         const keep = Math.max(2, cfg.historyTurns * 2);
         const cutoff = Math.max(0, ua.length - keep);
 
-        const start = Math.max(0, memory.lastSummarizedIndex || 0);
+        const start = Math.max(0, Number(memory.lastSummarizedIndex || 0));
         const end = cutoff;
 
         if (end <= start) {
@@ -70,13 +86,19 @@ export async function POST(req: Request) {
             messages: memoryMessages,
             temperature: 0.2,
             top_p: 1,
-            max_completion_tokens: 400,
+            max_completion_tokens: 160,
             stream: false,
         });
 
         const res = await groqChatOnce({ payload });
+        const nextOldContext = normalizeMemoryText(res.content);
+
+        if (!nextOldContext) {
+            return NextResponse.json(memory);
+        }
+
         const nextMemory: LongMemoryState = {
-            oldContext: res.content.trim(),
+            oldContext: nextOldContext,
             lastSummarizedIndex: end,
         };
 

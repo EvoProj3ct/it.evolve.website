@@ -4,10 +4,10 @@ import type { SupportChatConfig } from "./types";
 export const supportChatConfig: SupportChatConfig = {
     greeting: "Ciao, sono Leo, assistente virtuale di Evolve, come posso aiutarti?",
 
-    model: "openai/gpt-oss-120b",
-    temperature: 0.7,
+    model: "llama-3.3-70b-versatile",
+    temperature: 0.6,
     top_p: 1,
-    max_completion_tokens: 120,
+    max_completion_tokens: 320,
     stream: false,
     historyTurns: 8,
 

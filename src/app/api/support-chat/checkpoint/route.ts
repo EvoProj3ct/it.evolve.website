@@ -17,6 +17,16 @@ type CheckpointModelOutput = {
     reason?: string;
 };
 
+function normalizeLight(value: unknown): CheckpointLight | null {
+    const v = String(value ?? "").trim().toUpperCase();
+
+    if (v === "GREEN" || v === "ORANGE" || v === "RED") {
+        return v;
+    }
+
+    return null;
+}
+
 export async function POST(req: Request) {
     try {
         const body = (await req.json()) as RequestBody;
@@ -30,8 +40,15 @@ export async function POST(req: Request) {
         }
 
         const messages = Array.isArray(body.messages) ? body.messages : [];
-        const userText = String(body.userText ?? "");
-        const oldContext = body.oldContext ?? "";
+        const userText = String(body.userText ?? "").trim();
+        const oldContext = String(body.oldContext ?? "");
+
+        if (!userText) {
+            return NextResponse.json({
+                light: "GREEN" as CheckpointLight,
+                reason: "OK",
+            });
+        }
 
         const ctxSystem = withOldContext(cfg.systemPrompt, oldContext);
         const recent = takeLastTurnsForAPI(messages, Math.min(cfg.historyTurns, 8));
@@ -44,13 +61,13 @@ export async function POST(req: Request) {
             {
                 role: "user",
                 content: [
-                    "SYSTEM+OLD_CONTEXT (reference):",
+                    "SYSTEM+OLD_CONTEXT DI RIFERIMENTO:",
                     ctxSystem,
                     "",
-                    "CONVERSAZIONE RECENTE (user/assistant):",
+                    "CONVERSAZIONE RECENTE:",
                     JSON.stringify(recent, null, 2),
                     "",
-                    "NUOVO MESSAGGIO UTENTE:",
+                    "ULTIMO MESSAGGIO UTENTE:",
                     userText,
                 ].join("\n"),
             },
@@ -61,16 +78,19 @@ export async function POST(req: Request) {
             messages: cpMessages,
             temperature: 0,
             top_p: 1,
-            max_completion_tokens: 120,
+            max_completion_tokens: 40,
             stream: false,
+            response_format: {
+                type: "json_object",
+            },
         });
 
         const res = await groqChatOnce({ payload });
         const parsed = safeJsonParse<CheckpointModelOutput>(res.content.trim());
 
-        const light = String(parsed?.light ?? "GREEN").toUpperCase();
+        const light = normalizeLight(parsed?.light);
 
-        if (light !== "GREEN" && light !== "ORANGE" && light !== "RED") {
+        if (!light) {
             return NextResponse.json({
                 light: "GREEN" as CheckpointLight,
                 reason: "parse_fail",
@@ -79,7 +99,7 @@ export async function POST(req: Request) {
 
         return NextResponse.json({
             light,
-            reason: parsed?.reason ?? "",
+            reason: String(parsed?.reason ?? "").trim().slice(0, 12),
         });
     } catch (error) {
         const message =

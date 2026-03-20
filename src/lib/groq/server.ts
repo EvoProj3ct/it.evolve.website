@@ -14,6 +14,9 @@ export type GroqChatPayload = {
     seed?: number;
     user?: string;
     stream?: boolean;
+    response_format?: {
+        type: "json_object";
+    };
 };
 
 function normalizeStop(stopRaw?: string | string[] | null) {
@@ -44,6 +47,7 @@ export function buildChatPayload({
                                      seed,
                                      user,
                                      stream,
+                                     response_format,
                                  }: GroqChatPayload): GroqChatPayload {
     const body: GroqChatPayload = {
         model,
@@ -66,12 +70,16 @@ export function buildChatPayload({
     const stopNorm = normalizeStop(stop);
     if (stopNorm) body.stop = stopNorm;
 
-    if (seed !== undefined && seed !== null && seed !== Number.NaN) {
+    if (seed !== undefined && seed !== null && !Number.isNaN(Number(seed))) {
         body.seed = Number(seed);
     }
 
     if (user) {
         body.user = String(user);
+    }
+
+    if (response_format) {
+        body.response_format = response_format;
     }
 
     return body;

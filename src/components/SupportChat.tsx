@@ -3,28 +3,27 @@
 import { AnimatePresence, motion } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
 
-type SupportChatProps = {
-    open: boolean;
-    onClose: () => void;
-};
+import { supportChatApi } from "@/lib/support-chat/client";
+import { supportChatConfig } from "@/lib/support-chat/config";
+import {
+    loadCheckpointState,
+    loadLongMemory,
+    resetCheckpointState,
+    resetLongMemory,
+    saveCheckpointState,
+    saveLongMemory,
+} from "@/lib/support-chat/storage";
+import type { SupportChatProps, UiMessage } from "@/lib/support-chat/types";
+import {
+    getAllUserAssistant,
+    mapUiMessagesToChatMessages,
+    uid,
+} from "@/lib/support-chat/utils";
 
-type Msg = {
-    id: string;
-    role: "bot" | "user";
-    text?: string;
-    typing?: boolean;
-    ts: number;
-};
-
-function uid() {
-    return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
-}
-
-const BOT_GREETING =
-    "Ciao, sono Leo, assistente virtuale di Evolve, come posso aiutarti?";
+const BOT_GREETING = supportChatConfig.greeting;
 
 const BOT_FALLBACK_REPLY =
-    "Perfetto — grazie! Al momento la chat non è disponibile. Lasciaci obiettivo, budget e tempistiche e ti ricontattiamo subito.";
+    "Perfetto, grazie. Al momento non riesco a rispondere bene. Se vuoi, scrivici obiettivo, budget e tempistiche e ti ricontattiamo subito.";
 
 function MessageText({ text }: { text: string }) {
     const normalized = text.replace(/\r\n/g, "\n").trim();
@@ -78,7 +77,7 @@ function MessageText({ text }: { text: string }) {
 
 export function SupportChat({ open, onClose }: SupportChatProps) {
     const [text, setText] = useState("");
-    const [messages, setMessages] = useState<Msg[]>([]);
+    const [messages, setMessages] = useState<UiMessage[]>([]);
     const [isSending, setIsSending] = useState(false);
 
     const inputRef = useRef<HTMLInputElement | null>(null);
@@ -91,8 +90,21 @@ export function SupportChat({ open, onClose }: SupportChatProps) {
         el.scrollTop = el.scrollHeight;
     };
 
+    const replaceTypingMessage = (typingId: string, textValue: string) => {
+        setMessages((prev) =>
+            prev.map((m) =>
+                m.id === typingId
+                    ? { ...m, typing: false, text: textValue }
+                    : m
+            )
+        );
+    };
+
     useEffect(() => {
         if (!open) return;
+
+        resetLongMemory(supportChatConfig.storage.longMemoryKey);
+        resetCheckpointState(supportChatConfig.storage.checkpointKey);
 
         setMessages([
             { id: uid(), role: "bot", text: BOT_GREETING, ts: Date.now() },
@@ -129,7 +141,7 @@ export function SupportChat({ open, onClose }: SupportChatProps) {
         scrollToBottom();
     }, [messages, open]);
 
-    const sendBotReply = async (conversation: Msg[]) => {
+    const sendBotReply = async (conversation: UiMessage[]) => {
         const typingId = uid();
 
         setMessages((prev) => [
@@ -138,51 +150,114 @@ export function SupportChat({ open, onClose }: SupportChatProps) {
         ]);
 
         try {
-            const payloadMessages = conversation
-                .filter((m) => !m.typing && typeof m.text === "string" && m.text.trim())
-                .map((m) => ({
-                    role: m.role === "user" ? "user" : "assistant",
-                    content: m.text!.trim(),
-                }));
+            const allMessages = mapUiMessagesToChatMessages(conversation);
+            const uaMessages = getAllUserAssistant(allMessages);
 
-            const res = await fetch("/api/support-chat/message", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    messages: payloadMessages,
-                }),
-            });
+            const lastUserText =
+                [...allMessages].reverse().find((m) => m.role === "user")?.content ?? "";
 
-            if (!res.ok) {
-                const raw = await res.text().catch(() => "");
-                throw new Error(raw || `HTTP ${res.status}`);
+            let memory = loadLongMemory(supportChatConfig.storage.longMemoryKey);
+            let checkpoint = loadCheckpointState(supportChatConfig.storage.checkpointKey);
+
+            if (checkpoint.closed) {
+                replaceTypingMessage(typingId, supportChatConfig.redMessage);
+                return;
             }
 
-            const data = await res.json();
-            const botText =
-                typeof data?.text === "string" && data.text.trim()
-                    ? data.text.trim()
-                    : BOT_FALLBACK_REPLY;
+            if (supportChatConfig.enableCheckpoint) {
+                const cp = await supportChatApi.checkpoint({
+                    messages: allMessages,
+                    userText: lastUserText,
+                    oldContext: memory.oldContext,
+                });
 
-            setMessages((prev) =>
-                prev.map((m) =>
-                    m.id === typingId
-                        ? { ...m, typing: false, text: botText }
-                        : m
-                )
+                if (cp.light === "RED") {
+                    checkpoint = {
+                        orangeCount: checkpoint.orangeCount,
+                        closed: true,
+                    };
+
+                    saveCheckpointState(
+                        supportChatConfig.storage.checkpointKey,
+                        checkpoint
+                    );
+
+                    replaceTypingMessage(typingId, supportChatConfig.redMessage);
+                    return;
+                }
+
+                if (cp.light === "ORANGE") {
+                    const orangeCount = Number(checkpoint.orangeCount || 0) + 1;
+                    const closed = orangeCount >= supportChatConfig.orangeLimit;
+
+                    checkpoint = {
+                        orangeCount,
+                        closed,
+                    };
+
+                    saveCheckpointState(
+                        supportChatConfig.storage.checkpointKey,
+                        checkpoint
+                    );
+
+                    replaceTypingMessage(
+                        typingId,
+                        closed
+                            ? supportChatConfig.redMessage
+                            : supportChatConfig.orangeMessage
+                    );
+                    return;
+                }
+
+                checkpoint = {
+                    orangeCount: 0,
+                    closed: false,
+                };
+
+                saveCheckpointState(
+                    supportChatConfig.storage.checkpointKey,
+                    checkpoint
+                );
+            }
+
+            if (supportChatConfig.enableLongMemory) {
+                const unsummarizedCount =
+                    uaMessages.length - Number(memory.lastSummarizedIndex || 0);
+
+                if (
+                    unsummarizedCount >=
+                    Math.max(1, supportChatConfig.longMemoryDecayTurns) * 2
+                ) {
+                    const nextMemory = await supportChatApi.longMemory({
+                        messages: allMessages,
+                        memory,
+                    });
+
+                    if (
+                        nextMemory &&
+                        typeof nextMemory.oldContext === "string"
+                    ) {
+                        memory = nextMemory;
+                        saveLongMemory(
+                            supportChatConfig.storage.longMemoryKey,
+                            memory
+                        );
+                    }
+                }
+            }
+
+            const reply = await supportChatApi.message({
+                messages: allMessages,
+                oldContext: memory.oldContext,
+            });
+
+            replaceTypingMessage(
+                typingId,
+                String(reply?.text ?? "").trim() || BOT_FALLBACK_REPLY
             );
         } catch (error) {
-            console.error("SupportChat API error:", error);
-
-            setMessages((prev) =>
-                prev.map((m) =>
-                    m.id === typingId
-                        ? { ...m, typing: false, text: BOT_FALLBACK_REPLY }
-                        : m
-                )
-            );
+            console.error("SupportChat pipeline error:", error);
+            replaceTypingMessage(typingId, BOT_FALLBACK_REPLY);
         }
     };
 
@@ -192,7 +267,7 @@ export function SupportChat({ open, onClose }: SupportChatProps) {
         const value = text.trim();
         if (!value || isSending) return;
 
-        const userMessage: Msg = {
+        const userMessage: UiMessage = {
             id: uid(),
             role: "user",
             text: value,
@@ -273,10 +348,10 @@ export function SupportChat({ open, onClose }: SupportChatProps) {
                                                     className="supportChatTyping"
                                                     aria-label="Leo sta scrivendo"
                                                 >
-                          <span className="dot" />
-                          <span className="dot" />
-                          <span className="dot" />
-                        </span>
+                                                    <span className="dot" />
+                                                    <span className="dot" />
+                                                    <span className="dot" />
+                                                </span>
                                             ) : (
                                                 <MessageText text={m.text ?? ""} />
                                             )}
