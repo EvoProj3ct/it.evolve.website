@@ -10,24 +10,24 @@ export function IntroLoader() {
     const [phase, setPhase] = useState<Phase>("bar");
 
     // ---- TIMING (ms) ----
-    const BAR_TO_SPLIT = 650;
-    const SPLIT_TO_CUT = 350;
+    const BAR_TO_SPLIT = 420;
+    const SPLIT_TO_CUT = 240;
 
     // CUT: durata totale della “corsa” della linea fullscreen
-    const CUT_DURATION = 900;
+    const CUT_DURATION = 520;
 
     // niente gap: reveal parte subito dopo cut
     const AFTER_CUT_HOLD = 0;
 
     // tende (coerenti con i transition sotto)
     const CURTAIN_DELAY_S = 0.0; // <<< se vuoi “subito dopo”, metti 0
-    const CURTAIN_DURATION_S = 0.5;
+    const CURTAIN_DURATION_S = 0.42;
 
     // ---- OVERLAP (ms) ----
     // Quanto prima far partire la fase successiva (sovrapposizione controllata).
     // Aumenta questi valori per rendere tutto più "attaccato" e fluido.
-    const OVERLAP_SPLIT_MS = 180;   // cut parte leggermente prima che split "finisca"
-    const OVERLAP_REVEAL_MS = 440; // reveal parte mentre cut sta ancora finendo (consigliato 120-200)
+    const OVERLAP_SPLIT_MS = 120;   // cut parte leggermente prima che split "finisca"
+    const OVERLAP_REVEAL_MS = 260; // reveal parte mentre cut sta ancora finendo (consigliato 120-200)
     const OVERLAP_HIDE_MS = 0;     // opzionale: per smontare overlay un filo prima/dopo
 
     useEffect(() => {

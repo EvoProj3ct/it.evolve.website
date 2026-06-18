@@ -87,7 +87,7 @@ export function AboutSplit() {
                 {/* LEFT */}
                 <div className="about-split-left">
                     <div className="about-split-left-inner">
-                        <div className="about-eyebrow">Su di Noi</div>
+                        <div className="about-eyebrow">Su di noi</div>
 
                         <h2 className="about-title">
                             <span className="about-title-gradient">Il metodo prima della</span>
@@ -100,7 +100,7 @@ export function AboutSplit() {
                         </p>
 
                         <div className="about-cta">
-                            <FillButton>SCOPRI DI PIU&apos;</FillButton>
+                            <FillButton>SCOPRI DI PIÙ</FillButton>
                         </div>
                     </div>
                 </div>

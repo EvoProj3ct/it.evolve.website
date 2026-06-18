@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { SupportChat } from "@/components/SupportChat"; // ✅ aggiusta path se serve
 
@@ -12,15 +12,6 @@ const NAV_ITEMS = [
     { label: "Servizi", href: "/portfolio" },
     { label: "Contatti", href: "/contact" },
 ];
-
-/** ✅ Brand typewriter loop (hover-safe) */
-const BRAND_BASE = "Evolve";
-const BRAND_PHRASES = ["Think Deeper", "Think To Evolve"];
-const BRAND_LOOP = [BRAND_BASE, ...BRAND_PHRASES];
-
-function uid() {
-    return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
-}
 
 export function Navbar() {
     // ✅ show/hide on scroll
@@ -37,22 +28,6 @@ export function Navbar() {
     const [chatOpen, setChatOpen] = useState(false);
     const closeChat = () => setChatOpen(false);
     const openChat = () => setChatOpen(true);
-
-    // ✅ brand hover typewriter (NO restart due to width collapse)
-    const [brandHover, setBrandHover] = useState(false);
-    const [brandText, setBrandText] = useState(BRAND_BASE);
-
-    // width “fixed” so hover area never collapses during delete
-    const [brandW, setBrandW] = useState<number | null>(null);
-    const brandMeasureRef = useRef<HTMLSpanElement | null>(null);
-
-    // timers for brand animation
-    const brandTimersRef = useRef<number[]>([]);
-    const brandStateRef = useRef({
-        phraseIdx: 0, // index in BRAND_LOOP
-        phase: "idle" as "idle" | "typing" | "deleting",
-        char: 0,
-    });
 
     // ---- scroll show/hide
     useEffect(() => {
@@ -107,108 +82,6 @@ export function Navbar() {
             window.removeEventListener("keydown", onKeyDown);
         };
     }, [mobileOpen]);
-
-    // ✅ measure max width of brand phrases ONCE (same font/weight/size)
-    useEffect(() => {
-        if (!brandMeasureRef.current) return;
-
-        const all = BRAND_LOOP.map((s) => s + "|"); // include cursor
-        let maxW = 0;
-
-        for (const s of all) {
-            brandMeasureRef.current.textContent = s;
-            const w = brandMeasureRef.current.getBoundingClientRect().width;
-            if (w > maxW) maxW = w;
-        }
-
-        setBrandW(Math.ceil(maxW));
-        // restore
-        brandMeasureRef.current.textContent = "";
-    }, []);
-
-    const clearBrandTimers = () => {
-        brandTimersRef.current.forEach((t) => window.clearTimeout(t));
-        brandTimersRef.current = [];
-    };
-
-    const schedule = (fn: () => void, ms: number) => {
-        const t = window.setTimeout(fn, ms);
-        brandTimersRef.current.push(t);
-    };
-
-    // ✅ brand loop logic
-    useEffect(() => {
-        clearBrandTimers();
-
-        // leave hover => stop and reset to base (but do NOT “fight” while leaving)
-        if (!brandHover) {
-            brandStateRef.current = { phraseIdx: 0, phase: "idle", char: BRAND_BASE.length };
-            setBrandText(BRAND_BASE);
-            return;
-        }
-
-        // start from current state (don’t restart due to rerenders)
-        const run = () => {
-            const st = brandStateRef.current;
-            const phrase = BRAND_LOOP[st.phraseIdx];
-
-            // tuning
-            const TYPE_MS = 42;
-            const DEL_MS = 28;
-            const HOLD_FULL_MS = 900;
-            const HOLD_EMPTY_MS = 180;
-
-            if (st.phase === "idle") {
-                // ensure we start typing next phrase (if we are on base already, go to next)
-                // if currently exactly base, move to next phrase
-                if (st.phraseIdx === 0) st.phraseIdx = 1;
-                st.phase = "typing";
-                st.char = 0;
-            }
-
-            if (st.phase === "typing") {
-                st.char = Math.min(phrase.length, st.char + 1);
-                setBrandText(phrase.slice(0, st.char));
-
-                if (!brandHover) return;
-
-                if (st.char >= phrase.length) {
-                    st.phase = "deleting";
-                    schedule(run, HOLD_FULL_MS);
-                } else {
-                    schedule(run, TYPE_MS);
-                }
-                return;
-            }
-
-            if (st.phase === "deleting") {
-                st.char = Math.max(0, st.char - 1);
-                setBrandText(phrase.slice(0, st.char));
-
-                if (!brandHover) return;
-
-                if (st.char <= 0) {
-                    // next phrase
-                    st.phraseIdx = (st.phraseIdx + 1) % BRAND_LOOP.length;
-                    if (st.phraseIdx === 0) st.phraseIdx = 1; // skip base during hover loop
-                    st.phase = "typing";
-                    st.char = 0;
-                    schedule(run, HOLD_EMPTY_MS);
-                } else {
-                    schedule(run, DEL_MS);
-                }
-                return;
-            }
-        };
-
-        // init state for hover start
-        brandStateRef.current = { phraseIdx: 0, phase: "idle", char: BRAND_BASE.length };
-        setBrandText(BRAND_BASE);
-
-        schedule(run, 120);
-
-        return () => clearBrandTimers();
-    }, [brandHover]);
 
     return (
         <>
@@ -268,30 +141,14 @@ export function Navbar() {
 
                     {/* ✅ Nav: padding-left per il logo assoluto + padding-right per chat assoluta (desktop only) */}
                     <nav className="navbarShell navbarShellRight mx-auto flex max-w-6xl items-center px-6 py-5">
-                        {/* ✅ BRAND: hover typewriter loop (safe area fixed width) */}
+                        {/* ✅ BRAND: testo statico */}
                         <Link
                             href="/"
                             onClick={closeMobile}
                             className="navbarBrand hidden md:inline-flex text-xl tracking-wide text-[#0b1118] transition-colors"
-                            onMouseEnter={() => setBrandHover(true)}
-                            onMouseLeave={() => setBrandHover(false)}
                         >
-              <span className="relative inline-flex items-center px-2">
-                {/* hidden measurer to compute max width */}
-                  <span
-                      ref={brandMeasureRef}
-                      className="font-display font-semibold invisible absolute left-0 top-0 whitespace-nowrap"
-                      aria-hidden="true"
-                  />
-                <span
-                    className="font-display font-semibold whitespace-nowrap"
-                    style={brandW ? { width: brandW } : undefined}
-                >
-                  {brandText}
-                    <span className="inline-block translate-y-[1px] ml-[2px] opacity-70">
-                    |
-                  </span>
-                </span>
+              <span className="font-display font-semibold whitespace-nowrap">
+                Evolve
               </span>
                         </Link>
 

@@ -299,7 +299,7 @@ export function TestimonialsSlider() {
                             type="button"
                             className="testi2-navBtn"
                             onClick={onPrev}
-                            aria-label="Previous testimonial"
+                            aria-label="Testimonial precedente"
                         >
                             ‹
                         </button>
@@ -307,7 +307,7 @@ export function TestimonialsSlider() {
                             type="button"
                             className="testi2-navBtn"
                             onClick={onNext}
-                            aria-label="Next testimonial"
+                            aria-label="Testimonial successivo"
                         >
                             ›
                         </button>

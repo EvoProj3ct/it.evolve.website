@@ -13,9 +13,9 @@ type Service = {
 };
 
 const services: Service[] = [
-    { n: "01", title: "Consulenza", desc: "Definiamo obbiettivi, contesto e giusta taglia dell'intervento", ghost: "C", accent: "yellow" },
+    { n: "01", title: "Consulenza", desc: "Definiamo obiettivi, contesto e giusta taglia dell'intervento", ghost: "C", accent: "yellow" },
     { n: "02", title: "Analisi", desc: "Analizziamo e strutturiamo i tuoi processi aziendali", ghost: "A", accent: "blue" },
-    { n: "03", title: "Sviluppo", desc: "Costruiamo sistemi digitali e soluzioni digitali su misura", ghost: "S", accent: "purple" },
+    { n: "03", title: "Sviluppo", desc: "Costruiamo sistemi digitali su misura, scalabili e integrati", ghost: "S", accent: "purple" },
 ];
 
 const accentVar = (a: Service["accent"]) =>

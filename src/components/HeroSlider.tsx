@@ -27,30 +27,30 @@ type Slide = {
 const SLIDES: Slide[] = [
     {
         pill: { text: "CONSULENZA" },
-        titleTop: "Tecnologia",
-        titleBottom: "Sartoriale",
+        titleTop: "Software",
+        titleBottom: "su misura",
         subtitle:
-            "Studiamo, strutturiamo e digitalizziamo i processi aziendali con soluzioni scalabili su misura.",
+            "Trasformiamo processi complessi in strumenti digitali chiari, scalabili e integrati con il lavoro reale dell'azienda.",
         cta: "SCOPRI COME",
         ctaHref: "/about",
         imageUrl: "/hero/slide1.png",
     },
     {
         pill: { text: "ANALISI" },
-        titleTop: "La Giusta",
-        titleBottom: "Taglia",
+        titleTop: "Analisi",
+        titleBottom: "prima del codice",
         subtitle:
-            "Niente spese superflue. Analizziamo il tuo progetto per offrirti la taglia di sviluppo, dalla S alla XL, proporzionata alle tue reali esigenze.",
+            "Partiamo dall'analisi operativa per definire priorità, perimetro e investimento corretto prima di scrivere codice.",
         cta: "IL NOSTRO METODO",
         ctaHref: "/about",
         imageUrl: "/hero/slide2.png",
     },
     {
         pill: { text: "SVILUPPO" },
-        titleTop: "Disegnato",
-        titleBottom: "Per Te",
+        titleTop: "Sistemi",
+        titleBottom: "che scalano",
         subtitle:
-            "Grazie ad ATLAS, il nostro ecosistema modulare e scalabile, ti forniamo un prodotto solo tuo: dati, processi, operatività, tutto pensato per farti sentire a casa.",
+            "Costruiamo ecosistemi modulari per dati, processi e operatività: meno strumenti dispersi, più controllo.",
         cta: "SCOPRI ATLAS",
         ctaHref: "/portfolio",
         imageUrl: "/hero/slide3.png",
@@ -130,9 +130,9 @@ export function HeroSlider() {
     const PUSH = 202;
     const SHOVE = 15;
 
-    const PANEL_DUR = 9.85;
-    const WIPE_DUR = 1.42;
-    const BG_DUR = 1.62;
+    const PANEL_DUR = 7.2;
+    const WIPE_DUR = 1.05;
+    const BG_DUR = 1.2;
 
     const descDelayAfterStop = 0.54;
     const btnDelayAfterStop = 0.96;
@@ -148,35 +148,26 @@ export function HeroSlider() {
 
     const glowTitleStyle: React.CSSProperties = {
         color: "#0b0b0b",
-        WebkitTextStroke: "1.6px rgba(114,201,79,0.72)",
+        WebkitTextStroke: "0.6px rgba(114,201,79,0.28)",
         textShadow: `
-      0 0 6px  rgba(114,201,79,0.85),
-      0 0 14px rgba(114,201,79,0.70),
-      0 0 28px rgba(114,201,79,0.55),
-      0 0 46px rgba(114,201,79,0.38),
-      0 0 70px rgba(114,201,79,0.24)
+      0 0 18px rgba(114,201,79,0.22),
+      0 12px 38px rgba(0,0,0,0.10)
     `,
     };
 
     const glowBodyStyle: React.CSSProperties = {
         color: "rgba(11,11,11,0.94)",
-        WebkitTextStroke: "1.1px rgba(114,201,79,0.58)",
+        WebkitTextStroke: "0.35px rgba(114,201,79,0.18)",
         textShadow: `
-      0 0 5px  rgba(114,201,79,0.70),
-      0 0 12px rgba(114,201,79,0.55),
-      0 0 24px rgba(114,201,79,0.40),
-      0 0 40px rgba(114,201,79,0.28)
+      0 0 12px rgba(114,201,79,0.14)
     `,
     };
 
     const glowUIStyle: React.CSSProperties = {
         color: "#0b0b0b",
-        WebkitTextStroke: "0.95px rgba(114,201,79,0.52)",
+        WebkitTextStroke: "0.35px rgba(114,201,79,0.18)",
         textShadow: `
-      0 0 5px  rgba(114,201,79,0.78),
-      0 0 12px rgba(114,201,79,0.58),
-      0 0 24px rgba(114,201,79,0.40),
-      0 0 40px rgba(114,201,79,0.26)
+      0 0 10px rgba(114,201,79,0.18)
     `,
     };
 
@@ -184,7 +175,7 @@ export function HeroSlider() {
      * AUTOPLAY
      * - cooldown dopo interazione: 10s
      */
-    const AUTOPLAY_COOLDOWN_MS = 10_000;
+    const AUTOPLAY_COOLDOWN_MS = 16_000;
     const autoplayTimerRef = useRef<number | null>(null);
 
     const clearAutoplayTimer = () => {
@@ -538,11 +529,11 @@ export function HeroSlider() {
                                             <RouletteTitle
                                                 text={titleText}
                                                 triggerKey={rouletteTrigger}
-                                                picks={3}
-                                                durationMs={3300}
-                                                tickMinMs={85}
-                                                tickMaxMs={460}
-                                                stopFractions={[0.62, 0.82, 1]}
+                                                picks={1}
+                                                durationMs={1200}
+                                                tickMinMs={90}
+                                                tickMaxMs={220}
+                                                stopFractions={[1, 1, 1]}
                                                 className="whitespace-pre-wrap"
                                             />
                                         </motion.h1>
@@ -612,7 +603,7 @@ export function HeroSlider() {
                 <button
                     onClick={prev}
                     className="grid h-12 w-12 place-items-center rounded-full border bg-transparent hover:bg-black/10"
-                    aria-label="Previous"
+                    aria-label="Slide precedente"
                     style={{
                         opacity: isAnimating ? 0.55 : 1,
                         cursor: "pointer",
@@ -628,7 +619,7 @@ export function HeroSlider() {
                 <button
                     onClick={next}
                     className="grid h-12 w-12 place-items-center rounded-full border bg-transparent hover:bg-black/10"
-                    aria-label="Next"
+                    aria-label="Slide successiva"
                     style={{
                         opacity: isAnimating ? 0.55 : 1,
                         cursor: "pointer",

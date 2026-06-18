@@ -1,0 +1,5 @@
+interface:
+  display_name: "Smart Homepage Fidelity"
+  short_description: "Aggiorna homepage e sezioni marketing preservando layout, ritmo visivo e fedeltà strutturale."
+  icon: "layout-template"
+  accent_color: "#72C94F"

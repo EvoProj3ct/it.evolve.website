@@ -1,5 +1,7 @@
 import { createHash, timingSafeEqual } from "crypto";
+import { readFileSync } from "fs";
 import { headers } from "next/headers";
+import { join } from "path";
 import { NextResponse } from "next/server";
 import { sendEventRegistrationConfirmation } from "@/lib/chiedilo/email";
 import { eventRegistrationSchema, normalizeEmail } from "@/lib/chiedilo/event-registration-schema";
@@ -124,10 +126,25 @@ export async function POST(request: Request) {
     stage = "insert_document";
     const inserted = await collection.insertOne(document);
 
+    stage = "read_attachment";
+    const pdfPath = join(
+      process.cwd(),
+      "public",
+      "chiedilo-all-ia",
+      "cronoprogramma-evento-chiedilo-all-ia-paliano.pdf",
+    );
+    let attachmentBuffer: Buffer | undefined;
+    try {
+      attachmentBuffer = readFileSync(pdfPath);
+    } catch {
+      console.warn("cronoprogramma-pdf-not-found", { path: pdfPath });
+    }
+
     stage = "send_confirmation_email";
     const confirmationEmail = await sendEventRegistrationConfirmation({
       nome: input.nome,
       email: input.email,
+      attachmentBuffer,
     });
 
     stage = "update_confirmation_email_status";

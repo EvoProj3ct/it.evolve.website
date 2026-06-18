@@ -7,7 +7,7 @@ description: Usa questa skill per aggiornare homepage e sezioni marketing manten
 
 ## Quando usarla
 
-- Modifiche alla homepage in `app/page.tsx`.
+- Modifiche alla homepage in `src/app/(site)/page.tsx` o al routing equivalente della root `/`.
 - Aggiornamenti di palette, gradienti, tipografia visiva o micro-movimenti.
 - Estensioni di sezioni senza perdere la struttura originaria.
 
@@ -21,7 +21,7 @@ description: Usa questa skill per aggiornare homepage e sezioni marketing manten
 
 ## Output minimi richiesti
 
-- Diff codice in `app/page.tsx` e file correlati.
+- Diff codice in `src/app/(site)/page.tsx` e file correlati.
 - Nota palette applicata (sorgente -> target).
 - Check QA compilata con esito responsive e accessibilita base.
 

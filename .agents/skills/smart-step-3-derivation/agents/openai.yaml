@@ -1,0 +1,5 @@
+interface:
+  display_name: "Smart Step 3 Derivation"
+  short_description: "Produce derivati Step 3 mantenendo tracciabilità, provider target e gate di pubblicazione."
+  icon: "workflow"
+  accent_color: "#72C94F"

@@ -148,7 +148,7 @@ export function PortfolioCollage() {
                 src: "/collage/product_ai.png",
                 alt: "Top 1",
                 tagTop: "ESPERTI AI",
-                tagBottom: "Agenti e Chatbot",
+                tagBottom: "Agenti AI e chatbot",
             },
             {
                 id: "top-2",
@@ -157,7 +157,7 @@ export function PortfolioCollage() {
                 src: "/collage/product_formazione.png",
                 alt: "Top 2",
                 tagTop: "FORMAZIONE",
-                tagBottom: "Sulle nuove Tecnologie",
+                tagBottom: "Sulle nuove tecnologie",
             },
             {
                 id: "top-3",
@@ -175,7 +175,7 @@ export function PortfolioCollage() {
                 src: "/collage/product_consulenza.png",
                 alt: "Bottom 1",
                 tagTop: "CONSULENZA",
-                tagBottom: "Perché Innovare Conta",
+                tagBottom: "Perché innovare conta",
             },
             {
                 id: "bot-2",
@@ -202,7 +202,7 @@ export function PortfolioCollage() {
                 src: "/collage/product_ecommerce.png",
                 alt: "Right",
                 tagTop: "E-COMMERCE",
-                tagBottom: "BELLI E FUNZIONALI",
+                tagBottom: "Funzionali, misurabili, scalabili",
             },
         ],
         []
