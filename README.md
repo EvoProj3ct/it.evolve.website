@@ -1,1 +1,1 @@
-game
+- sh1ni deploy 18-06-2026
