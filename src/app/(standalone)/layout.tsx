@@ -1,5 +1,4 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import CookieConsent from "@/components/chiedilo/cookie-consent";
 import ChiediloFooter from "@/components/chiedilo/site-footer";
 
 const geistSans = Geist({
@@ -17,7 +16,6 @@ export default function StandaloneLayout({ children }: { children: React.ReactNo
     <div className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col bg-white text-zinc-900 antialiased`}>
       <div className="flex-1">{children}</div>
       <ChiediloFooter />
-      <CookieConsent />
     </div>
   );
 }

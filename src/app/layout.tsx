@@ -1,5 +1,8 @@
 import "./globals.css";
 import { Montserrat, Inter } from "next/font/google";
+import { CookieConsentBanner } from "@/components/legal/cookie-consent-banner";
+import { CookieConsentProvider } from "@/components/legal/cookie-consent-provider";
+import { CookiePreferencesModal } from "@/components/legal/cookie-preferences-modal";
 
 const montserrat = Montserrat({
     subsets: ["latin"],
@@ -16,7 +19,13 @@ const inter = Inter({
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
         <html lang="it" className={`${montserrat.variable} ${inter.variable}`}>
-            <body>{children}</body>
+            <body>
+                <CookieConsentProvider>
+                    {children}
+                    <CookieConsentBanner />
+                    <CookiePreferencesModal />
+                </CookieConsentProvider>
+            </body>
         </html>
     );
 }

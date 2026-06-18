@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { CookiePreferencesButton } from "@/components/legal/cookie-preferences-button";
 
 // ✅ nuovo path (cartella waveBattery)
 import FooterMiniGame from "@/components/waveBattery/FooterMiniGame";
@@ -81,6 +82,12 @@ export function SiteFooter() {
                         <div className="footer-copy">
                             © {new Date().getFullYear()}, <span className="footer-copyBrand">Evolve</span>. Think Deeper{" "}
                             <span className="footer-copyAccent">Think to Evolve</span>.
+                        </div>
+                        <div className="mt-4 flex flex-wrap justify-center gap-3 text-xs">
+                            <Link className="footer-link" href="/privacy">Privacy</Link>
+                            <Link className="footer-link" href="/cookie-policy">Cookie Policy</Link>
+                            <Link className="footer-link" href="/sicurezza">Sicurezza</Link>
+                            <CookiePreferencesButton className="footer-link" />
                         </div>
                     </div>
                 </div>

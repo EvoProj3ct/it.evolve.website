@@ -145,7 +145,7 @@ export default function PrivateEventRegistrationForm({ registrationToken }: { re
         return;
       }
 
-      router.push("/chiedilo-all-ia/thank-you");
+      router.push("/chiedilo-all-ia/registrazione/thank-you");
     } catch {
       setError("Errore di rete. Riprova tra pochi minuti.");
     } finally {
@@ -211,12 +211,12 @@ export default function PrivateEventRegistrationForm({ registrationToken }: { re
 
       <div className="space-y-4 rounded-2xl border border-emerald-300 bg-gradient-to-br from-emerald-50 to-teal-50 p-4 text-sm leading-relaxed text-zinc-700 sm:p-5">
         <label className="grid grid-cols-[1rem_1fr] items-start gap-3"><input type="checkbox" checked={form.privacyAccepted} onChange={(e) => onChange("privacyAccepted", e.target.checked)} onBlur={() => { markTouched("privacyAccepted"); setFieldError("privacyAccepted", validateField("privacyAccepted", form.privacyAccepted)); }} className="mt-1" required />
-          <span>Ho letto la <a href="/chiedilo-all-ia/privacy" className="underline">Privacy Policy</a> e acconsento al trattamento dei dati per gestire richieste di aggiornamento, manifestazioni di interesse, iscrizioni agli eventi e comunicazioni organizzative collegate alle iniziative Evolve. (obbligatorio)</span>
+          <span>Ho letto la <a href="/privacy" className="underline">Privacy Policy</a> e acconsento al trattamento dei dati per gestire richieste di aggiornamento, manifestazioni di interesse, iscrizioni agli eventi e comunicazioni organizzative collegate alle iniziative Evolve. (obbligatorio)</span>
         </label>
         {touched.privacyAccepted && fieldErrors.privacyAccepted ? <p className="text-xs text-rose-600">{fieldErrors.privacyAccepted}</p> : null}
 
         <label className="grid grid-cols-[1rem_1fr] items-start gap-3"><input type="checkbox" checked={form.dataSecurityAccepted} onChange={(e) => onChange("dataSecurityAccepted", e.target.checked)} onBlur={() => { markTouched("dataSecurityAccepted"); setFieldError("dataSecurityAccepted", validateField("dataSecurityAccepted", form.dataSecurityAccepted)); }} className="mt-1" required />
-          <span>Acconsento alla conservazione sicura dei dati forniti per finalità organizzative legate all’evento, secondo le misure descritte nella pagina <a href="/chiedilo-all-ia/sicurezza" className="underline">Sicurezza</a>. (obbligatorio)</span>
+          <span>Acconsento alla conservazione sicura dei dati forniti per finalità organizzative legate all'evento, secondo le misure descritte nella pagina <a href="/sicurezza" className="underline">Sicurezza</a>. (obbligatorio)</span>
         </label>
         {touched.dataSecurityAccepted && fieldErrors.dataSecurityAccepted ? <p className="text-xs text-rose-600">{fieldErrors.dataSecurityAccepted}</p> : null}
       </div>

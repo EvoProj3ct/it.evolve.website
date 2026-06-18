@@ -1,6 +1,7 @@
 import { createHash, timingSafeEqual } from "crypto";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { sendEventRegistrationConfirmation } from "@/lib/chiedilo/email";
 import { eventRegistrationSchema, normalizeEmail } from "@/lib/chiedilo/event-registration-schema";
 import { getDatabase } from "@/lib/chiedilo/mongodb";
 
@@ -111,12 +112,41 @@ export async function POST(request: Request) {
         userAgent,
         registrationTokenHash: hashValue(input.registrationToken),
       },
+      confirmationEmail: {
+        status: "pending",
+        sentAt: null,
+        error: null,
+      },
       createdAt: now,
       updatedAt: now,
     };
 
     stage = "insert_document";
-    await collection.insertOne(document);
+    const inserted = await collection.insertOne(document);
+
+    stage = "send_confirmation_email";
+    const confirmationEmail = await sendEventRegistrationConfirmation({
+      nome: input.nome,
+      email: input.email,
+    });
+
+    stage = "update_confirmation_email_status";
+    await collection.updateOne(
+      { _id: inserted.insertedId },
+      {
+        $set: {
+          confirmationEmail,
+          updatedAt: new Date(),
+        },
+      },
+    );
+
+    if (confirmationEmail.status === "failed") {
+      console.warn("event-registration-confirmation-email-failed", {
+        registrationId: inserted.insertedId.toString(),
+        error: confirmationEmail.error,
+      });
+    }
 
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (error: unknown) {

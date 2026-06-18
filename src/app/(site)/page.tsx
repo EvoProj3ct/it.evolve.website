@@ -5,6 +5,7 @@ import { PortfolioCollage } from "@/components/PortfolioCollage";
 import { TestimonialsSlider } from "@/components/TestimonialsSlider";
 import { ClientsTape } from "@/components/ClientsTape";
 import { ClientsGrid } from "@/components/ClientsGrid";
+import { StayUpdatedBanner } from "@/components/StayUpdatedBanner";
 import { TeamStrip } from "@/components/TeamStrip";
 
 export default function Page() {
@@ -17,6 +18,7 @@ export default function Page() {
       <TestimonialsSlider />
       <ClientsTape />
       <ClientsGrid />
+      <StayUpdatedBanner />
       <TeamStrip />
     </main>
   );

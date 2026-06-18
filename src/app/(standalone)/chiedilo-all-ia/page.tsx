@@ -123,7 +123,7 @@ export default function Home() {
             </div>
             <div className="mt-8 flex flex-col items-stretch justify-center gap-3 sm:mt-10 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
               <a
-                href="/chiedilo-all-ia/partecipa"
+                href="/rimani-aggiornato"
                 className="group flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-amber-600 px-6 py-3 text-white shadow-2xl transition-all hover:scale-105 hover:shadow-emerald-500/40 sm:px-8 sm:py-4"
               >
                 <span className="text-base sm:text-lg">Rimani aggiornato</span>
@@ -347,7 +347,7 @@ export default function Home() {
               Compila il modulo per manifestare interesse o ricevere aggiornamenti sull’incontro “Chiedilo all’IA”.
             </p>
             <a
-              href="/chiedilo-all-ia/partecipa"
+              href="/rimani-aggiornato"
               className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-zinc-700 px-6 py-3 text-base font-semibold text-white shadow-2xl transition-all hover:scale-105 sm:px-8 sm:py-4 sm:text-lg"
             >
               Rimani aggiornato

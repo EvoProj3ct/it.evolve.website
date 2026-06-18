@@ -53,7 +53,7 @@ export default async function RegistrazionePage({
           Questo modulo è riservato alla registrazione all’evento “Chiedilo all’IA” presso la sede BCC di Paliano.
         </p>
         <p className="mt-2 text-sm text-zinc-500">
-          Compila i campi richiesti e conferma i consensi obbligatori. Non partirà alcuna email automatica da questo modulo.
+          Compila i campi richiesti e conferma i consensi obbligatori. Al termine della registrazione riceverai una conferma via email.
         </p>
 
         <div className="mt-10">

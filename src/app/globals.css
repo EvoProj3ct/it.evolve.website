@@ -4506,10 +4506,10 @@ body {
 
 @layer components {
   .form-control {
-    @apply h-14 w-full rounded-xl border-2 border-emerald-200 bg-white px-4 text-sm text-zinc-900 outline-none transition-colors placeholder:text-zinc-400 focus:border-emerald-500;
+    @apply h-14 w-full rounded-xl border-2 border-[#CDE8D1] bg-white px-4 text-sm text-[#0B3D2E] outline-none transition-colors placeholder:text-[#114928]/50 focus:border-[#72C94F];
   }
 
   .form-field-label {
-    @apply mb-2 flex min-h-11 items-end text-sm font-medium leading-snug text-zinc-700;
+    @apply mb-2 flex min-h-11 items-end text-sm font-medium leading-snug text-[#0B3D2E]/80;
   }
 }

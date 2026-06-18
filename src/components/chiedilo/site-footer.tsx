@@ -2,10 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-
-function openCookiePreferences() {
-  window.dispatchEvent(new Event("open-cookie-preferences"));
-}
+import { openCookiePreferences } from "@/components/legal/cookie-consent-provider";
 
 export default function SiteFooter() {
   return (
@@ -30,9 +27,9 @@ export default function SiteFooter() {
         <p className="text-base sm:text-lg">© 2026 Evolve Srls - Chiedilo all’IA</p>
         <p className="mt-2 text-sm text-zinc-400">Evento promosso da BCC e realizzato da Evolve.</p>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-4 text-sm text-zinc-300 sm:mt-5">
-          <Link href="/chiedilo-all-ia/privacy" className="underline-offset-2 transition-colors hover:text-amber-300 hover:underline">Privacy Policy</Link>
-          <Link href="/chiedilo-all-ia/cookie-policy" className="underline-offset-2 transition-colors hover:text-amber-300 hover:underline">Cookie Policy</Link>
-          <Link href="/chiedilo-all-ia/sicurezza" className="underline-offset-2 transition-colors hover:text-amber-300 hover:underline">Sicurezza</Link>
+          <Link href="/privacy" className="underline-offset-2 transition-colors hover:text-amber-300 hover:underline">Privacy Policy</Link>
+          <Link href="/cookie-policy" className="underline-offset-2 transition-colors hover:text-amber-300 hover:underline">Cookie Policy</Link>
+          <Link href="/sicurezza" className="underline-offset-2 transition-colors hover:text-amber-300 hover:underline">Sicurezza</Link>
           <button type="button" onClick={openCookiePreferences} className="underline-offset-2 transition-colors hover:text-amber-300 hover:underline" data-open-cookie-preferences="true">
             Preferenze cookie
           </button>

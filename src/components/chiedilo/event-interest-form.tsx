@@ -11,6 +11,7 @@ type FormState = {
   profiloProfessionale: "dipendente" | "libero-professionista" | "imprenditore" | "altro" | "";
   interesseEventiFormativi: "si" | "no" | "forse" | "";
   usoIaQuotidiano: "mai" | "qualche-volta" | "spesso" | "quotidianamente" | "";
+  contactReason: "aggiornamenti" | "materiali" | "prima-consulenza-gratuita" | "altro";
   kitPostEventoAccepted: boolean;
   trainingEventsAccepted: boolean;
   productsServicesAccepted: boolean;
@@ -31,7 +32,8 @@ const INITIAL_STATE: FormState = {
   profiloProfessionale: "",
   interesseEventiFormativi: "",
   usoIaQuotidiano: "",
-  kitPostEventoAccepted: true,
+  contactReason: "aggiornamenti",
+  kitPostEventoAccepted: false,
   trainingEventsAccepted: false,
   productsServicesAccepted: false,
   privacyAccepted: false,
@@ -40,6 +42,7 @@ const INITIAL_STATE: FormState = {
 };
 
 type EventInterestFormProps = {
+  eventId?: string;
   sourcePage?: string;
   sourceContext?: string;
   introText?: string;
@@ -47,10 +50,11 @@ type EventInterestFormProps = {
 };
 
 export default function EventInterestForm({
-  sourcePage = "chiedilo-all-ia",
-  sourceContext = "evento-bcc-paliano",
+  eventId = "evolve-generale",
+  sourcePage = "rimani-aggiornato",
+  sourceContext = "evolve-rimani-aggiornato",
   introText = "Inserisci nome, cognome ed email. Il numero di telefono è facoltativo e serve solo se preferisci lasciare anche un contatto diretto.",
-  submitLabel = "Salva contatto e consensi",
+  submitLabel = "Invia richiesta",
 }: EventInterestFormProps) {
   const [form, setForm] = useState<FormState>(INITIAL_STATE);
   const [touched, setTouched] = useState<Partial<Record<FieldKey, boolean>>>({});
@@ -125,7 +129,7 @@ export default function EventInterestForm({
   const onKitChange = (checked: boolean) => {
     onChange("kitPostEventoAccepted", checked);
     if (!checked) {
-      pushToast("warning", "Ok, non riceverai il kit pratico via email.");
+      pushToast("warning", "Ok, non riceverai i materiali aperti via email.");
     }
   };
 
@@ -166,7 +170,7 @@ export default function EventInterestForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          eventId: "chiedilo-all-ia",
+          eventId,
           sourcePage,
           sourceContext,
         }),
@@ -205,7 +209,8 @@ export default function EventInterestForm({
         onChange={(e) => onChange("website", e.target.value)}
       />
 
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-sm leading-relaxed text-zinc-700 sm:p-5">
+      <div className="relative overflow-hidden rounded-2xl border border-[#72C94F]/20 bg-[#FAFBFA] p-4 text-sm leading-relaxed text-[#114928] sm:p-5">
+        <span className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#72C94F] to-[#2C7A62]" aria-hidden />
         {introText}
       </div>
 
@@ -246,7 +251,7 @@ export default function EventInterestForm({
             <option value="forse">Forse, vorrei saperne di più</option>
           </select>
         </Field>
-        <Field label="Hai già usato strumenti IA nella tua operatività?">
+        <Field label="Utilizzi strumenti digitali innovativi nella tua operatività?">
           <select className="form-control" value={form.usoIaQuotidiano} onChange={(e) => onChange("usoIaQuotidiano", e.target.value as FormState["usoIaQuotidiano"])}>
             <option value="">Seleziona</option>
             <option value="mai">Mai</option>
@@ -257,24 +262,35 @@ export default function EventInterestForm({
         </Field>
       </div>
 
-      <div className="rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 via-white to-emerald-50 p-4 text-sm leading-relaxed text-zinc-700 shadow-sm sm:p-5">
-        <h2 className="text-base font-semibold text-zinc-900">Kit pratico post-evento incluso</h2>
+      <Field label="Perché ci stai lasciando i dati?" required>
+        <select className="form-control" value={form.contactReason} onChange={(e) => onChange("contactReason", e.target.value as FormState["contactReason"])} required>
+          <option value="aggiornamenti">Ricevere aggiornamenti sulle iniziative Evolve</option>
+          <option value="materiali">Ricevere materiali aperti o kit collegati ai progetti</option>
+          <option value="prima-consulenza-gratuita">Richiedere un primo confronto gratuito di 30 minuti</option>
+          <option value="altro">Altro interesse verso iniziative Evolve</option>
+        </select>
+      </Field>
+
+      <div className="relative overflow-hidden rounded-2xl border border-[#72C94F]/20 bg-[#FAFBFA] p-4 text-sm leading-relaxed text-[#114928] shadow-sm sm:p-5">
+        <span className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#72C94F] to-[#CDE8D1]" aria-hidden />
+        <h2 className="text-base font-semibold text-[#0B3D2E]">Materiali open source</h2>
         <label className="mt-4 grid grid-cols-[1rem_1fr] items-start gap-3"><input type="checkbox" checked={form.kitPostEventoAccepted} onChange={(e) => onKitChange(e.target.checked)} className="mt-1" />
-          <span>Desidero ricevere via email il kit pratico post-evento.</span>
+          <span>Desidero ricevere via email i materiali aperti e gli aggiornamenti su nuovi progetti ed eventi Evolve.</span>
         </label>
-        <p className="mt-2 pl-7 text-xs leading-relaxed text-zinc-600 sm:text-sm">
-          Include prompt, esempi ed esercizi in formato zip. Puoi togliere la spunta se non vuoi riceverlo.
+        <p className="mt-2 pl-7 text-xs leading-relaxed text-[#114928]/70 sm:text-sm">
+          Al termine di ogni ciclo di eventi, i materiali di studio vengono rilasciati come open source. Lascia la spunta per riceverli direttamente via email.
         </p>
       </div>
 
-      <div className="space-y-4 rounded-2xl border border-emerald-300 bg-gradient-to-br from-emerald-50 to-teal-50 p-4 text-sm leading-relaxed text-zinc-700 sm:p-5">
+      <div className="relative overflow-hidden rounded-2xl border border-[#2C7A62]/25 bg-[#FAFBFA] p-4 text-sm leading-relaxed text-[#114928] sm:p-5">
+        <span className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-[#2C7A62] to-[#578B60]" aria-hidden />
         <label className="grid grid-cols-[1rem_1fr] items-start gap-3"><input type="checkbox" checked={form.privacyAccepted} onChange={(e) => onChange("privacyAccepted", e.target.checked)} onBlur={() => { markTouched("privacyAccepted"); setFieldError("privacyAccepted", validateField("privacyAccepted", form.privacyAccepted)); }} className="mt-1" required />
-          <span>Ho letto la <a href="/chiedilo-all-ia/privacy" className="underline">Privacy Policy</a> e acconsento al trattamento dei dati per gestire richieste di aggiornamento, manifestazioni di interesse, iscrizioni agli eventi e comunicazioni organizzative collegate alle iniziative Evolve. (obbligatorio)</span>
+          <span>Ho letto la <a href="/privacy" className="underline">Privacy Policy</a> e acconsento al trattamento dei dati per gestire richieste di aggiornamento, manifestazioni di interesse, iscrizioni agli eventi e comunicazioni organizzative collegate alle iniziative Evolve. (obbligatorio)</span>
         </label>
         {touched.privacyAccepted && fieldErrors.privacyAccepted ? <p className="text-xs text-rose-600">{fieldErrors.privacyAccepted}</p> : null}
 
         <label className="grid grid-cols-[1rem_1fr] items-start gap-3"><input type="checkbox" checked={form.dataSecurityAccepted} onChange={(e) => onChange("dataSecurityAccepted", e.target.checked)} onBlur={() => { markTouched("dataSecurityAccepted"); setFieldError("dataSecurityAccepted", validateField("dataSecurityAccepted", form.dataSecurityAccepted)); }} className="mt-1" required />
-          <span>Acconsento alla conservazione sicura dei dati forniti per finalità organizzative legate all’iniziativa, secondo le misure descritte nella pagina <a href="/chiedilo-all-ia/sicurezza" className="underline">Sicurezza</a>. (obbligatorio)</span>
+          <span>Acconsento alla conservazione sicura dei dati forniti per finalità organizzative legate all'iniziativa, secondo le misure descritte nella pagina <a href="/sicurezza" className="underline">Sicurezza</a>. (obbligatorio)</span>
         </label>
         {touched.dataSecurityAccepted && fieldErrors.dataSecurityAccepted ? <p className="text-xs text-rose-600">{fieldErrors.dataSecurityAccepted}</p> : null}
 
@@ -288,12 +304,12 @@ export default function EventInterestForm({
       </div>
 
       {error ? <p className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p> : null}
-      {success ? <p className="rounded-lg bg-emerald-50 p-3 text-sm text-emerald-700">Contatto registrato correttamente. Grazie per aver indicato le tue preferenze.</p> : null}
+      {success ? <p className="rounded-lg bg-[#ECF3E9] p-3 text-sm text-[#0B3D2E]">Contatto registrato correttamente. Grazie per aver indicato le tue preferenze.</p> : null}
 
       <button
         type="submit"
         disabled={!isValid || submitting}
-        className="w-full rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-amber-500 px-5 py-3 text-base font-semibold text-white shadow-xl transition-all hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-60 sm:px-6 sm:py-4 sm:text-lg"
+        className="group relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-[#72C94F] via-[#578B60] to-[#2C7A62] px-5 py-3 text-base font-semibold text-white shadow-xl shadow-[#0B3D2E]/20 transition-all hover:scale-[1.01] hover:shadow-[#72C94F]/30 disabled:cursor-not-allowed disabled:opacity-60 sm:px-6 sm:py-4 sm:text-lg"
       >
         {submitting ? "Invio in corso..." : submitLabel}
       </button>

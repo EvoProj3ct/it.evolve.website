@@ -72,6 +72,7 @@ export async function POST(request: Request) {
       profiloProfessionale: input.profiloProfessionale || null,
       interesseEventiFormativi: input.interesseEventiFormativi || null,
       usoIaQuotidiano: input.usoIaQuotidiano || null,
+      contactReason: input.contactReason,
       kitPostEventoAccepted: input.kitPostEventoAccepted ?? false,
       sourcePage: input.sourcePage,
       sourceContext: input.sourceContext || null,

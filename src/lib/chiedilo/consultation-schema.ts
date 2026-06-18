@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const consultationRequestSchema = z.object({
-  eventId: z.literal("chiedilo-all-ia"),
+  eventId: z.string().trim().min(1).max(80).default("evolve-generale"),
   nome: z.string().trim().min(2).max(80),
   cognome: z.string().trim().min(2).max(80),
   email: z.string().trim().email().max(160),
@@ -9,7 +9,8 @@ export const consultationRequestSchema = z.object({
   profiloProfessionale: z.enum(["dipendente", "libero-professionista", "imprenditore", "altro"]).optional().or(z.literal("")),
   interesseEventiFormativi: z.enum(["si", "no", "forse"]).optional().or(z.literal("")),
   usoIaQuotidiano: z.enum(["mai", "qualche-volta", "spesso", "quotidianamente"]).optional().or(z.literal("")),
-  kitPostEventoAccepted: z.boolean().optional().default(true),
+  contactReason: z.enum(["aggiornamenti", "materiali", "prima-consulenza-gratuita", "altro"]).optional().default("aggiornamenti"),
+  kitPostEventoAccepted: z.boolean().optional().default(false),
   trainingEventsAccepted: z.boolean().optional().default(false),
   productsServicesAccepted: z.boolean().optional().default(false),
   privacyAccepted: z.literal(true),

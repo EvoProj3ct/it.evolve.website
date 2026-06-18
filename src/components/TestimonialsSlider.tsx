@@ -22,6 +22,26 @@ const ACCENT_VAR: Record<NonNullable<Testimonial["accent"]>, string> = {
    - typewriter per-char + micro “electric glow”
    - re-trigger via triggerKey (use active.id)
 ------------------------------------------- */
+/* Seeded PRNG (mulberry32) — deterministico tra server e client */
+function hashCode(s: string): number {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) {
+        h = ((h << 5) - h) + s.charCodeAt(i);
+        h = h & h;
+    }
+    return Math.abs(h);
+}
+
+function mulberry32(seed: number): () => number {
+    let s = seed | 0;
+    return () => {
+        s = (s + 0x6D2B79F5) | 0;
+        let t = Math.imul(s ^ (s >>> 15), 1 | s);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+}
+
 function TechType({
                       text,
                       triggerKey,
@@ -37,8 +57,25 @@ function TechType({
 }) {
     const tokens = useMemo(() => text.split(/(\s+)/), [text]);
 
-    // progressivo vero (non esplode)
-    let charIndex = 0;
+    const charDelays = useMemo(() => {
+        const seed = typeof triggerKey === "string"
+            ? hashCode(triggerKey)
+            : Math.abs(triggerKey);
+        const rng = mulberry32(seed + text.length + stepMs + jitterMs);
+        const delays: number[] = [];
+        let ci = 0;
+        for (const tok of tokens) {
+            if (!/^\s+$/.test(tok)) {
+                for (const _ch of Array.from(tok)) {
+                    delays.push(ci * stepMs + rng() * jitterMs);
+                    ci++;
+                }
+            }
+        }
+        return delays;
+    }, [tokens, triggerKey, stepMs, jitterMs, text]);
+
+    let delayIdx = 0;
 
     return (
         <motion.span
@@ -54,7 +91,6 @@ function TechType({
             <span className="techType-scan" />
 
             {tokens.map((tok, tIdx) => {
-                // whitespace: render immediato (e mantiene wrap)
                 if (/^\s+$/.test(tok)) {
                     return (
                         <span key={`ws-${tIdx}`} className="techType-ws">
@@ -63,7 +99,6 @@ function TechType({
                     );
                 }
 
-                // parola: NO wrap dentro la parola
                 const chars = Array.from(tok);
 
                 return (
@@ -73,8 +108,8 @@ function TechType({
                         style={{ display: "inline-block", whiteSpace: "nowrap" }}
                     >
             {chars.map((ch, cIdx) => {
-                const delayMs = charIndex * stepMs + Math.random() * jitterMs;
-                charIndex += 1;
+                const delayMs = charDelays[delayIdx];
+                delayIdx += 1;
 
                 return (
                     <span
