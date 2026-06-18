@@ -1,0 +1,109 @@
+{
+  "schema": {
+    "name": "SMART Case Schema",
+    "version": "v0.3.0",
+    "core_version": "v0.3.0",
+    "language": "it"
+  },
+  "project": {
+    "project_id": "chiedilo-all-ia-bcc-29f8e699",
+    "project_title": "Chiedilo-all-ia_BCC",
+    "project_slug": "chiedilo-all-ia-bcc",
+    "created_at": "2026-06-18T07:44:47.874Z",
+    "case_id": "case-chiedilo-all-ia-bcc-29f8e699",
+    "case_version": "v0.3.0"
+  },
+  "initiative": {
+    "initiative_type": "evento",
+    "initiative_goal": "aggiornare",
+    "context_domain": [
+      "intelligenza_artificiale",
+      "produttivita_personale",
+      "strumenti_no_code",
+      "trasformazione_digitale"
+    ],
+    "beneficiary_context": "misto",
+    "delivery_mode": "in_presenza"
+  },
+  "audience": {
+    "primary_audience_type": "misto",
+    "audience_experience_level": "eterogeneo",
+    "audience_digital_maturity": "bassa",
+    "audience_size": "31_60",
+    "audience_primary_need": [
+      "capire_fondamenti",
+      "capire_limiti_rischi",
+      "migliorare_operativita",
+      "vedere_casi_uso"
+    ],
+    "audience_resistance_profile": [
+      "scetticismo",
+      "timore_tecnico"
+    ]
+  },
+  "design": {
+    "duration_format": "media_60_120_min",
+    "days_count": "1",
+    "interaction_level": "basso",
+    "didactic_style": "pratico_guidato",
+    "narrative_direction": "dai_fondamenti_alla_pratica",
+    "practice_presence": "esempi_guidati",
+    "evaluation_mode": "domande_risposte"
+  },
+  "content": {
+    "content_depth": "base_operativo",
+    "macro_topics": [
+      "casi_uso",
+      "fondamenti",
+      "strumenti"
+    ],
+    "content_priority": "utilita_pratica",
+    "example_intensity": "bassa",
+    "tool_focus": "centrale",
+    "tool_categories": [
+      "automazione",
+      "fogli_calcolo",
+      "llm_chat",
+      "no_code",
+      "organizzazione_contenuti",
+      "presentazioni"
+    ],
+    "responsible_ai_emphasis": "media"
+  },
+  "constraints": {
+    "tone_profile": [
+      "accessibile",
+      "chiaro",
+      "ispirazionale"
+    ],
+    "complexity_limit": "media",
+    "policy_profile": [
+      "centralita_giudizio_umano",
+      "trasparenza_su_limiti"
+    ],
+    "accessibility_profile": [
+      "esempi_concreti",
+      "passaggi_graduali",
+      "riduzione_jargon",
+      "ritmo_moderato"
+    ],
+    "excluded_elements": [
+      "contenuti_astratti",
+      "eccesso_tecnico",
+      "tool_troppo_specialistici"
+    ]
+  },
+  "generation_targets": {
+    "primary_output": "cartella_master",
+    "secondary_outputs": [
+      "canva_brief",
+      "checklist_docente",
+      "followup_brief",
+      "locandina_brief",
+      "mail_brief",
+      "pagina_evento_brief",
+      "slide_brief"
+    ],
+    "material_generation_scope": "cartella_master_e_brief_completi"
+  }
+}

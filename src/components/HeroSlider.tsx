@@ -63,6 +63,8 @@ const IMAGE_URLS = SLIDES.map((s) => s.imageUrl);
 const _preloadCache = new Map<string, Promise<void>>();
 
 function preloadAndDecode(src: string) {
+    if (typeof window === "undefined") return Promise.resolve();
+
     if (_preloadCache.has(src)) return _preloadCache.get(src)!;
 
     const p = new Promise<void>((resolve) => {

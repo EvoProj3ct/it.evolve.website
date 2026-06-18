@@ -11,11 +11,14 @@
     "@vercel/kv": "^3.0.0",
     "ctx": "^0.3.0",
     "framer-motion": "^12.29.2",
+    "lucide-react": "^1.21.0",
+    "mongodb": "^6.21.0",
     "motion": "^12.29.2",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-icons": "^5.5.0"
+    "react-icons": "^5.5.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -1,0 +1,12 @@
+{
+  "phase": "fase-1",
+  "status": "completed",
+  "core_version": "v0.3.0",
+  "case_schema_version": "v0.3.0",
+  "case_path": "fase-1/case.json",
+  "generated_at": "2026-06-18T07:44:47.874Z",
+  "next_phase": "fase-2",
+  "next_phase_requires": [
+    "validated fase-1/case.json"
+  ]
+}
