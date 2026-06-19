@@ -55,7 +55,11 @@ Durante l'incontro parleremo di:
 
 Il programma prevede anche un momento finale di confronto informale con apericena.
 
-A guidare l'evento ci saranno Luca De Angelis come presentatore e i relatori Luca Marinelli, Emanuele Ienna e Gian Marco Marinelli.
+A guidare l'evento:
+- Luca De Angelis \u2014 presentatore
+- Luca Marinelli \u2014 relatore
+- Emanuele Ienna \u2014 relatore
+- Gian Marco Marinelli \u2014 relatore
 
 Speaker di eccezione:
 - Francesca Calamari, assessore turismo, politiche giovanili e pari opportunit\u00e0 del comune di Paliano
@@ -191,9 +195,12 @@ function buildHtml({ nome }: EventRegistrationConfirmationInput) {
               <h2 style="margin:0 0 12px; color:#081b33; font-size:20px;">
                 Chi guider\u00e0 l\u2019incontro
               </h2>
-              <p style="margin:0; color:#415466; font-size:15px; line-height:1.7;">
-                Presenta <strong>Luca De Angelis</strong>. Intervengono <strong>Luca Marinelli</strong>, <strong>Emanuele Ienna</strong> e <strong>Gian Marco Marinelli</strong>.
-              </p>
+              <ul style="margin:0; padding-left:20px; color:#415466; font-size:15px; line-height:1.8;">
+                <li><strong>Luca De Angelis</strong> \u2014 presentatore</li>
+                <li><strong>Luca Marinelli</strong> \u2014 relatore</li>
+                <li><strong>Emanuele Ienna</strong> \u2014 relatore</li>
+                <li><strong>Gian Marco Marinelli</strong> \u2014 relatore</li>
+              </ul>
             </td>
           </tr>
 
