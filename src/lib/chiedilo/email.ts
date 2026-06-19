@@ -56,10 +56,10 @@ Durante l'incontro parleremo di:
 Il programma prevede anche un momento finale di confronto informale con apericena.
 
 A guidare l'evento:
-- Luca De Angelis \u2014 presentatore
-- Luca Marinelli \u2014 relatore
-- Emanuele Ienna \u2014 relatore
-- Gian Marco Marinelli \u2014 relatore
+- Luca De Angelis \u2014 presentatore, Presidente Evolve Srls e Modellatore 3D
+- Luca Marinelli \u2014 relatore, Software Developer AI
+- Emanuele Ienna \u2014 relatore, Divulgatore e Sviluppatore AI
+- Gian Marco Marinelli \u2014 relatore, Consulente Informatico
 
 Speaker di eccezione:
 - Francesca Calamari, assessore turismo, politiche giovanili e pari opportunit\u00e0 del comune di Paliano
@@ -196,10 +196,10 @@ function buildHtml({ nome }: EventRegistrationConfirmationInput) {
                 Chi guider\u00e0 l\u2019incontro
               </h2>
               <ul style="margin:0; padding-left:20px; color:#415466; font-size:15px; line-height:1.8;">
-                <li><strong>Luca De Angelis</strong> \u2014 presentatore</li>
-                <li><strong>Luca Marinelli</strong> \u2014 relatore</li>
-                <li><strong>Emanuele Ienna</strong> \u2014 relatore</li>
-                <li><strong>Gian Marco Marinelli</strong> \u2014 relatore</li>
+                <li><strong>Luca De Angelis</strong> \u2014 presentatore, divulgatore IA</li>
+                <li><strong>Luca Marinelli</strong> \u2014 relatore, sviluppatore AI</li>
+                <li><strong>Emanuele Ienna</strong> \u2014 relatore, ingegnere AI</li>
+                <li><strong>Gian Marco Marinelli</strong> \u2014 relatore, consulente AI</li>
               </ul>
             </td>
           </tr>
