@@ -57,6 +57,10 @@ Il programma prevede anche un momento finale di confronto informale con apericen
 
 A guidare l'evento ci saranno Luca De Angelis come presentatore e i relatori Luca Marinelli, Emanuele Ienna e Gian Marco Marinelli.
 
+Speaker di eccezione:
+- Francesca Calamari, assessore turismo, politiche giovanili e pari opportunit\u00e0 del comune di Paliano
+- Roberto Romani, responsabile sviluppo e marketing BCC Paliano
+
 Luogo:
 Piazza Marcantonio Colonna, Paliano (FR)
 
@@ -67,7 +71,7 @@ In allegato trovi il cronoprogramma completo dell'evento.
 
 Per ulteriori informazioni:
 Email: infoevolvecompany@gmail.com
-Sito: evolvecompany.tech
+Sito: evolvecompany.tech/chiedilo-all-ia
 
 Ti aspettiamo a Paliano per un pomeriggio di confronto, domande e sperimentazione concreta sull'IA.
 
@@ -193,6 +197,19 @@ function buildHtml({ nome }: EventRegistrationConfirmationInput) {
             </td>
           </tr>
 
+          <!-- Special speakers -->
+          <tr>
+            <td style="padding:0 28px 28px;">
+              <h2 style="margin:0 0 12px; color:#081b33; font-size:20px;">
+                Speaker di eccezione
+              </h2>
+              <p style="margin:0; color:#415466; font-size:15px; line-height:1.7;">
+                <strong>Francesca Calamari</strong> \u2014 assessore turismo, politiche giovanili e pari opportunit\u00e0 del comune di Paliano<br />
+                <strong>Roberto Romani</strong> \u2014 responsabile sviluppo e marketing BCC Paliano
+              </p>
+            </td>
+          </tr>
+
           <!-- Attachment note -->
           <tr>
             <td style="padding:0 28px 28px;">
@@ -216,7 +233,7 @@ function buildHtml({ nome }: EventRegistrationConfirmationInput) {
               </p>
               <p style="margin:0; color:#415466; font-size:14px; line-height:1.7;">
                 Email: <a href="mailto:infoevolvecompany@gmail.com" style="color:#16877f;">infoevolvecompany@gmail.com</a><br />
-                Sito: <a href="https://evolvecompany.tech" style="color:#16877f;">evolvecompany.tech</a>
+                Sito: <a href="https://evolvecompany.tech/chiedilo-all-ia" style="color:#16877f;">evolvecompany.tech/chiedilo-all-ia</a>
               </p>
               <p style="margin:20px 0 0; color:#415466; font-size:15px; line-height:1.7;">
                 Ti aspettiamo a Paliano per un pomeriggio di confronto, domande e sperimentazione concreta sull\u2019IA.
