@@ -135,6 +135,13 @@ export default function Home() {
               >
                 Vedi il programma
               </a>
+              <a
+                href="/chiedilo-all-ia/cronoprogramma-evento-chiedilo-all-ia-paliano.pdf"
+                download
+                className="rounded-2xl border-2 border-teal-500 bg-white/70 px-6 py-3 text-center text-base text-teal-700 shadow-lg transition-all hover:scale-105 hover:bg-teal-50 hover:shadow-teal-500/20 sm:px-8 sm:py-4 sm:text-lg"
+              >
+                Scarica il cronoprogramma
+              </a>
             </div>
           </div>
         </div>
