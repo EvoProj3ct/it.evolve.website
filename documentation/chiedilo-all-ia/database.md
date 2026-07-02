@@ -42,20 +42,6 @@ Indici consigliati:
 
 ## Esportazione dati
 
-Uno script CLI permette di esportare le registrazioni senza esporre API pubbliche:
+Gli export operativi sono gestiti da script CLI locali che generano JSON in `script-output/`, senza esporre API pubbliche e senza modificare dati MongoDB.
 
-```bash
-# Lista partecipanti (nome, cognome, email)
-node --env-file=.env.local scripts/event-registrations-export.mjs list
-
-# Solo email (utile per marketing)
-node --env-file=.env.local scripts/event-registrations-export.mjs emails
-
-# Formato CSV (nome,cognome,email)
-node --env-file=.env.local scripts/event-registrations-export.mjs csv
-
-# Tutti i formati in sequenza
-node --env-file=.env.local scripts/event-registrations-export.mjs
-```
-
-Lo script si connette a MongoDB usando `MONGODB_URI` dall'env, filtra per `eventId: "chiedilo-all-ia-bcc-paliano"` e ordina per `createdAt` ascendente.
+Vedi `documentation/chiedilo-all-ia/local-data-export-scripts.md` per elenco script, esempi `node --env-file=.env.local` e comandi npm.

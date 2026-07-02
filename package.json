@@ -5,7 +5,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "report:event:subscribers": "node --env-file=.env.local scripts/script-how-many-subscribers.mjs",
+    "report:event:emails": "node --env-file=.env.local scripts/script-email-subscribed.mjs",
+    "report:opensource:emails": "node --env-file=.env.local scripts/script-email-send-opensource-content.mjs",
+    "report:marketing:emails": "node --env-file=.env.local scripts/script-email-send-marketing-content.mjs"
   },
   "dependencies": {
     "@vercel/kv": "^3.0.0",
