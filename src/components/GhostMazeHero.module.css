@@ -1,0 +1,188 @@
+.hero {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  background: #fcfdfb;
+  color: #101914;
+  isolation: isolate;
+}
+
+.scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.ghostLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.copyWash {
+  position: absolute;
+  z-index: 1;
+  top: 145px;
+  left: 50%;
+  width: min(760px, 100vw);
+  height: 430px;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, #fcfdfb 0%, rgba(252, 253, 251, 0.98) 54%, rgba(252, 253, 251, 0.72) 78%, rgba(252, 253, 251, 0) 100%);
+  pointer-events: none;
+}
+
+.mazeWalls line {
+  stroke: #72c94f;
+  stroke-width: 2;
+  stroke-linecap: square;
+  opacity: 0.82;
+  shape-rendering: crispEdges;
+}
+
+.ghostShape {
+  shape-rendering: crispEdges;
+}
+
+.copy {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100% - 40px, 1060px);
+  margin: 0 auto;
+  padding: clamp(132px, 22vh, 205px) 0 138px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  color: #42584a;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  line-height: 1.5;
+}
+
+.title {
+  margin: 32px 0 0;
+  font-family: var(--fonts-body), Arial, sans-serif;
+  font-size: clamp(56px, 6.7vw, 92px);
+  font-weight: 400;
+  letter-spacing: -0.072em;
+  line-height: 1.06;
+  text-wrap: balance;
+}
+
+.description {
+  max-width: 580px;
+  margin: 30px 0 0;
+  color: #45534a;
+  font-family: var(--fonts-body), Arial, sans-serif;
+  font-size: clamp(16px, 1.55vw, 19px);
+  line-height: 1.66;
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  margin-top: 32px;
+  pointer-events: auto;
+}
+
+.primaryLink,
+.secondaryLink {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 260ms ease, color 260ms ease;
+}
+
+.primaryLink {
+  gap: 24px;
+  padding: 0 19px;
+  border: 1px solid #101914;
+  border-radius: 7px;
+  background: #101914;
+  color: #fff;
+}
+
+.primaryLink::after,
+.secondaryLink::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 64px;
+  height: 1px;
+  background: #72c94f;
+  transform: translateX(-50%) scaleX(0);
+  transition: transform 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.primaryLink:hover {
+  background: #1a2a1e;
+}
+
+.primaryLink:hover::after,
+.secondaryLink:hover::after { transform: translateX(-50%) scaleX(1); }
+.primaryArrow {
+  flex: none;
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.primaryLink:hover .primaryArrow { transform: translate(2px, -2px); }
+
+.secondaryLink {
+  gap: 12px;
+  padding: 0 2px;
+  color: #1a3425;
+}
+
+.secondaryArrow {
+  flex: none;
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.secondaryLink:hover .secondaryArrow { transform: translateX(3px); }
+
+.primaryLink:focus-visible,
+.secondaryLink:focus-visible {
+  outline: 3px solid #72c94f;
+  outline-offset: 4px;
+}
+
+@media (max-width: 640px) {
+  .hero { min-height: 780px; min-height: max(780px, 100svh); }
+  .copy {
+    width: min(100% - 36px, 540px);
+    padding-top: clamp(138px, 19svh, 176px);
+    padding-bottom: 170px;
+  }
+  .copyWash { top: 145px; width: min(530px, 120vw); height: 430px; }
+  .eyebrow { max-width: 300px; font-size: 9px; letter-spacing: 0.12em; }
+  .title { margin-top: 30px; font-size: clamp(44px, 11.2vw, 62px); letter-spacing: -0.065em; }
+  .description { max-width: 33ch; margin-top: 26px; font-size: 15px; line-height: 1.65; }
+  .actions { flex-direction: column; gap: 6px; margin-top: 27px; }
+  .primaryLink { min-width: 186px; }
+  .secondaryLink { font-size: 13px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryLink, .secondaryLink, .primaryLink::after, .primaryArrow, .secondaryLink::after, .secondaryArrow { transition: none; }
+}

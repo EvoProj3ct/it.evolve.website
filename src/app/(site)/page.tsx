@@ -1,4 +1,4 @@
-import { HeroSlider } from "@/components/HeroSlider";
+import { GhostMazeHero } from "@/components/GhostMazeHero";
 import { ServicesSection } from "@/components/ServicesSection";
 import { AboutSplit } from "@/components/AboutSplit";
 import { PortfolioCollage } from "@/components/PortfolioCollage";
@@ -11,7 +11,7 @@ import { TeamStrip } from "@/components/TeamStrip";
 export default function Page() {
   return (
     <main>
-      <HeroSlider />
+      <GhostMazeHero />
       <ServicesSection />
       <AboutSplit />
       <PortfolioCollage />

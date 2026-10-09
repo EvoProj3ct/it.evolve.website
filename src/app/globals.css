@@ -4041,6 +4041,19 @@ body {
   .navChatBtn:hover .navChatIcon {
     animation-play-state: paused;
   }
+
+  .homeNavbar .navChatBtn {
+    background: #edf5e9;
+    border-color: #e1ecdd;
+  }
+
+  .homeNavbar .navChatBtn:hover {
+    background: #dff1d7;
+  }
+
+  .homeNavbar .navChatIcon {
+    animation: none;
+  }
 }
 
 @layer components {

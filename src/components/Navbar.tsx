@@ -1,280 +1,330 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { SupportChat } from "@/components/SupportChat"; // ✅ aggiusta path se serve
+import { SupportChat } from "@/components/SupportChat";
+import styles from "./Navbar.module.css";
 
-const NAV_ITEMS = [
-    { label: "Home", href: "/" },
-    { label: "Chi Siamo", href: "/about" },
-    { label: "Servizi", href: "/portfolio" },
-    { label: "Contatti", href: "/contact" },
-];
+type MenuKey = "services" | "events" | "utils";
+const NAV_ITEMS = ["services", "events", "about", "utils"] as const;
+type Menu = {
+  label: string;
+  heading: string;
+  overviewLabel: string;
+  overviewHref: string;
+  items: { label: string; href: string }[];
+};
+
+const MENUS: Record<MenuKey, Menu> = {
+  services: {
+    label: "Servizi",
+    heading: "Rivolgiti a chi ha lavorato nel settore IA fin dalla sua nascita.",
+    overviewLabel: "portfolio",
+    overviewHref: "/portfolio",
+    items: [
+      { label: "Software per il mondo finestra", href: "/portfolio" },
+      { label: "Sviluppo sartoriale", href: "/portfolio" },
+      { label: "Consulenza sartoriale", href: "/about" },
+      { label: "Progettazione Agenti IA", href: "/portfolio" },
+      { label: "Bandi", href: "/contact" },
+    ],
+  },
+  events: {
+    label: "Eventi",
+    heading: "La tecnologia è un bene da condividere.",
+    overviewLabel: "Rimani aggiornato",
+    overviewHref: "/rimani-aggiornato",
+    items: [
+      { label: "Seminari", href: "/rimani-aggiornato" },
+      { label: "Chiedilo all'IA", href: "/chiedilo-all-ia" },
+      { label: "Festival IA di Palestrina", href: "/rimani-aggiornato" },
+    ],
+  },
+  utils: {
+    label: "Utils",
+    heading: "Risorse da tenere a portata di mano.",
+    overviewLabel: "Tutte le risorse",
+    overviewHref: "/utils",
+    items: [
+      { label: "Brochure", href: "/utils#brochure" },
+      { label: "Corsi", href: "/utils#corsi" },
+      { label: "PDF utili", href: "/utils#pdf-utili" },
+    ],
+  },
+};
+
+function Chevron({ open }: { open: boolean }) {
+  return (
+    <svg className={`${styles.chevron} ${open ? styles.chevronOpen : ""}`} aria-hidden="true" width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="m3.25 5.25 3.75 3.5 3.75-3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ChatIcon() {
+  return (
+    <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none">
+      <path d="M7 18 4 21V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H7Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="M8 8h8m-8 4h6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 export function Navbar() {
-    // ✅ show/hide on scroll
-    const [hidden, setHidden] = useState(false);
-    const lastY = useRef(0);
-    const ticking = useRef(false);
+  const pathname = usePathname();
+  const reduceMotion = useReducedMotion();
+  const headerRef = useRef<HTMLElement>(null);
+  const menuPinnedRef = useRef(false);
+  const restoreFocusRef = useRef<HTMLButtonElement | null>(null);
+  const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<MenuKey | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileSection, setMobileSection] = useState<MenuKey | null>(null);
+  const [chatOpen, setChatOpen] = useState(false);
 
-    // ✅ mobile menu
-    const [mobileOpen, setMobileOpen] = useState(false);
-    const closeMobile = () => setMobileOpen(false);
-    const openMobile = () => setMobileOpen(true);
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    const onScroll = () => {
+      const scrollY = window.scrollY;
+      const distance = scrollY - lastScrollY;
+      setScrolled(scrollY > 24);
 
-    // ✅ chat
-    const [chatOpen, setChatOpen] = useState(false);
-    const closeChat = () => setChatOpen(false);
-    const openChat = () => setChatOpen(true);
+      if (scrollY <= 24) setHidden(false);
+      if (Math.abs(distance) < 6) return;
 
-    // ---- scroll show/hide
-    useEffect(() => {
-        lastY.current = window.scrollY;
+      setHidden(scrollY > 100 && distance > 0);
+      menuPinnedRef.current = false;
+      setActiveMenu(null);
+      lastScrollY = scrollY;
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-        const onScroll = () => {
-            if (ticking.current) return;
-            ticking.current = true;
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        const openTrigger = headerRef.current?.querySelector<HTMLButtonElement>('[aria-controls^="nav-panel-"][aria-expanded="true"]');
+        if (openTrigger) {
+          event.preventDefault();
+          restoreFocusRef.current = openTrigger;
+        }
+        menuPinnedRef.current = false;
+        setActiveMenu(null);
+        setMobileOpen(false);
+      }
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.target instanceof Node && !headerRef.current?.contains(event.target)) {
+        menuPinnedRef.current = false;
+        setActiveMenu(null);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("pointerdown", onPointerDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("pointerdown", onPointerDown);
+    };
+  }, []);
 
-            requestAnimationFrame(() => {
-                const y = window.scrollY;
-                const delta = y - lastY.current;
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previous; };
+  }, [mobileOpen]);
 
-                const TOP_LOCK = 24;
-                const HIDE_AFTER = 120;
-                const DELTA_TRIGGER = 8;
+  const closeNavigation = () => {
+    menuPinnedRef.current = false;
+    setActiveMenu(null);
+    setMobileOpen(false);
+    setMobileSection(null);
+  };
+  const openChat = () => {
+    closeNavigation();
+    setChatOpen(true);
+  };
+  const menuTransition = { duration: reduceMotion ? 0 : 0.34, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] };
 
-                if (y < TOP_LOCK) {
-                    setHidden(false);
-                } else if (y > HIDE_AFTER) {
-                    if (delta > DELTA_TRIGGER) {
-                        setHidden(true);
-                        if (mobileOpen) closeMobile();
-                    } else if (delta < -DELTA_TRIGGER) {
-                        setHidden(false);
-                    }
-                }
+  return (
+    <>
+      <header
+        ref={headerRef}
+        className={`${styles.header} ${scrolled ? styles.headerScrolled : ""} ${hidden ? styles.headerHidden : ""} ${activeMenu || mobileOpen ? styles.headerMenuOpen : ""} ${pathname === "/" && !scrolled && !activeMenu && !mobileOpen ? styles.headerOverHero : ""}`}
+        data-evolve-nav=""
+        data-menu-open={Boolean(activeMenu || mobileOpen)}
+        onMouseLeave={() => { if (!menuPinnedRef.current) setActiveMenu(null); }}
+      >
+        <div className={styles.bar}>
+          <Link href="/" className={styles.logoLink} onClick={closeNavigation} aria-label="Evolve, homepage">
+            <Image src="/logoEvolve.png" alt="Evolve" width={64} height={51} className={styles.logo} priority />
+          </Link>
 
-                lastY.current = y;
-                ticking.current = false;
-            });
-        };
-
-        window.addEventListener("scroll", onScroll, { passive: true });
-        return () => window.removeEventListener("scroll", onScroll);
-    }, [mobileOpen]);
-
-    // ✅ lock scroll + ESC close quando menu mobile aperto
-    useEffect(() => {
-        if (!mobileOpen) return;
-
-        const prevOverflow = document.body.style.overflow;
-        document.body.style.overflow = "hidden";
-
-        const onKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "Escape") closeMobile();
-        };
-        window.addEventListener("keydown", onKeyDown);
-
-        return () => {
-            document.body.style.overflow = prevOverflow;
-            window.removeEventListener("keydown", onKeyDown);
-        };
-    }, [mobileOpen]);
-
-    return (
-        <>
-            <motion.header
-                className="fixed top-0 left-0 right-0 z-50"
-                initial={false}
-                animate={hidden ? "hidden" : "shown"}
-                variants={{
-                    shown: { y: 0, opacity: 1 },
-                    hidden: { y: -18, opacity: 0 },
+          <nav className={styles.desktopNav} aria-label="Navigazione principale">
+            <Link href="/" className={`${styles.navLink} ${pathname === "/" && !activeMenu ? styles.currentLink : ""}`} onMouseEnter={() => { menuPinnedRef.current = false; setActiveMenu(null); }} onClick={closeNavigation}>Home</Link>
+            {NAV_ITEMS.map((key) => key === "about" ? (
+              <Link key={key} href="/about" className={`${styles.navLink} ${pathname === "/about" && !activeMenu ? styles.currentLink : ""}`} onMouseEnter={() => { menuPinnedRef.current = false; setActiveMenu(null); }} onClick={closeNavigation}>Chi siamo</Link>
+            ) : (
+              <button
+                key={key}
+                type="button"
+                className={`${styles.navLink} ${styles.navTrigger} ${activeMenu === key ? styles.activeTrigger : ""}`}
+                aria-expanded={activeMenu === key}
+                aria-controls={`nav-panel-${key}`}
+                onMouseEnter={() => { menuPinnedRef.current = false; setActiveMenu(key); }}
+                onKeyDown={(event) => {
+                  if (event.key !== "ArrowDown") return;
+                  event.preventDefault();
+                  menuPinnedRef.current = true;
+                  setActiveMenu(key);
+                  window.requestAnimationFrame(() => {
+                    document.getElementById(`nav-panel-${key}`)?.querySelector<HTMLAnchorElement>("a")?.focus();
+                  });
                 }}
-                transition={{ duration: 0.22, ease: "easeOut" }}
+                onClick={() => {
+                  if (menuPinnedRef.current && activeMenu === key) {
+                    menuPinnedRef.current = false;
+                    setActiveMenu(null);
+                  } else {
+                    menuPinnedRef.current = true;
+                    setActiveMenu(key);
+                  }
+                }}
+              >
+                {MENUS[key].label}<Chevron open={activeMenu === key} />
+              </button>
+            ))}
+            <Link href="/contact" className={`${styles.navLink} ${pathname === "/contact" && !activeMenu ? styles.currentLink : ""}`} onMouseEnter={() => { menuPinnedRef.current = false; setActiveMenu(null); }} onClick={closeNavigation}>Contatti</Link>
+          </nav>
+
+          <div className={styles.actions}>
+            <button type="button" className={styles.chatButton} onClick={openChat} aria-label="Chiedilo a Leo">
+              <ChatIcon /><span>Chiedilo a Leo</span>
+            </button>
+            <button
+              type="button"
+              className={`${styles.mobileToggle} ${mobileOpen ? styles.mobileToggleOpen : ""}`}
+              onClick={() => { setActiveMenu(null); setMobileOpen(!mobileOpen); }}
+              aria-label={mobileOpen ? "Chiudi menu" : "Apri menu"}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-site-nav"
             >
-                <div className="bg-[#72C94F]/50 backdrop-blur-md ring-1 ring-black/5 relative">
-                    {/* ✅ Logo: sempre a sinistra, con più margine */}
-                    <div className="absolute left-6 sm:left-10 top-0 h-full flex items-center z-10">
-                        <Link href="/" onClick={closeMobile} className="flex items-center">
-              <span className="inline-flex h-9 w-9 md:h-10 md:w-10 shrink-0 items-center justify-center">
-                <Image
-                    src="/logoEvolve.png"
-                    alt="Evolve logo"
-                    width={40}
-                    height={40}
-                    className="h-full w-full object-contain"
-                    priority
-                />
-              </span>
-                        </Link>
-                    </div>
+              <span /><span />
+            </button>
+          </div>
+        </div>
 
-                    {/* ✅ CHAT ICON: SOLO DESKTOP, assoluta estrema destra (non sposta nulla) */}
-                    <div className="hidden md:flex absolute right-6 sm:right-10 top-0 h-full items-center z-20">
-                        <button
-                            type="button"
-                            onClick={openChat}
-                            className="navChatBtn"
-                            aria-label="Apri chat assistenza"
-                        >
-              <span className="navChatIcon" aria-hidden="true">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path
-                      d="M7 18l-3 3V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H7z"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinejoin="round"
-                  />
-                  <path
-                      d="M8 8h8M8 12h6"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                  />
-                </svg>
-              </span>
-                        </button>
-                    </div>
-
-                    {/* ✅ Nav: padding-left per il logo assoluto + padding-right per chat assoluta (desktop only) */}
-                    <nav className="navbarShell navbarShellRight mx-auto flex max-w-6xl items-center px-6 py-5">
-                        {/* ✅ BRAND: testo statico */}
-                        <Link
-                            href="/"
-                            onClick={closeMobile}
-                            className="navbarBrand hidden md:inline-flex text-xl tracking-wide text-[#0b1118] transition-colors"
-                        >
-              <span className="font-display font-semibold whitespace-nowrap">
-                Evolve
-              </span>
-                        </Link>
-
-                        {/* DESKTOP NAV */}
-                        <div className="hidden md:flex items-center gap-8 text-sm text-[#0b1118] ml-auto">
-                            {NAV_ITEMS.map((it) => (
-                                <Link key={it.href} href={it.href} className="navGlowLink">
-                                    {it.label}
-                                </Link>
-                            ))}
-                        </div>
-
-                        {/* ✅ MOBILE: chat a sinistra del burger (NON sovrapposta) */}
-                        <div className="md:hidden ml-auto flex items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={openChat}
-                                className="navChatBtn"
-                                aria-label="Apri chat assistenza"
-                            >
-                <span className="navChatIcon" aria-hidden="true">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                    <path
-                        d="M7 18l-3 3V6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v9a3 3 0 0 1-3 3H7z"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinejoin="round"
-                    />
-                    <path
-                        d="M8 8h8M8 12h6"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                    />
-                  </svg>
-                </span>
-                            </button>
-
-                            <button
-                                type="button"
-                                onClick={openMobile}
-                                aria-label="Apri menu"
-                                aria-expanded={mobileOpen}
-                                className={[
-                                    "grid h-10 w-10 place-items-center rounded-full border border-black/10 bg-[#72C94F]/50 backdrop-blur-md transition",
-                                    "hover:bg-[#72C94F]/60",
-                                    mobileOpen ? "opacity-0 pointer-events-none" : "opacity-100",
-                                ].join(" ")}
-                            >
-                                <div className="relative h-[18px] w-[18px]">
-                                    <span className="absolute left-0 top-0 h-[2px] w-full bg-[#0b1118]" />
-                                    <span className="absolute left-0 top-1/2 -translate-y-1/2 h-[2px] w-full bg-[#0b1118]" />
-                                    <span className="absolute left-0 bottom-0 h-[2px] w-full bg-[#0b1118]" />
-                                </div>
-                            </button>
-                        </div>
-                    </nav>
+        <AnimatePresence onExitComplete={() => {
+          restoreFocusRef.current?.focus();
+          restoreFocusRef.current = null;
+        }}>
+          {activeMenu && (
+            <motion.div
+              key={activeMenu}
+              id={`nav-panel-${activeMenu}`}
+              className={styles.megaPanel}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={menuTransition}
+            >
+              <div className={styles.megaInner}>
+                <div className={styles.megaIntro}>
+                  <h2>{MENUS[activeMenu].heading}</h2>
+                  <Link href={MENUS[activeMenu].overviewHref} className={styles.overviewLink} onClick={closeNavigation}>
+                    {MENUS[activeMenu].overviewLabel}
+                  </Link>
                 </div>
-            </motion.header>
-
-            {/* ✅ X sopra la tendina: FIXED + z-index altissimo */}
-            <AnimatePresence>
-                {mobileOpen && (
-                    <motion.button
-                        type="button"
-                        onClick={closeMobile}
-                        aria-label="Chiudi menu"
-                        className="md:hidden navCloseFixed"
-                        initial={{ opacity: 0, scale: 0.96 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.96 }}
-                        transition={{ duration: 0.15, ease: "easeOut" }}
-                    >
-                        <div className="relative h-[18px] w-[18px]">
-                            <span className="absolute left-0 top-1/2 h-[2px] w-full bg-[#0b1118] -translate-y-1/2 rotate-45" />
-                            <span className="absolute left-0 top-1/2 h-[2px] w-full bg-[#0b1118] -translate-y-1/2 -rotate-45" />
-                        </div>
-                    </motion.button>
-                )}
-            </AnimatePresence>
-
-            {/* MOBILE OVERLAY MENU */}
-            <AnimatePresence>
-                {mobileOpen && (
+                <div className={styles.megaItems}>
+                  {MENUS[activeMenu].items.map((item, index) => (
                     <motion.div
-                        className="fixed inset-0 z-[60] md:hidden"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
+                      key={item.label}
+                      initial={{ opacity: 0, y: 7 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4, transition: { duration: reduceMotion ? 0 : 0.18, delay: 0 } }}
+                      transition={{ duration: reduceMotion ? 0 : 0.38, delay: reduceMotion ? 0 : 0.08 + index * 0.075, ease: [0.22, 1, 0.36, 1] }}
                     >
-                        {/* overlay */}
-                        <div className="absolute inset-0 bg-black/30" onClick={closeMobile} />
-
-                        {/* panel */}
-                        <motion.div
-                            initial={{ y: -10, opacity: 0 }}
-                            animate={{ y: 0, opacity: 1 }}
-                            exit={{ y: -10, opacity: 0 }}
-                            transition={{ duration: 0.2, ease: "easeOut" }}
-                            className="absolute left-0 right-0 top-0 bg-[#72C94F]/50 backdrop-blur-md ring-1 ring-black/5"
-                        >
-                            <div className="px-6 pt-24 pb-10">
-                                <div className="flex flex-col gap-4">
-                                    {NAV_ITEMS.map((it) => (
-                                        <Link
-                                            key={it.href}
-                                            href={it.href}
-                                            onClick={closeMobile}
-                                            className="navGlowLink navGlowLinkMobile text-[28px] leading-[1.1] tracking-[-0.02em] text-[#0b1118] transition-colors font-display font-semibold"
-                                        >
-                                            {it.label}
-                                        </Link>
-                                    ))}
-                                </div>
-
-                                <div className="mt-8 text-sm text-black/50">
-                                    © {new Date().getFullYear()} Evolve
-                                </div>
-                            </div>
-                        </motion.div>
+                      <Link href={item.href} className={styles.megaItem} onClick={closeNavigation}>
+                        {item.label}
+                      </Link>
                     </motion.div>
-                )}
-            </AnimatePresence>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
 
-            {/* ✅ SUPPORT CHAT */}
-            <SupportChat open={chatOpen} onClose={closeChat} />
-        </>
-    );
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.nav
+            id="mobile-site-nav"
+            className={styles.mobilePanel}
+            aria-label="Navigazione mobile"
+            initial={{ opacity: 0, y: -12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -12 }}
+            transition={menuTransition}
+          >
+            <div className={styles.mobileInner}>
+              <Link href="/" className={styles.mobileLink} onClick={closeNavigation}>Home</Link>
+              {NAV_ITEMS.map((key) => key === "about" ? (
+                <Link key={key} href="/about" className={styles.mobileLink} onClick={closeNavigation}>Chi siamo</Link>
+              ) : (
+                <div className={styles.mobileGroup} key={key}>
+                  <button
+                    type="button"
+                    className={styles.mobileSectionButton}
+                    aria-expanded={mobileSection === key}
+                    aria-controls={`mobile-${key}`}
+                    onClick={() => setMobileSection(mobileSection === key ? null : key)}
+                  >
+                    {MENUS[key].label}<Chevron open={mobileSection === key} />
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {mobileSection === key && (
+                      <motion.div
+                        id={`mobile-${key}`}
+                        className={styles.mobileSubmenu}
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={menuTransition}
+                      >
+                        <p className={styles.mobileStatement}>{MENUS[key].heading}</p>
+                        {MENUS[key].items.map((item, index) => (
+                          <motion.div
+                            key={item.label}
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: reduceMotion ? 0 : 0.32, delay: reduceMotion ? 0 : 0.06 + index * 0.06 }}
+                          >
+                            <Link href={item.href} className={styles.mobileSubLink} onClick={closeNavigation}>
+                              {item.label}
+                            </Link>
+                          </motion.div>
+                        ))}
+                        <Link href={MENUS[key].overviewHref} className={styles.mobileOverview} onClick={closeNavigation}>{MENUS[key].overviewLabel}</Link>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ))}
+              <Link href="/contact" className={styles.mobileLink} onClick={closeNavigation}>Contatti</Link>
+            </div>
+          </motion.nav>
+        )}
+      </AnimatePresence>
+
+      <SupportChat open={chatOpen} onClose={() => setChatOpen(false)} />
+    </>
+  );
 }

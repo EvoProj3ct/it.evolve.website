@@ -147,8 +147,8 @@ export function PortfolioCollage() {
                 variant: "center",
                 src: "/collage/product_ai.png",
                 alt: "Top 1",
-                tagTop: "ESPERTI AI",
-                tagBottom: "Agenti AI e chatbot",
+                tagTop: "ESPERTI IA",
+                tagBottom: "Agenti IA e chatbot",
             },
             {
                 id: "top-2",

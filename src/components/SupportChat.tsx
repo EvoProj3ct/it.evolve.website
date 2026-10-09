@@ -307,11 +307,11 @@ export function SupportChat({ open, onClose }: SupportChatProps) {
                         transition={{ duration: 0.18, ease: "easeOut" }}
                         role="dialog"
                         aria-modal="true"
-                        aria-label="Powered by Evolve AI"
+                        aria-label="Powered by Evolve IA"
                     >
                         <div className="supportChatHeader">
                             <div className="supportChatTitle">
-                                Leo <span className="supportChatTitleSub">• Powered by Evolve AI</span>
+                                Leo <span className="supportChatTitleSub">• Powered by Evolve IA</span>
                             </div>
 
                             <button

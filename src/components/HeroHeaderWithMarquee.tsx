@@ -79,7 +79,7 @@ export default function HeroHeaderWithMarquee({
                                                   pill = "Portfolio",
                                                   title = "Soluzioni su Misura",
                                                   subtitle = "",
-                                                  tickerText = "CONSULENZA • UX/UI • WEB APPS • ATLAS • CLOUD • INNOVAZIONE AI • METODO SCRUM • PROGETTAZIONE 3D • FORMAZIONE • STUDIO TECNICO • SISTEMI COMPLESSI •",
+                                                  tickerText = "CONSULENZA • UX/UI • WEB APPS • ATLAS • CLOUD • INNOVAZIONE IA • METODO SCRUM • PROGETTAZIONE 3D • FORMAZIONE • STUDIO TECNICO • SISTEMI COMPLESSI •",
                                                   bannerSrc = "/portfolio/portfolio_banner1.png",
                                               }: Props) {
     const row = `${tickerText} ${tickerText} ${tickerText}`;
