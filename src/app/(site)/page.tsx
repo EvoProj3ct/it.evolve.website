@@ -1,4 +1,5 @@
 import { GhostMazeHero } from "@/components/GhostMazeHero";
+import { EvolveReveal } from "@/components/EvolveReveal";
 import { ServicesSection } from "@/components/ServicesSection";
 import { AboutSplit } from "@/components/AboutSplit";
 import { PortfolioCollage } from "@/components/PortfolioCollage";
@@ -12,6 +13,7 @@ export default function Page() {
   return (
     <main>
       <GhostMazeHero />
+      <EvolveReveal />
       <ServicesSection />
       <AboutSplit />
       <PortfolioCollage />

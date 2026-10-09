@@ -577,7 +577,7 @@ export function GhostMazeHero() {
         {/* Provisional copy for this visual study; original slides remain in HeroSlider and the inventory. */}
         <h1 className={styles.title}>Consulenza, software<br />e stampa 3D</h1>
         <p className={styles.description}>
-          Progettiamo soluzioni integrate con l&apos;IA per migliorare il lavoro della tua azienda.
+          Progettiamo soluzioni integrate con l&apos;IA per migliorare la tua produttività.
         </p>
         <div className={styles.actions}>
           <Link className={styles.primaryLink} href="/about">

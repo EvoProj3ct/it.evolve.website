@@ -150,7 +150,7 @@
   display: grid;
   grid-template-columns: minmax(0, 380px) minmax(0, 380px) minmax(0, 1fr);
   width: 100%;
-  padding: 40px clamp(24px, 4.75vw, 90px) 38px;
+  padding: 28px clamp(24px, 4.75vw, 90px) 38px;
 }
 
 .megaIntro {
