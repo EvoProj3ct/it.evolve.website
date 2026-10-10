@@ -2,23 +2,27 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import styles from "./CubeScene.module.css";
+import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
+import { modelAssets } from "./modelAssets";
+import styles from "./ModelScene.module.css";
 
-type CubeSceneProps = { progress: number };
+type ModelSceneProps = { progress: number };
 type SceneController = { setProgress: (progress: number) => void };
-
-const cubePositions = [
-  { x: -1.85, z: .7, size: 1.35, height: 1.3 },
-  { x: 0, z: -.55, size: 1.65, height: 1.7 },
-  { x: 1.85, z: .6, size: 1.2, height: 1.15 },
-] as const;
+type ModelEntry = {
+  group: THREE.Group;
+  geometry: THREE.BufferGeometry;
+  edgesGeometry: THREE.EdgesGeometry;
+  face: THREE.MeshStandardMaterial;
+  edgeMaterial: THREE.LineBasicMaterial;
+  height: number;
+};
 
 function ease(value: number) {
   const t = Math.min(1, Math.max(0, value));
   return t * t * (3 - 2 * t);
 }
 
-export function CubeScene({ progress }: CubeSceneProps) {
+export function ModelScene({ progress }: ModelSceneProps) {
   const mountRef = useRef<HTMLDivElement>(null);
   const controllerRef = useRef<SceneController | null>(null);
   const [unavailable, setUnavailable] = useState(false);
@@ -50,26 +54,7 @@ export function CubeScene({ progress }: CubeSceneProps) {
     scene.add(ambient, directional);
     const assembly = new THREE.Group();
     scene.add(assembly);
-
-    const cubes = cubePositions.map(({ x, z, size, height }, index) => {
-      const geometry = new THREE.BoxGeometry(size, height, size);
-      const face = new THREE.MeshStandardMaterial({
-        color: index === 1 ? 0x396e48 : 0x295839,
-        roughness: .65,
-        metalness: .06,
-        transparent: true,
-        opacity: .14,
-        side: THREE.DoubleSide,
-        depthWrite: false,
-      });
-      const edgesGeometry = new THREE.EdgesGeometry(geometry);
-      const edge = new THREE.LineSegments(edgesGeometry, new THREE.LineBasicMaterial({ color: 0x92dd72 }));
-      const group = new THREE.Group();
-      group.position.set(x, 0, z);
-      group.add(new THREE.Mesh(geometry, face), edge);
-      assembly.add(group);
-      return { group, geometry, edgesGeometry, face, edgeMaterial: edge.material as THREE.LineBasicMaterial, height };
-    });
+    const models: ModelEntry[] = [];
 
     let target = 0;
     let current = 0;
@@ -91,11 +76,11 @@ export function CubeScene({ progress }: CubeSceneProps) {
       assembly.rotation.y = turn * .7;
       assembly.rotation.x = turn * .1;
 
-      cubes.forEach(({ group, face, height }) => {
+      models.forEach(({ group, face, height }) => {
         const depth = .025 + .975 * lift;
         group.scale.y = depth;
         group.position.y = height * depth / 2;
-        face.opacity = .12 + lift * .62;
+        face.opacity = .16 + lift * .66;
       });
       renderer.render(scene, camera);
     };
@@ -118,7 +103,7 @@ export function CubeScene({ progress }: CubeSceneProps) {
       const aspect = width / height;
       const compactSpan = aspect < .85 ? 3.7 : 3.25;
       const span = window.innerWidth <= 800
-        ? (aspect < .85 ? 4.8 : 4.3)
+        ? Math.max(aspect < .85 ? 4.8 : 4.3, 3.35 / aspect)
         : width <= 800 ? compactSpan : (aspect < .85 ? 4.6 : 4.05);
       camera.left = -span * aspect;
       camera.right = span * aspect;
@@ -140,12 +125,70 @@ export function CubeScene({ progress }: CubeSceneProps) {
     };
     controllerRef.current.setProgress(progress);
 
+    const loader = new STLLoader();
+    void Promise.allSettled(modelAssets.map(({ url }) => loader.loadAsync(url))).then((results) => {
+      if (disposed) {
+        results.forEach((result) => {
+          if (result.status === "fulfilled") result.value.dispose();
+        });
+        return;
+      }
+
+      results.forEach((result, index) => {
+        if (result.status !== "fulfilled") return;
+        const config = modelAssets[index];
+        const geometry = result.value;
+
+        // The STL extrusion axis becomes vertical: the first frame shows its 2D profile.
+        geometry.rotateX(-Math.PI / 2);
+        geometry.computeBoundingBox();
+        const extent = new THREE.Vector3();
+        geometry.boundingBox?.getSize(extent);
+        const longestSide = Math.max(extent.x, extent.y, extent.z);
+        if (!Number.isFinite(longestSide) || longestSide <= 0) {
+          geometry.dispose();
+          return;
+        }
+        const scale = config.size / longestSide;
+        geometry.scale(scale, scale, scale);
+        geometry.center();
+        geometry.computeBoundingBox();
+
+        const face = new THREE.MeshStandardMaterial({
+          color: config.color,
+          roughness: .7,
+          metalness: .04,
+          transparent: true,
+          opacity: .16,
+          side: THREE.DoubleSide,
+          depthWrite: true,
+        });
+        const edgesGeometry = new THREE.EdgesGeometry(geometry, 34);
+        const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x92dd72, transparent: true, opacity: .78 });
+        const group = new THREE.Group();
+        group.position.set(config.x, 0, config.z);
+        group.add(new THREE.Mesh(geometry, face), new THREE.LineSegments(edgesGeometry, edgeMaterial));
+        assembly.add(group);
+        models.push({
+          group,
+          geometry,
+          edgesGeometry,
+          face,
+          edgeMaterial,
+          height: (geometry.boundingBox?.max.y ?? 0) - (geometry.boundingBox?.min.y ?? 0),
+        });
+      });
+
+      if (models.length === 0) setUnavailable(true);
+      draw();
+    });
+
     return () => {
       disposed = true;
       controllerRef.current = null;
       observer.disconnect();
       if (frame) window.cancelAnimationFrame(frame);
-      cubes.forEach(({ geometry, edgesGeometry, face, edgeMaterial }) => {
+      models.forEach(({ geometry, edgesGeometry, face, edgeMaterial }) => {
         geometry.dispose();
         edgesGeometry.dispose();
         face.dispose();
@@ -164,7 +207,7 @@ export function CubeScene({ progress }: CubeSceneProps) {
 
   return (
     <div className={styles.scene} ref={mountRef}>
-      {unavailable && <div className={styles.fallback} aria-hidden="true"><i /><i /><i /></div>}
+      {unavailable && <div className={styles.fallback}>Anteprima 3D non disponibile</div>}
     </div>
   );
 }

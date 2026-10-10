@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { STLLoader } from "three/examples/jsm/loaders/STLLoader.js";
+import { printedModel } from "./modelAssets";
+import { extractStlProfile, type Profile, type ProfilePoint } from "./stlProfile";
 import styles from "./LayerPrintScene.module.css";
 
 type Point = { x: number; y: number };
@@ -8,28 +11,38 @@ type Point = { x: number; y: number };
 const layerCount = 19;
 const prebuiltLayers = 11;
 const layerHeight = 11;
-const footprint: readonly Point[] = [
-  { x: 220, y: 475 },
-  { x: 430, y: 518 },
-  { x: 565, y: 430 },
-  { x: 355, y: 387 },
-];
+let profilePromise: Promise<Profile> | null = null;
 
-function corners(layer: number): Point[] {
-  return footprint.map(({ x, y }) => ({ x, y: y - layer * layerHeight }));
+function loadProfile() {
+  profilePromise ??= new STLLoader().loadAsync(printedModel.url).then((geometry) => {
+    try {
+      return extractStlProfile(geometry);
+    } finally {
+      geometry.dispose();
+    }
+  }).catch((error) => {
+    profilePromise = null;
+    throw error;
+  });
+  return profilePromise;
+}
+
+function project({ x, y }: ProfilePoint, layer: number): Point {
+  return { x: 150 + x * 290 + y * 135, y: 445 + x * 55 - y * 118 - layer * layerHeight };
 }
 
 function points(pointsToJoin: Point[]) {
   return pointsToJoin.map(({ x, y }) => `${x},${y}`).join(" ");
 }
 
-function perimeterPath(layer: number) {
-  const [a, b, c, d] = corners(layer);
-  return `M ${a.x} ${a.y} L ${b.x} ${b.y} L ${c.x} ${c.y} L ${d.x} ${d.y} Z`;
+function profilePath(profile: Profile, layer: number) {
+  return profile.map((loop) => {
+    const [first, ...rest] = loop.map((point) => project(point, layer));
+    return `M ${first.x} ${first.y} ${rest.map(({ x, y }) => `L ${x} ${y}`).join(" ")} Z`;
+  }).join(" ");
 }
 
-function pointOnPerimeter(layer: number, fraction: number): Point {
-  const vertices = corners(layer);
+function pointOnPerimeter(vertices: Point[], fraction: number): Point {
   const lengths = vertices.map((point, index) => {
     const next = vertices[(index + 1) % vertices.length];
     return Math.hypot(next.x - point.x, next.y - point.y);
@@ -51,11 +64,25 @@ function pointOnPerimeter(layer: number, fraction: number): Point {
   return vertices[0];
 }
 
-export function LayerPrintScene({ progress }: { progress: number }) {
+export function LayerPrintScene({ progress, exitOffset = 0 }: { progress: number; exitOffset?: number }) {
   const targetRef = useRef(progress);
   const currentRef = useRef(progress);
   const frameRef = useRef<number | null>(null);
   const [visibleProgress, setVisibleProgress] = useState(progress);
+  const [profile, setProfile] = useState<Profile>([]);
+  const [profileError, setProfileError] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    void loadProfile().then((loaded) => {
+      if (!active) return;
+      setProfile(loaded);
+      setProfileError(loaded.length === 0);
+    }).catch(() => {
+      if (active) setProfileError(true);
+    });
+    return () => { active = false; };
+  }, []);
 
   useEffect(() => {
     targetRef.current = progress;
@@ -81,35 +108,51 @@ export function LayerPrintScene({ progress }: { progress: number }) {
   const completeCount = Math.floor(scaled);
   const activeLayer = Math.min(layerCount - 1, completeCount);
   const partial = completeCount === layerCount ? 1 : scaled - completeCount;
-  const nozzle = pointOnPerimeter(activeLayer, partial);
-  const topCorners = corners(layerCount - 1);
-  const [baseA, baseB, baseC] = corners(0);
-  const [topA, topB, topC, topD] = corners(scaled - 1);
+  if (profile.length === 0) {
+    return <div className={styles.scene}>{profileError && <span className={styles.fallback}>Modello di stampa non disponibile</span>}</div>;
+  }
+
+  const outer = profile[0];
+  const nozzle = pointOnPerimeter(outer.map((point) => project(point, activeLayer)), partial);
+  const walls = profile.flatMap((loop, loopIndex) => loop.map((point, index) => {
+    const next = loop[(index + 1) % loop.length];
+    const topFrom = project(point, scaled - 1);
+    const topTo = project(next, scaled - 1);
+    return {
+      key: `${loopIndex}-${index}`,
+      points: points([topFrom, topTo, project(next, -1), project(point, -1)]),
+      middleY: (topFrom.y + topTo.y) / 2,
+      front: topTo.x > topFrom.x,
+    };
+  })).sort((a, b) => a.middleY - b.middleY);
 
   return (
     <div className={styles.scene}>
-      <svg className={styles.drawing} viewBox="90 105 620 520" role="img" aria-label="Una testina traccia i livelli di un cubo in prospettiva">
+      <div className={styles.motion} style={{ transform: `translate3d(0, -${exitOffset}px, 0)` }}>
+      <svg className={styles.drawing} viewBox="90 45 620 580" role="img" aria-label="Una testina stampa il profilo di un modello 3D strato dopo strato">
         <g className={styles.guides}>
-          <polygon points={points(corners(0))} />
-          <polygon points={points(topCorners)} />
-          {footprint.map((point, index) => (
-            <line key={index} x1={point.x} y1={point.y} x2={topCorners[index].x} y2={topCorners[index].y} />
-          ))}
+          <path d={profilePath(profile, 0)} />
+          <path d={profilePath(profile, layerCount - 1)} />
+          {outer.filter((_, index) => index % 5 === 0).map((point, index) => {
+            const start = project(point, 0);
+            const end = project(point, layerCount - 1);
+            return <line key={index} x1={start.x} y1={start.y} x2={end.x} y2={end.y} />;
+          })}
         </g>
 
-        <polygon className={styles.front} points={points([topA, topB, { x: baseB.x, y: baseB.y + layerHeight }, { x: baseA.x, y: baseA.y + layerHeight }])} />
-        <polygon className={styles.side} points={points([topB, topC, { x: baseC.x, y: baseC.y + layerHeight }, { x: baseB.x, y: baseB.y + layerHeight }])} />
+        {walls.map((wall) => (
+          <polygon key={wall.key} className={wall.front ? styles.front : styles.side} points={wall.points} />
+        ))}
         {Array.from({ length: completeCount }, (_, index) => {
-          const [a, b, c] = corners(index);
-          return <path key={index} className={styles.contour} d={`M ${a.x} ${a.y} L ${b.x} ${b.y} L ${c.x} ${c.y}`} />;
+          return <path key={index} className={styles.contour} d={profilePath(profile, index)} />;
         })}
-        <polygon className={styles.top} points={points([topA, topB, topC, topD])} />
-        <path className={styles.topOutline} d={perimeterPath(scaled - 1)} />
+        <path className={styles.top} d={profilePath(profile, scaled - 1)} fillRule="evenodd" />
+        <path className={styles.topOutline} d={profilePath(profile, scaled - 1)} />
 
         {completeCount < layerCount && (
           <path
             className={styles.activePath}
-            d={perimeterPath(activeLayer)}
+            d={profilePath([outer], activeLayer)}
             pathLength={1}
             strokeDasharray="1"
             strokeDashoffset={1 - partial}
@@ -123,6 +166,7 @@ export function LayerPrintScene({ progress }: { progress: number }) {
           <circle className={styles.contact} r="3" />
         </g>
       </svg>
+      </div>
     </div>
   );
 }

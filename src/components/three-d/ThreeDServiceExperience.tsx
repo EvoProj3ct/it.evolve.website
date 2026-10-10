@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CubeScene } from "./CubeScene";
+import { ModelScene } from "./ModelScene";
 import { LayerPrintScene } from "./LayerPrintScene";
 import styles from "./ThreeDServiceExperience.module.css";
 
@@ -72,10 +72,12 @@ function clamp(value: number) {
 export function ThreeDServiceExperience() {
   const designRef = useRef<HTMLDivElement>(null);
   const printRef = useRef<HTMLDivElement>(null);
+  const lastPrintStepRef = useRef<HTMLElement>(null);
   const visualStageRef = useRef<HTMLDivElement>(null);
   const [designProgress, setDesignProgress] = useState(0);
   const [printProgress, setPrintProgress] = useState(0);
   const [handoff, setHandoff] = useState(0);
+  const [printExitOffset, setPrintExitOffset] = useState(0);
 
   useEffect(() => {
     let frame = 0;
@@ -99,9 +101,13 @@ export function ThreeDServiceExperience() {
         (handoffStart - printTop) / Math.max(1, handoffDistance)
       );
       const nextHandoff = transition * transition * (3 - 2 * transition);
+      const lastStepTop = lastPrintStepRef.current?.getBoundingClientRect().top ?? window.innerHeight;
+      // Carry the drawing through the entire final step at the same scroll distance as its text.
+      const nextPrintExitOffset = Math.max(0, -lastStepTop);
       setDesignProgress((previous) => Math.abs(previous - nextDesign) < 0.001 ? previous : nextDesign);
       setPrintProgress((previous) => Math.abs(previous - nextPrint) < 0.001 ? previous : nextPrint);
       setHandoff((previous) => Math.abs(previous - nextHandoff) < 0.001 ? previous : nextHandoff);
+      setPrintExitOffset((previous) => Math.abs(previous - nextPrintExitOffset) < .5 ? previous : nextPrintExitOffset);
     };
 
     const schedule = () => {
@@ -124,10 +130,10 @@ export function ThreeDServiceExperience() {
       <div className={styles.experience}>
         <div ref={visualStageRef} className={styles.visualStage}>
           <aside className={`${styles.visual} ${styles.designVisual}`} style={{ opacity: 1 - handoff }} aria-label="Modello dimostrativo tridimensionale che si trasforma durante lo scorrimento">
-            <CubeScene progress={designProgress} />
+            <ModelScene progress={designProgress} />
           </aside>
-          <aside className={`${styles.visual} ${styles.printVisual}`} style={{ opacity: handoff }} aria-label="Animazione vettoriale della stampa di un cubo strato dopo strato">
-            <LayerPrintScene progress={printProgress} />
+          <aside className={`${styles.visual} ${styles.printVisual}`} style={{ opacity: handoff }} aria-label="Animazione vettoriale della stampa di un modello 3D strato dopo strato">
+            <LayerPrintScene progress={printProgress} exitOffset={printExitOffset} />
           </aside>
         </div>
 
@@ -148,8 +154,8 @@ export function ThreeDServiceExperience() {
           ))}
         </div>
         <div ref={printRef} className={`${styles.story} ${styles.printStory}`}>
-          {printSteps.map((step) => (
-            <section key={step.number} className={styles.step} aria-labelledby={`three-d-step-${step.number}`}>
+          {printSteps.map((step, index) => (
+            <section key={step.number} ref={index === printSteps.length - 1 ? lastPrintStepRef : undefined} className={styles.step} aria-labelledby={`three-d-step-${step.number}`}>
               <div className={styles.stepInner}>
                 <span className={styles.eyebrow}>{step.number} / {step.label}</span>
                 <h2 id={`three-d-step-${step.number}`} className={styles.title}>{step.title}</h2>

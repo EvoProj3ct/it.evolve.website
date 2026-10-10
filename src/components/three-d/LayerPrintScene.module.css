@@ -7,6 +7,19 @@
   pointer-events: none;
 }
 
+.motion {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.fallback {
+  padding: 24px;
+  color: #9bbb9d;
+  font-size: 14px;
+  text-align: center;
+}
+
 .drawing {
   display: block;
   width: 100%;

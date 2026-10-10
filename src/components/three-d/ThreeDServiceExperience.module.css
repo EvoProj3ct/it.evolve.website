@@ -50,7 +50,7 @@
 
 .story {
   position: relative;
-  z-index: 1;
+  z-index: 3;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   min-width: 0;
@@ -126,7 +126,7 @@
     content: "";
   }
   .visual { grid-column: 1; background: none; }
-  .story { grid-template-columns: minmax(0, 1fr); }
+  .story { z-index: 1; grid-template-columns: minmax(0, 1fr); }
   .designStory .step,
   .printStory .step { grid-column: 1; }
   .step {
