@@ -138,10 +138,15 @@
   .experience { --scene-height: clamp(330px, 56svh, 470px); }
   .visualStage {
     --fade-height: 96px;
-    top: 0;
-    height: 100svh;
-    margin-bottom: -100svh;
+    position: fixed;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 100dvh;
+    margin-bottom: 0;
     grid-template-columns: minmax(0, 1fr);
+    will-change: transform;
     background: linear-gradient(to bottom, transparent calc(100% - var(--scene-height)), #060c08 calc(100% - var(--scene-height)));
   }
   .visualStage::before {
@@ -161,22 +166,6 @@
       0 calc(var(--scene-height) + var(--fade-height) - 100svh),
       0 calc(var(--scene-height) + var(--fade-height) - 100svh),
       center;
-    content: "";
-  }
-  .visualStage::after {
-    position: absolute;
-    z-index: 3;
-    top: 100%;
-    right: 0;
-    left: 0;
-    height: max(2px, calc(200dvh - 200svh + 2px));
-    pointer-events: none;
-    background-color: #060c08;
-    background-image:
-      linear-gradient(rgba(130, 176, 131, .085) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(130, 176, 131, .085) 1px, transparent 1px);
-    background-size: 48px 48px;
-    background-position: 0 -100svh;
     content: "";
   }
   .visual {

@@ -76,10 +76,12 @@ export function ThreeDServiceExperience() {
   const printRef = useRef<HTMLDivElement>(null);
   const lastPrintStepRef = useRef<HTMLElement>(null);
   const visualStageRef = useRef<HTMLDivElement>(null);
+  const designVisualRef = useRef<HTMLElement>(null);
   const [designProgress, setDesignProgress] = useState(0);
   const [printProgress, setPrintProgress] = useState(0);
   const [handoff, setHandoff] = useState(0);
   const [printExitOffset, setPrintExitOffset] = useState(0);
+  const [mobileView, setMobileView] = useState(false);
 
   useEffect(() => {
     let frame = 0;
@@ -87,6 +89,7 @@ export function ThreeDServiceExperience() {
     const measure = () => {
       frame = 0;
       const mobile = window.innerWidth <= 800;
+      setMobileView(mobile);
       const viewportHeight = mobile
         ? (gridRef.current?.getBoundingClientRect().height ?? window.innerHeight)
         : window.innerHeight;
@@ -99,7 +102,7 @@ export function ThreeDServiceExperience() {
       const nextDesign = progressFor(designRef.current);
       const nextPrint = progressFor(printRef.current);
       const printTop = printRef.current?.getBoundingClientRect().top ?? viewportHeight;
-      const visualHeight = visualStageRef.current?.getBoundingClientRect().height ?? viewportHeight;
+      const visualHeight = (mobile ? designVisualRef.current : visualStageRef.current)?.getBoundingClientRect().height ?? viewportHeight;
       const handoffStart = mobile ? viewportHeight - visualHeight * .1 : viewportHeight * .5;
       const handoffDistance = mobile ? visualHeight * .8 : viewportHeight * .45;
       const transition = clamp(
@@ -107,8 +110,8 @@ export function ThreeDServiceExperience() {
       );
       const nextHandoff = transition * transition * (3 - 2 * transition);
       const lastStepTop = lastPrintStepRef.current?.getBoundingClientRect().top ?? viewportHeight;
-      // The full-height mobile stage leaves with the last step on its own.
-      const nextPrintExitOffset = mobile ? 0 : Math.max(0, -lastStepTop);
+      // On mobile the fixed stage leaves with the final text; on desktop the drawing moves within its sticky stage.
+      const nextPrintExitOffset = Math.max(0, -lastStepTop);
       setDesignProgress((previous) => Math.abs(previous - nextDesign) < 0.001 ? previous : nextDesign);
       setPrintProgress((previous) => Math.abs(previous - nextPrint) < 0.001 ? previous : nextPrint);
       setHandoff((previous) => Math.abs(previous - nextHandoff) < 0.001 ? previous : nextHandoff);
@@ -133,12 +136,12 @@ export function ThreeDServiceExperience() {
     <main className={styles.page}>
       <div ref={gridRef} className={styles.grid} aria-hidden="true" />
       <div className={styles.experience}>
-        <div ref={visualStageRef} className={styles.visualStage}>
-          <aside className={`${styles.visual} ${styles.designVisual}`} style={{ opacity: 1 - handoff }} aria-label="Modello dimostrativo tridimensionale che si trasforma durante lo scorrimento">
+        <div ref={visualStageRef} className={styles.visualStage} style={mobileView ? { transform: `translate3d(0, -${printExitOffset}px, 0)` } : undefined}>
+          <aside ref={designVisualRef} className={`${styles.visual} ${styles.designVisual}`} style={{ opacity: 1 - handoff }} aria-label="Modello dimostrativo tridimensionale che si trasforma durante lo scorrimento">
             <ModelScene progress={designProgress} />
           </aside>
           <aside className={`${styles.visual} ${styles.printVisual}`} style={{ opacity: handoff }} aria-label="Animazione vettoriale della stampa di un modello 3D strato dopo strato">
-            <LayerPrintScene progress={printProgress} exitOffset={printExitOffset} />
+            <LayerPrintScene progress={printProgress} exitOffset={mobileView ? 0 : printExitOffset} />
           </aside>
         </div>
 
