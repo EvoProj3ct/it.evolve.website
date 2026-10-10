@@ -39,6 +39,12 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
+function defaultLightPoint({ width, height }: Size): Point {
+  return width < 640
+    ? { x: width * 0.24, y: height * 0.24 }
+    : { x: width * 0.78, y: height * 0.72 };
+}
+
 function randomGenerator(seed: number) {
   let value = seed >>> 0;
   return () => {
@@ -259,6 +265,7 @@ export function GhostMazeHero() {
   const ghostPupilRefs = useRef<(SVGGElement | null)[]>([]);
   const pointerRef = useRef({ x: 600, y: 440, active: false, lastMovedAt: 0 });
   const [size, setSize] = useState<Size>({ width: 1200, height: 720 });
+  const initialLight = defaultLightPoint(size);
   const maze = useMemo(() => createMaze(size), [size]);
   const homeNode = useMemo(() => {
     const { cols } = mazeDimensions(size);
@@ -291,8 +298,9 @@ export function GhostMazeHero() {
       setSize((previous) =>
         previous.width === width && previous.height === height ? previous : { width, height },
       );
-      pointerRef.current.x = width < 640 ? width / 2 : width * 0.78;
-      pointerRef.current.y = height * (width < 640 ? 0.78 : 0.72);
+      const defaultPoint = defaultLightPoint({ width, height });
+      pointerRef.current.x = defaultPoint.x;
+      pointerRef.current.y = defaultPoint.y;
     });
     observer.observe(section);
     return () => observer.disconnect();
@@ -389,8 +397,9 @@ export function GhostMazeHero() {
     let visible = false;
     let previousTime = 0;
     let elapsed = 0;
-    let x = size.width * (size.width < 640 ? 0.5 : 0.78);
-    let y = size.height * (size.width < 640 ? 0.78 : 0.72);
+    const defaultPoint = defaultLightPoint(size);
+    let x = defaultPoint.x;
+    let y = defaultPoint.y;
     let lagX = x;
     let lagY = y;
 
@@ -412,8 +421,8 @@ export function GhostMazeHero() {
       previousTime = time;
       elapsed += delta;
       const pointer = pointerRef.current;
-      const restX = size.width * (size.width < 640 ? 0.5 : 0.78);
-      const restY = size.height * (size.width < 640 ? 0.78 : 0.72);
+      const restX = defaultPoint.x;
+      const restY = defaultPoint.y;
       const idleX = restX + Math.sin(elapsed * 0.43) * Math.min(56, size.width * 0.06);
       const idleY = restY + Math.sin(elapsed * 0.37) * 20;
       const targetX = motionQuery.matches ? restX : pointer.active ? pointer.x : idleX;
@@ -548,10 +557,10 @@ export function GhostMazeHero() {
           </radialGradient>
           <mask id="ghost-maze-reveal" maskUnits="userSpaceOnUse" x="0" y="0" width={size.width} height={size.height}>
             <rect width={size.width} height={size.height} fill="black" />
-            <circle ref={maskRef} cx={size.width * (size.width < 640 ? 0.5 : 0.78)} cy={size.height * (size.width < 640 ? 0.78 : 0.72)} r="270" fill="url(#ghost-maze-mask)" />
+            <circle ref={maskRef} cx={initialLight.x} cy={initialLight.y} r="270" fill="url(#ghost-maze-mask)" />
           </mask>
         </defs>
-        <circle ref={lightRef} cx={size.width * (size.width < 640 ? 0.5 : 0.78)} cy={size.height * (size.width < 640 ? 0.78 : 0.72)} r="270" fill="url(#ghost-maze-light)" />
+        <circle ref={lightRef} cx={initialLight.x} cy={initialLight.y} r="270" fill="url(#ghost-maze-light)" />
         <g mask="url(#ghost-maze-reveal)" className={styles.mazeWalls}>
           {maze.walls.map(([from, to], index) => (
             <line key={index} x1={from.x} y1={from.y} x2={to.x} y2={to.y} />

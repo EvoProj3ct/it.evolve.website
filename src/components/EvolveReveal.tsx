@@ -13,7 +13,7 @@ export function EvolveReveal() {
   const progress = useSpring(scrollYProgress, { stiffness: 95, damping: 32, mass: 0.8 });
   const scale = useTransform<number, number>(
     [automaticProgress, progress],
-    ([automatic, scroll]) => Math.min(1, 0.74 + automatic * 0.235 + scroll * 0.025),
+    ([automatic, scroll]) => Math.min(1, 0.5 + automatic * 0.475 + scroll * 0.025),
   );
   const radius = useTransform<number, number>(
     [automaticProgress, progress],
@@ -36,9 +36,9 @@ export function EvolveReveal() {
       const value = travel > 0 ? -rect.top / travel : 1;
       scrollYProgress.set(Math.max(0, Math.min(1, value)));
 
-      if (!opened && rect.top < window.innerHeight * 0.15 && rect.bottom > 0) {
+      if (!opened && rect.top <= 1 && rect.bottom > 0) {
         opened = true;
-        opening = animate(automaticProgress, 1, { duration: 1.55, ease: [0.45, 0, 0.2, 1] });
+        opening = animate(automaticProgress, 1, { duration: 2.1, ease: [0.22, 0.84, 0.46, 1] });
       } else if (opened && rect.top >= window.innerHeight) {
         opening?.stop();
         automaticProgress.set(0);
@@ -107,7 +107,7 @@ export function EvolveReveal() {
           || latest.bottom < window.innerHeight - 2) return;
         exiting = true;
         goToNextSection();
-      }, 420);
+      }, 520);
     };
     const unsubscribeAutomatic = automaticProgress.on("change", checkCompletion);
     const onWheel = (event: WheelEvent) => {
