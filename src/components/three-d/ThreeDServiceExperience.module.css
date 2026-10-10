@@ -91,9 +91,9 @@
   line-height: 1.48;
 }
 @media (max-width: 800px) {
-  .experience { --scene-height: clamp(360px, 66svh, 570px); }
+  .experience { --scene-height: clamp(330px, 56svh, 470px); }
   .visualStage {
-    --fade-height: 76px;
+    --fade-height: 96px;
     top: calc(100svh - var(--scene-height));
     height: var(--scene-height);
     margin-bottom: calc(0px - var(--scene-height));
@@ -117,7 +117,7 @@
     background-image:
       linear-gradient(rgba(130, 176, 131, .055) 1px, transparent 1px),
       linear-gradient(90deg, rgba(130, 176, 131, .055) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(6, 12, 8, 0), rgba(6, 12, 8, .65) 45%, #060c08 72%);
+      linear-gradient(to bottom, rgba(6, 12, 8, 0), rgba(6, 12, 8, .72) 42%, #060c08 72%);
     background-size: 48px 48px, 48px 48px, auto;
     background-position:
       0 calc(var(--scene-height) + var(--fade-height) - 100svh),
@@ -134,7 +134,7 @@
     z-index: 2;
     align-items: flex-end;
     min-height: 100svh;
-    padding: 72px 28px calc(var(--scene-height) + 30px);
+    padding: clamp(56px, 8svh, 72px) 28px calc(var(--scene-height) + 40px);
   }
   .eyebrow { margin-bottom: 35px; }
   .title { max-width: 600px; font-size: clamp(47px, 11vw, 74px); }
@@ -142,8 +142,8 @@
 }
 
 @media (max-width: 480px) {
-  .experience { --scene-height: clamp(340px, 66svh, 530px); }
-  .step { padding: 72px 24px calc(var(--scene-height) + 26px); }
+  .experience { --scene-height: clamp(310px, 54svh, 430px); }
+  .step { padding: clamp(52px, 7svh, 64px) 24px calc(var(--scene-height) + 36px); }
   .eyebrow { margin-bottom: 24px; }
   .title { font-size: clamp(36px, 10.2vw, 50px); }
   .copy { font-size: 17px; }

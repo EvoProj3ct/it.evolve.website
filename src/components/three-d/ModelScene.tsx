@@ -66,11 +66,14 @@ export function ModelScene({ progress }: ModelSceneProps) {
       const lift = ease((current - .1) / .52);
       const turn = ease((current - .66) / .3);
       const cameraPosition = new THREE.Vector3(0, 12, .001).lerp(new THREE.Vector3(6.7, 7, 9.3), cameraLift);
+      const mobile = window.innerWidth <= 800;
+      const focusHeight = mobile ? lift * 1.1 : 0;
       camera.position.copy(cameraPosition);
-      camera.lookAt(0, .3, 0);
-      if (window.innerWidth <= 800) {
+      camera.position.y += focusHeight;
+      camera.lookAt(0, .3 + focusHeight, 0);
+      if (mobile) {
         const screenUp = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
-        camera.position.addScaledVector(screenUp, -camera.top * .24);
+        camera.position.addScaledVector(screenUp, -camera.top * .16);
       }
       camera.updateProjectionMatrix();
       assembly.rotation.y = turn * .7;
