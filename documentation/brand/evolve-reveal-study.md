@@ -13,6 +13,6 @@ Con movimento ridotto la finestra è direttamente a pieno schermo, senza animazi
 ## Verifica visiva
 
 - Desktop: entrando dall'hero il riquadro compie l'apertura automatica senza altro scroll; lo scroll successivo completa l'espansione a pieno schermo e, raggiunto il bordo, la pagina passa da sola ai Servizi.
-- Mobile: apertura automatica visibile, riquadro e marchio sempre nella vista; la sezione non introduce overflow orizzontale.
+- Mobile: apertura automatica visibile, completamento con lo swipe e passaggio autonomo ai Servizi; riquadro e marchio restano nella vista senza introdurre overflow orizzontale.
 - Accessibilità di base: il marchio ha testo alternativo; con preferenza per movimento ridotto la finestra è statica.
 - I controlli TypeScript e di build non sono stati eseguiti su richiesta dell'utente.

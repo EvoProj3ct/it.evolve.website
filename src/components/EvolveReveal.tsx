@@ -11,11 +11,11 @@ export function EvolveReveal() {
   const scrollYProgress = useMotionValue(0);
   const automaticProgress = useMotionValue(0);
   const progress = useSpring(scrollYProgress, { stiffness: 95, damping: 32, mass: 0.8 });
-  const scale = useTransform(
+  const scale = useTransform<number, number>(
     [automaticProgress, progress],
     ([automatic, scroll]) => Math.min(1, 0.74 + automatic * 0.235 + scroll * 0.025),
   );
-  const radius = useTransform(
+  const radius = useTransform<number, number>(
     [automaticProgress, progress],
     ([automatic, scroll]) => Math.max(0, 30 - automatic * 20 - scroll * 10),
   );
