@@ -4526,3 +4526,18 @@ body {
     @apply mb-2 flex min-h-11 items-end text-sm font-medium leading-snug text-[#0B3D2E]/80;
   }
 }
+html,
+body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
+html:has([data-intro-loader]),
+body:has([data-intro-loader]) {
+  overflow: hidden;
+}

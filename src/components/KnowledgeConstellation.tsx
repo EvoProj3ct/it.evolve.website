@@ -42,6 +42,17 @@ const links: [number, number][] = [
 const crossLinks: [number, number][] = [[11, 14]];
 const allLinks = [...links, ...crossLinks];
 
+function isUpperBranch(index: number) {
+  let current = index;
+  while (current !== 0) {
+    if (current === 1) return true;
+    const parent = links.find(([, child]) => child === current);
+    if (!parent) return false;
+    current = parent[0];
+  }
+  return false;
+}
+
 const depths = concepts.map((_, index) => {
   let depth = 0;
   let current = index;
@@ -403,10 +414,17 @@ export function KnowledgeConstellation() {
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
+    const statementIncomplete = () => {
+      const previous = section.previousElementSibling;
+      return previous instanceof HTMLElement && previous.hasAttribute("data-brand-statement")
+        && previous.dataset.typingComplete !== "true"
+        && previous.getBoundingClientRect().bottom > window.innerHeight * 0.35;
+    };
     let snapTimer = 0;
     let lastScrollY = window.scrollY;
     let settlingTimer = 0;
     const snap = () => {
+      if (statementIncomplete()) return;
       const rect = section.getBoundingClientRect();
       if (rect.top >= window.innerHeight * 0.95
         || rect.top < -window.innerHeight * 0.35
@@ -415,6 +433,7 @@ export function KnowledgeConstellation() {
       snapTimer = window.setTimeout(() => { snapTimer = 0; }, 900);
     };
     const onWheel = (event: WheelEvent) => {
+      if (event.defaultPrevented || statementIncomplete()) return;
       const top = section.getBoundingClientRect().top;
       if (event.deltaY <= 0 || event.ctrlKey || top > window.innerHeight + 8
         || top < -window.innerHeight * 0.35 || (top <= 2 && composed)) return;
@@ -536,7 +555,7 @@ export function KnowledgeConstellation() {
       <Graph layout="desktop" active={active} selected={selected} routeTarget={routeTarget} trip={trip} reducedMotion={reducedMotion} onHover={setHovered} onSelect={select} />
       <Graph layout="mobile" active={active} selected={selected} routeTarget={routeTarget} trip={trip} reducedMotion={reducedMotion} onHover={setHovered} onSelect={select} />
       {selected !== null && (
-        <aside className={styles.detail} aria-labelledby="concept-title" key={selected}>
+        <aside className={`${styles.detail} ${isUpperBranch(selected) ? styles.detailBelow : ""}`} aria-labelledby="concept-title" key={selected}>
           <div className={styles.detailTop}>
             <span>EVOLVE / {String(selected + 1).padStart(2, "0")}</span>
             <button type="button" className={styles.close} aria-label="Chiudi scheda" onClick={() => setSelected(null)}>×</button>

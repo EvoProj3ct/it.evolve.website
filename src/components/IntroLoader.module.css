@@ -1,0 +1,69 @@
+.loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  overflow: hidden;
+  background: transparent;
+  isolation: isolate;
+}
+
+.curtain {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 50%;
+  overflow: hidden;
+  background-color: #0b120e;
+  background-image: radial-gradient(ellipse at 51% 48%, #16261b 0%, #101a13 45%, #0b120e 100%);
+  background-repeat: no-repeat;
+  background-size: 100vw 100svh;
+  will-change: transform;
+}
+
+.curtainTop {
+  top: 0;
+  background-position: center top;
+}
+
+.curtainBottom {
+  bottom: 0;
+  background-position: center bottom;
+}
+
+.logoPiece {
+  position: absolute;
+  left: 50%;
+  width: clamp(170px, 20vw, 270px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.logoTop { top: 100%; }
+.logoBottom { top: 0; }
+
+.logoPiece img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.line {
+  position: absolute;
+  top: calc(50% - 1px);
+  left: 0;
+  z-index: 2;
+  width: 100%;
+  height: 2px;
+  background: #72c94f;
+  box-shadow: 0 0 12px rgb(114 201 79 / 76%), 0 0 32px rgb(114 201 79 / 44%);
+  transform-origin: left center;
+  will-change: transform, opacity;
+}
+
+@media (max-width: 640px) {
+  .logoPiece { width: clamp(150px, 45vw, 205px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .curtain, .line { will-change: auto; }
+}

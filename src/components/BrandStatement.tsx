@@ -10,6 +10,7 @@ export function BrandStatement() {
   const sectionRef = useRef<HTMLElement>(null);
   const [started, setStarted] = useState(false);
   const [visibleCount, setVisibleCount] = useState(0);
+  const complete = visibleCount >= CHARACTERS.length;
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -37,10 +38,47 @@ export function BrandStatement() {
     return () => window.clearTimeout(timer);
   }, [started, visibleCount]);
 
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section || complete) return;
+
+    let touchStartY = 0;
+    const active = () => {
+      const rect = section.getBoundingClientRect();
+      return rect.top <= 4 && rect.bottom > window.innerHeight * 0.35;
+    };
+    const onWheel = (event: WheelEvent) => {
+      if (event.deltaY > 0 && !event.ctrlKey && active()) event.preventDefault();
+    };
+    const onTouchStart = (event: TouchEvent) => {
+      touchStartY = event.touches[0]?.clientY ?? 0;
+    };
+    const onTouchMove = (event: TouchEvent) => {
+      const currentY = event.touches[0]?.clientY ?? touchStartY;
+      if (touchStartY > currentY && active()) event.preventDefault();
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if ((event.key === "ArrowDown" || event.key === "PageDown" || event.key === " " || event.key === "End") && active()) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [complete]);
+
   const visible = CHARACTERS.slice(0, visibleCount).join("");
 
   return (
-    <section ref={sectionRef} className={styles.section} aria-label="La visione di Evolve">
+    <section ref={sectionRef} className={styles.section} aria-label="La visione di Evolve" data-brand-statement data-typing-complete={complete ? "true" : "false"}>
       <h2 className={styles.statement} aria-label={STATEMENT}>
         <span aria-hidden="true">
           {visibleCount > 0 && (
