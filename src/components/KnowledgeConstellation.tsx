@@ -68,6 +68,7 @@ const edgeDelays = links.map(([parent], index) =>
 );
 
 const nodeDelays = concepts.map((_, index) => index === 0 ? 0.8 : edgeDelays[links.findIndex(([, child]) => child === index)] + 0.78);
+const BUILD_FALLBACK_MS = 5500;
 
 function pointFor(index: number, layout: "desktop" | "mobile"): Point {
   const point = concepts[index].desktop;
@@ -334,7 +335,7 @@ function Graph({ layout, active, selected, routeTarget, trip, reducedMotion, onH
           />;
         })}
         {crossLinks.map(([a, b]) =>
-          <path key={`${a}-${b}`} className={styles.link}
+          <path key={`${a}-${b}`} className={styles.link} data-constellation-final-link
             pathLength={1} style={{ animationDelay: "4.25s" }} d={pointsPath(edgePoints(a, b, layout))}
             stroke={`url(#constellation-line-${layout})`} fill="none" />
         )}
@@ -376,12 +377,16 @@ export function KnowledgeConstellation() {
   const [trip, setTrip] = useState(0);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [composed, setComposed] = useState(false);
+  const [introComplete, setIntroComplete] = useState(false);
   const active = hovered;
 
   useEffect(() => {
     const query = window.matchMedia("(prefers-reduced-motion: reduce)");
     setReducedMotion(query.matches);
-    if (query.matches) setComposed(true);
+    if (query.matches) {
+      setComposed(true);
+      setIntroComplete(true);
+    }
     const update = () => setReducedMotion(query.matches);
     query.addEventListener("change", update);
     return () => query.removeEventListener("change", update);
@@ -413,6 +418,22 @@ export function KnowledgeConstellation() {
 
   useEffect(() => {
     const section = sectionRef.current;
+    if (!section || !composed || introComplete) return;
+    const onAnimationEnd = (event: AnimationEvent) => {
+      if (event.target instanceof Element && event.target.hasAttribute("data-constellation-final-link")) {
+        setIntroComplete(true);
+      }
+    };
+    section.addEventListener("animationend", onAnimationEnd);
+    const fallback = window.setTimeout(() => setIntroComplete(true), BUILD_FALLBACK_MS);
+    return () => {
+      section.removeEventListener("animationend", onAnimationEnd);
+      window.clearTimeout(fallback);
+    };
+  }, [composed, introComplete]);
+
+  useEffect(() => {
+    const section = sectionRef.current;
     if (!section) return;
     const statementIncomplete = () => {
       const previous = section.previousElementSibling;
@@ -423,12 +444,13 @@ export function KnowledgeConstellation() {
     let snapTimer = 0;
     let lastScrollY = window.scrollY;
     let settlingTimer = 0;
+    const lowerLimit = () => composed && !introComplete ? -Infinity : -window.innerHeight * 0.35;
     const snap = () => {
       if (statementIncomplete()) return;
       const rect = section.getBoundingClientRect();
       if (rect.top >= window.innerHeight * 0.95
-        || rect.top < -window.innerHeight * 0.35
-        || (rect.top <= 2 && composed)) return;
+        || rect.top < lowerLimit()
+        || (rect.top <= 2 && composed && introComplete)) return;
       section.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
       snapTimer = window.setTimeout(() => { snapTimer = 0; }, 900);
     };
@@ -436,11 +458,29 @@ export function KnowledgeConstellation() {
       if (event.defaultPrevented || statementIncomplete()) return;
       const top = section.getBoundingClientRect().top;
       if (event.deltaY <= 0 || event.ctrlKey || top > window.innerHeight + 8
-        || top < -window.innerHeight * 0.35 || (top <= 2 && composed)) return;
+        || top < lowerLimit()
+        || (top <= 2 && composed && introComplete)) return;
       event.preventDefault();
+      if (composed && !introComplete && Math.abs(top) <= 4) return;
       if (snapTimer) return;
       section.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "start" });
       snapTimer = window.setTimeout(() => { snapTimer = 0; }, 900);
+    };
+    let touchStartY = 0;
+    const onTouchStart = (event: TouchEvent) => {
+      touchStartY = event.touches[0]?.clientY ?? 0;
+    };
+    const onTouchMove = (event: TouchEvent) => {
+      if (introComplete) return;
+      const currentY = event.touches[0]?.clientY ?? touchStartY;
+      const top = section.getBoundingClientRect().top;
+      if (touchStartY > currentY && top <= 4 && top >= lowerLimit()) event.preventDefault();
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (introComplete || !["ArrowDown", "PageDown", "End", " "].includes(event.key)) return;
+      if (event.key === " " && event.target instanceof Element && event.target.closest("button, a, input, textarea, select")) return;
+      const top = section.getBoundingClientRect().top;
+      if (Math.abs(top) <= 4) event.preventDefault();
     };
     const onScroll = () => {
       const movingDown = window.scrollY > lastScrollY + 1;
@@ -451,18 +491,24 @@ export function KnowledgeConstellation() {
     };
     window.addEventListener("wheel", onWheel, { passive: false });
     window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("keydown", onKeyDown);
     if (!composed) settlingTimer = window.setTimeout(snap, 220);
     return () => {
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("keydown", onKeyDown);
       window.clearTimeout(snapTimer);
       window.clearTimeout(settlingTimer);
     };
-  }, [composed, reducedMotion]);
+  }, [composed, introComplete, reducedMotion]);
 
   useEffect(() => {
     const section = sectionRef.current;
-    if (!section || !composed) return;
+    if (!section || !composed || !introComplete) return;
     let lockedUntil = 0;
     let touchStartY = 0;
     const nextSection = () => {
@@ -509,7 +555,7 @@ export function KnowledgeConstellation() {
       window.removeEventListener("touchstart", onTouchStart);
       window.removeEventListener("touchend", onTouchEnd);
     };
-  }, [composed, reducedMotion]);
+  }, [composed, introComplete, reducedMotion]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -548,7 +594,7 @@ export function KnowledgeConstellation() {
   };
 
   return (
-    <section ref={sectionRef} className={`${styles.section} ${composed ? styles.composed : ""}`} aria-labelledby="constellation-title" onPointerMove={moveLight} onPointerLeave={() => setHovered(null)}>
+    <section ref={sectionRef} className={`${styles.section} ${composed ? styles.composed : ""}`} data-constellation-complete={introComplete} aria-labelledby="constellation-title" onPointerMove={moveLight} onPointerLeave={() => setHovered(null)}>
       <div className={styles.intro}>
         <h2 id="constellation-title">Nel metodo Evolve tutto è connesso.</h2>
       </div>

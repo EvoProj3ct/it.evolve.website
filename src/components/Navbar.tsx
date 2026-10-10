@@ -27,8 +27,8 @@ const MENUS: Record<MenuKey, Menu> = {
     overviewHref: "/portfolio",
     items: [
       { label: "Software per il mondo finestra", href: "/portfolio" },
-      { label: "Sviluppo sartoriale", href: "/portfolio" },
-      { label: "Consulenza sartoriale", href: "/about" },
+      { label: "Consulenza e Sviluppo", href: "/portfolio" },
+      { label: "Progettazione e Stampa 3D", href: "/progettazione-e-stampa-3d" },
       { label: "Progettazione Agenti IA", href: "/portfolio" },
       { label: "Bandi", href: "/contact" },
     ],
