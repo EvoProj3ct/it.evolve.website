@@ -1,0 +1,181 @@
+.section {
+  --gutter: clamp(28px, 4.7vw, 92px);
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100svh;
+  overflow: hidden;
+  background: #fff;
+  color: #101814;
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 0 0 auto;
+  gap: 28px;
+  padding: clamp(85px, 11svh, 112px) var(--gutter) 0;
+}
+
+.heading h2 {
+  margin: 0;
+  font-size: clamp(42px, 4vw, 66px);
+  font-weight: 400;
+  letter-spacing: -.065em;
+  line-height: 1.05;
+}
+
+.track {
+  display: flex;
+  flex: 1 1 auto;
+  gap: clamp(22px, 2.1vw, 38px);
+  min-height: 0;
+  margin-top: clamp(48px, 7svh, 78px);
+  padding: 0 var(--gutter) 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--gutter);
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.track::-webkit-scrollbar { display: none; }
+
+.card {
+  display: flex;
+  flex: 0 0 clamp(270px, 21vw, 380px);
+  flex-direction: column;
+  min-width: 0;
+  padding-right: clamp(22px, 2.1vw, 38px);
+  border-right: 1px solid #e8ece8;
+  color: inherit;
+  text-decoration: none;
+  scroll-snap-align: start;
+}
+
+.media {
+  position: relative;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: 20px;
+  background: #fff;
+}
+
+.media::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px #e8ece8;
+  content: "";
+  pointer-events: none;
+}
+
+.logo {
+  width: 68%;
+  height: 68%;
+  object-fit: contain;
+  transition: transform .35s cubic-bezier(.2,.7,.2,1);
+}
+
+.wideLogo { transform: scale(1.4); }
+.card:hover .logo,
+.card:focus-visible .logo { transform: scale(1.07); }
+.card:hover .wideLogo,
+.card:focus-visible .wideLogo { transform: scale(1.48); }
+
+.cardTitle {
+  margin-top: clamp(18px, 2.6svh, 28px);
+  font-size: clamp(24px, 2vw, 32px);
+  font-weight: 400;
+  letter-spacing: -.045em;
+  line-height: 1.12;
+}
+
+.visit {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-top: 22px;
+  color: #3b4d41;
+  font-size: 16px;
+  transition: color .2s ease;
+}
+
+.card:hover .visit,
+.card:focus-visible .visit { color: #3b9a26; }
+.card:focus-visible { outline: 2px solid #72c94f; outline-offset: 5px; }
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 0 0 auto;
+  gap: 20px;
+  padding: 8px var(--gutter) clamp(25px, 4svh, 40px);
+  color: #69766e;
+  font-size: 13px;
+}
+
+.arrows { display: flex; gap: 9px; }
+.arrows button {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid #dde6dd;
+  border-radius: 50%;
+  background: #fff;
+  color: #1b2e20;
+  cursor: pointer;
+  font-size: 20px;
+  transition: background .2s ease, border-color .2s ease;
+}
+.arrows button:hover,
+.arrows button:focus-visible { background: #eaf6e5; border-color: #9bd285; }
+.arrows button:focus-visible { outline: 2px solid #62bb42; outline-offset: 2px; }
+
+@media (max-width: 700px) {
+  .section {
+    --card-mobile-width: min(calc(100vw - 64px), clamp(220px, calc(100svh - 260px), 320px));
+    --gutter: calc((100vw - var(--card-mobile-width)) / 2);
+    justify-content: flex-start;
+    padding-top: clamp(108px, 17svh, 150px);
+  }
+  .heading { gap: 10px; padding-top: 0; }
+  .heading h2 { font-size: clamp(28px, 8vw, 38px); }
+  .track {
+    flex: 0 0 auto;
+    margin-top: clamp(28px, 5svh, 42px);
+    gap: 18px;
+    padding-bottom: 0;
+    scroll-snap-type: none;
+  }
+  .card {
+    flex-basis: var(--card-mobile-width);
+    padding-right: 0;
+    border-right: 0;
+  }
+  .media { border-radius: 16px; }
+  .cardTitle { margin-top: 17px; font-size: 25px; }
+  .visit { margin-top: 9px; font-size: 14px; }
+  .controls { display: none; }
+}
+
+@media (max-height: 650px) and (min-width: 701px) {
+  .heading { padding-top: 65px; }
+  .track { margin-top: 30px; }
+  .card { flex-basis: min(28vw, 270px); }
+  .controls { padding-bottom: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo, .visit, .arrows button { transition: none; }
+  .track { scroll-behavior: auto; }
+}

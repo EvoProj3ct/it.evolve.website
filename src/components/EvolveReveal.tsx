@@ -7,6 +7,7 @@ import styles from "./EvolveReveal.module.css";
 
 export function EvolveReveal() {
   const sectionRef = useRef<HTMLElement>(null);
+  const completedOnceRef = useRef(false);
   const reduceMotion = useReducedMotion();
   const scrollYProgress = useMotionValue(0);
   const automaticProgress = useMotionValue(0);
@@ -31,6 +32,10 @@ export function EvolveReveal() {
     let opening: ReturnType<typeof animate> | undefined;
     const update = () => {
       frame = 0;
+      if (completedOnceRef.current) {
+        scrollYProgress.set(1);
+        return;
+      }
       const rect = section.getBoundingClientRect();
       const travel = rect.height - window.innerHeight;
       const value = travel > 0 ? -rect.top / travel : 1;
@@ -41,8 +46,14 @@ export function EvolveReveal() {
         opening = animate(automaticProgress, 1, { duration: 2.1, ease: [0.22, 0.84, 0.46, 1] });
       } else if (opened && rect.top >= window.innerHeight) {
         opening?.stop();
-        automaticProgress.set(0);
-        opened = false;
+        if (automaticProgress.get() >= 0.98) {
+          completedOnceRef.current = true;
+          automaticProgress.set(1);
+          scrollYProgress.set(1);
+        } else {
+          automaticProgress.set(0);
+          opened = false;
+        }
       }
     };
     const scheduleUpdate = () => {
@@ -70,7 +81,6 @@ export function EvolveReveal() {
     let lockedUntil = 0;
     let touchStartY = 0;
     let completionTimer = 0;
-    let exiting = false;
     const active = () => {
       const rect = section.getBoundingClientRect();
       return rect.top <= 96 && rect.bottom > window.innerHeight * 0.35;
@@ -88,24 +98,25 @@ export function EvolveReveal() {
       window.scrollBy({ top: remaining, behavior: reduceMotion ? "auto" : "smooth" });
     };
     const checkCompletion = () => {
+      if (completedOnceRef.current) return;
       const rect = section.getBoundingClientRect();
-      const travel = rect.height - window.innerHeight;
-      if (travel > 0 && -rect.top / travel < 0.98) exiting = false;
       const full = automaticProgress.get() >= 0.98
         && rect.bottom <= window.innerHeight + 2
         && rect.bottom >= window.innerHeight - 2;
-      if (!full || exiting) {
+      if (!full) {
         window.clearTimeout(completionTimer);
         completionTimer = 0;
         return;
       }
       if (completionTimer) return;
+      completedOnceRef.current = true;
+      automaticProgress.set(1);
+      scrollYProgress.set(1);
       completionTimer = window.setTimeout(() => {
         completionTimer = 0;
         const latest = section.getBoundingClientRect();
         if (!active() || latest.bottom > window.innerHeight + 2
           || latest.bottom < window.innerHeight - 2) return;
-        exiting = true;
         goToNextSection();
       }, 520);
     };
@@ -115,7 +126,7 @@ export function EvolveReveal() {
         || !(event.target instanceof Node) || !section.contains(event.target)) return;
       event.preventDefault();
       if (performance.now() < lockedUntil) return;
-      if (reduceMotion) goToNextSection();
+      if (reduceMotion || completedOnceRef.current) goToNextSection();
       else if (scrollYProgress.get() < 0.995) completeExpansion();
     };
     const onTouchStart = (event: TouchEvent) => {
@@ -128,7 +139,7 @@ export function EvolveReveal() {
     const onTouchEnd = (event: TouchEvent) => {
       const endY = event.changedTouches[0]?.clientY ?? touchStartY;
       if (touchStartY - endY <= 45 || !active() || performance.now() < lockedUntil) return;
-      if (reduceMotion) goToNextSection();
+      if (reduceMotion || completedOnceRef.current) goToNextSection();
       else if (scrollYProgress.get() < 0.995) completeExpansion();
     };
 

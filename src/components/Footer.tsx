@@ -1,97 +1,63 @@
-"use client";
-
+import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
 import { CookiePreferencesButton } from "@/components/legal/cookie-preferences-button";
+import { MenuGhost } from "@/components/MenuGhost";
+import styles from "./Footer.module.css";
 
-// ✅ nuovo path (cartella waveBattery)
-import FooterMiniGame from "@/components/waveBattery/FooterMiniGame";
+const exploreLinks = [
+  { label: "Home", href: "/" },
+  { label: "Chi siamo", href: "/about" },
+  { label: "Portfolio", href: "/portfolio" },
+  { label: "Risorse", href: "/utils" },
+];
 
-function pickAccent() {
-    const accents = ["var(--accent-blue)", "var(--accent-purple)", "var(--accent-yellow)"];
-    return accents[Math.floor(Math.random() * accents.length)];
-}
+const moreLinks = [
+  { label: "Eventi", href: "/rimani-aggiornato" },
+  { label: "Chiedilo all'IA", href: "/chiedilo-all-ia" },
+  { label: "Contatti", href: "/contact" },
+];
 
 export function SiteFooter() {
-    const rootRef = useRef<HTMLElement | null>(null);
+  return (
+    <footer className={styles.footer} aria-label="Piè di pagina">
+      <div className={styles.inner}>
+        <div className={styles.content}>
+          <div className={styles.brand}>
+            <Link href="/" aria-label="Evolve, homepage" className={styles.brandLink}>
+              <Image src="/logo_bianco.png" alt="Evolve" width={122} height={101} />
+            </Link>
+          </div>
 
-    useEffect(() => {
-        const root = rootRef.current;
-        if (!root) return;
+          <nav className={styles.column} aria-label="Esplora il sito">
+            <h3>Esplora</h3>
+            {exploreLinks.map((link) => <Link key={link.href} href={link.href}><span className={styles.linkGhostSlot}><MenuGhost /></span>{link.label}</Link>)}
+          </nav>
 
-        const links = Array.from(root.querySelectorAll<HTMLAnchorElement>(".footer-link"));
+          <nav className={styles.column} aria-label="Altre pagine">
+            <h3>Scopri</h3>
+            {moreLinks.map((link) => <Link key={link.href} href={link.href}><span className={styles.linkGhostSlot}><MenuGhost /></span>{link.label}</Link>)}
+          </nav>
 
-        const handlers = links.map((a) => {
-            const onEnter = () => a.style.setProperty("--hover-accent", pickAccent());
-            a.addEventListener("mouseenter", onEnter);
-            return { a, onEnter };
-        });
+          <address className={styles.contact}>
+            <h3>Contatti</h3>
+            <a className={styles.email} href="mailto:infoevolvecompany@gmail.com">infoevolvecompany@gmail.com</a>
+            <p>Via Ciciliano, 59/b<br />00036 Palestrina (RM)</p>
+            <p>P. IVA 18138881000</p>
+          </address>
 
-        return () => {
-            handlers.forEach(({ a, onEnter }) => a.removeEventListener("mouseenter", onEnter));
-        };
-    }, []);
+          <p className={styles.tagline}>Think Different.<br />Think to Evolve.</p>
+        </div>
 
-    return (
-        <footer ref={rootRef as any} className="footer-section" aria-label="Footer">
-            <div className="footer-wrap">
-                <div className="footer-grid">
-                    {/* COL 1 */}
-                    <div className="footer-col">
-                        <h3 className="footer-title">Contattaci</h3>
-
-                        <div className="footer-item">
-                            <span className="footer-itemLabel">Sede Legale</span>
-                            <p className="footer-itemText">Via Ciciliano, 59/b 00036 Palestrina (RM)</p>
-                        </div>
-
-                        <div className="footer-item">
-                            <span className="footer-itemLabel">Scrivici</span>
-                            <a className="footer-link" href="mailto:infoevolvecompany@gmail.com">
-                                infoevolvecompany@gmail.com
-                            </a>
-                        </div>
-
-                        <div className="footer-item">
-                            <span className="footer-itemLabel">P.IVA</span>
-                            <a className="footer-link" href="">
-                                P.IVA: 18138881000
-                            </a>
-                        </div>
-                    </div>
-
-                    {/* COL 2 */}
-                    <div className="footer-col">
-                        <h3 className="footer-title">Sfidaci!</h3>
-
-                        {/* Mini gioco 8-bit */}
-                        <FooterMiniGame />
-                    </div>
-
-                    {/* COL 3 */}
-                    <div className="footer-col footer-brand">
-                        <div className="footer-logo"></div>
-
-                        <div className="footer-socials" aria-label="Social">
-                            <Link className="footer-socialBtn" href="#" aria-label="Facebook">f</Link>
-                            <Link className="footer-socialBtn" href="#" aria-label="X">𝕏</Link>
-                            <Link className="footer-socialBtn" href="#" aria-label="Instagram">⌁</Link>
-                            <Link className="footer-socialBtn" href="#" aria-label="YouTube">A</Link>
-                        </div>
-
-                        <div className="footer-copy">
-                            © {new Date().getFullYear()}, <span className="footer-copyBrand">Evolve</span>. Think Deeper{" "}
-                            <span className="footer-copyAccent">Think to Evolve</span>.
-                        </div>
-                        <div className="mt-4 flex flex-wrap justify-center gap-3 text-xs">
-                            <Link className="footer-link" href="/privacy">Privacy</Link>
-                            <Link className="footer-link" href="/cookie-policy">Cookie Policy</Link>
-                            <Link className="footer-link" href="/sicurezza">Sicurezza</Link>
-                            <CookiePreferencesButton className="footer-link" />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </footer>
-    );
+        <div className={styles.bottom}>
+          <span>© {new Date().getFullYear()} Evolve</span>
+          <div className={styles.legal}>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/cookie-policy">Cookie Policy</Link>
+            <Link href="/sicurezza">Sicurezza</Link>
+            <CookiePreferencesButton className={styles.legalButton} />
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
 }

@@ -1,0 +1,326 @@
+.section {
+  --light-x: 50%;
+  --light-y: 52%;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  height: 100svh;
+  padding: clamp(70px, 9svh, 96px) clamp(24px, 5vw, 96px) clamp(16px, 3svh, 30px);
+  overflow: hidden;
+  background: #080d0a;
+  color: #f6faf5;
+}
+
+.section::before,
+.section::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+}
+
+.section::before {
+  background: radial-gradient(570px circle at var(--light-x) var(--light-y), rgb(111 194 82 / 9%), transparent 72%);
+}
+
+.section::after {
+  background:
+    radial-gradient(ellipse 43% 40% at 66% 62%, rgb(30 74 43 / 13%), transparent),
+    linear-gradient(180deg, #0b110d 0%, #070b09 100%);
+  z-index: -2;
+}
+
+.intro {
+  position: relative;
+  z-index: 3;
+  max-width: 1400px;
+  flex: 0 0 auto;
+}
+
+.intro h2 {
+  margin: 0;
+  font-size: clamp(36px, 3.5vw, 56px);
+  font-weight: 400;
+  line-height: 1.04;
+  letter-spacing: -.068em;
+}
+
+.graph {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 8px auto 0;
+}
+
+.desktopGraph {
+  max-width: 1400px;
+}
+
+.mobileGraph {
+  display: none;
+}
+
+.graphLines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.origin {
+  fill: #8fcb79;
+  opacity: 0;
+  filter: drop-shadow(0 0 7px rgb(114 201 79 / 50%));
+}
+
+.composed .origin {
+  animation: satelliteAppear .7s ease-out both;
+}
+
+.link {
+  stroke-width: 1.15;
+  vector-effect: non-scaling-stroke;
+  opacity: .72;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: opacity .35s ease, stroke .35s ease, filter .35s ease;
+}
+
+.composed .link {
+  animation: drawLine .72s cubic-bezier(.22,.75,.27,1) both;
+}
+
+.activeRoute {
+  fill: none;
+  stroke: #84d468;
+  stroke-width: 1.45;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: miter;
+  opacity: .84;
+  filter: drop-shadow(0 0 4px rgb(114 201 79 / 38%));
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: highlightDraw .72s cubic-bezier(.24,.68,.3,1) both;
+}
+
+.route {
+  fill: none;
+  stroke: #bbf4a3;
+  stroke-width: 1.7;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: miter;
+  opacity: .88;
+  filter: drop-shadow(0 0 5px rgb(114 201 79 / 58%));
+  stroke-dasharray: 6 8;
+  animation: routePulse 1.4s linear infinite;
+}
+
+.ghostSprite {
+  filter: drop-shadow(0 0 6px rgb(114 201 79 / 34%));
+}
+
+.travelGhost {
+  position: absolute;
+  z-index: 5;
+  width: 22px;
+  height: 21px;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  will-change: left, top;
+}
+
+.travelGhost svg { display: block; width: 22px; height: 21px; }
+
+.node {
+  position: absolute;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  outline-offset: 5px;
+  background: none;
+  color: #f5faf4;
+  cursor: pointer;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.composed .node {
+  animation: nodeAppear .58s cubic-bezier(.18,.82,.32,1) both;
+}
+
+.nodeHalo {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgb(191 229 189 / 22%);
+  border-radius: 50%;
+  background: rgb(114 201 79 / 2%);
+  transition: width .36s ease, height .36s ease, border-color .36s ease, background .36s ease, box-shadow .36s ease;
+}
+
+.nodeCore {
+  position: relative;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #b6d2b7;
+  box-shadow: 0 0 0 3px rgb(182 210 183 / 9%);
+  transition: background .3s ease, box-shadow .3s ease, transform .3s ease;
+}
+
+.nodeLabel {
+  position: absolute;
+  top: 45px;
+  left: 50%;
+  display: block;
+  width: max-content;
+  max-width: 210px;
+  color: #eff9ec;
+  font-size: clamp(15px, 1.15vw, 17px);
+  font-weight: 400;
+  letter-spacing: -.025em;
+  line-height: 1.2;
+  text-align: center;
+  text-shadow: 0 2px 12px #080d0a;
+  opacity: 0;
+  transform: translate(-50%, -5px);
+  transition: opacity .32s ease, transform .32s ease;
+  pointer-events: none;
+}
+
+.nodeActive .nodeHalo,
+.nodeSelected .nodeHalo,
+.node:focus-visible .nodeHalo {
+  width: 42px;
+  height: 42px;
+  border-color: rgb(141 214 110 / 55%);
+  background: rgb(114 201 79 / 8%);
+  box-shadow: 0 0 35px rgb(114 201 79 / 18%);
+}
+
+.nodeActive .nodeCore,
+.nodeSelected .nodeCore,
+.node:focus-visible .nodeCore {
+  background: #a4ec80;
+  box-shadow: 0 0 0 4px rgb(114 201 79 / 18%), 0 0 18px rgb(114 201 79 / 65%);
+  transform: scale(1.2);
+}
+
+.nodeActive .nodeLabel,
+.nodeSelected .nodeLabel,
+.node:focus-visible .nodeLabel {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+.detail {
+  position: absolute;
+  z-index: 8;
+  top: clamp(112px, 16%, 160px);
+  right: clamp(24px, 5vw, 96px);
+  width: min(390px, calc(100% - 48px));
+  padding: 23px 26px 25px;
+  border: 1px solid rgb(177 214 176 / 16%);
+  border-radius: 8px;
+  background: rgb(17 28 20 / 96%);
+  box-shadow: 0 24px 75px rgb(0 0 0 / 32%);
+  backdrop-filter: blur(20px);
+  animation: detailEnter .38s cubic-bezier(.2,.8,.25,1) both;
+}
+
+.detailTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.detailTop {
+  color: #98b29a;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .15em;
+}
+
+.close {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin: -8px -9px 0 0;
+  border: 0;
+  background: transparent;
+  color: #c3d2c2;
+  font-size: 25px;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+  transition: color .2s ease, transform .2s ease;
+}
+
+.close:hover { color: #fff; transform: rotate(90deg); }
+.close:focus-visible { outline: 2px solid #72c94f; }
+
+.detailMarker {
+  width: 26px;
+  height: 2px;
+  margin: 30px 0 15px;
+  background: #72c94f;
+  box-shadow: 0 0 14px rgb(114 201 79 / 60%);
+}
+
+.detail h3 {
+  margin: 0;
+  font-size: clamp(32px, 3vw, 41px);
+  font-weight: 400;
+  letter-spacing: -.06em;
+  line-height: 1.08;
+}
+
+.detail p {
+  margin: 18px 0 29px;
+  color: #bfcbc0;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+@keyframes drawLine { to { stroke-dashoffset: 0; } }
+@keyframes highlightDraw { to { stroke-dashoffset: 0; } }
+@keyframes satelliteAppear { from { opacity: 0; } to { opacity: .66; } }
+@keyframes nodeAppear { from { opacity: 0; scale: .6; } to { opacity: 1; scale: 1; } }
+@keyframes detailEnter { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes routePulse { to { stroke-dashoffset: -14; } }
+
+@media (max-width: 720px) {
+  .section { padding: 68px 12px 14px; }
+  .intro h2 { max-width: 390px; font-size: clamp(31px, 8.3vw, 43px); line-height: 1.06; }
+  .desktopGraph { display: none; }
+  .mobileGraph { display: block; max-width: 360px; height: auto; margin: 10px auto 0; }
+  .mobileGraph .node { width: 48px; height: 48px; }
+  .mobileGraph .nodeHalo { width: 23px; height: 23px; }
+  .mobileGraph .nodeLabel { top: 36px; max-width: 106px; width: 106px; font-size: 12px; line-height: 1.08; opacity: 0; transform: translate(-50%, -5px); }
+  .mobileGraph .nodeActive .nodeLabel, .mobileGraph .nodeSelected .nodeLabel { opacity: 1; color: #abeb93; }
+  .detail { top: 150px; right: 14px; left: auto; width: min(330px, calc(100% - 28px)); padding: 20px 22px 22px; }
+  .detailMarker { margin-top: 20px; }
+  .detail h3 { font-size: 32px; }
+  .detail p { margin: 13px 0 20px; font-size: 14px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .composed .link, .composed .node, .detail, .route, .activeRoute { animation: none; }
+  .link, .activeRoute { stroke-dashoffset: 0; }
+  .node, .route { opacity: 1; }
+  .route { stroke-dasharray: none; }
+}

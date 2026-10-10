@@ -1,0 +1,30 @@
+.ghost {
+  flex: none;
+  opacity: 0;
+  transform: translateX(-4px);
+  shape-rendering: crispEdges;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.body { fill: #1c2a20; }
+
+a:hover .ghost,
+a:focus-visible .ghost {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+a:hover .body,
+a:focus-visible .body {
+  animation: menuGhostBlink 560ms steps(1, end) infinite;
+}
+
+@keyframes menuGhostBlink {
+  0%, 49% { fill: #1c2a20; }
+  50%, 100% { fill: #cbdcc9; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghost { transition: none; }
+  a:hover .body, a:focus-visible .body { animation: none; }
+}

@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { SupportChat } from "@/components/SupportChat";
+import { MenuGhost } from "@/components/MenuGhost";
 import styles from "./Navbar.module.css";
 
 type MenuKey = "services" | "events" | "utils";
@@ -251,7 +252,7 @@ export function Navbar() {
                       transition={{ duration: reduceMotion ? 0 : 0.38, delay: reduceMotion ? 0 : 0.08 + index * 0.075, ease: [0.22, 1, 0.36, 1] }}
                     >
                       <Link href={item.href} className={styles.megaItem} onClick={closeNavigation}>
-                        {item.label}
+                        <span>{item.label}</span><MenuGhost />
                       </Link>
                     </motion.div>
                   ))}
