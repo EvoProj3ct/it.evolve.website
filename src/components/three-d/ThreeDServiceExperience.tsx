@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ModelScene } from "./ModelScene";
 import { LayerPrintScene } from "./LayerPrintScene";
@@ -70,6 +71,7 @@ function clamp(value: number) {
 }
 
 export function ThreeDServiceExperience() {
+  const gridRef = useRef<HTMLDivElement>(null);
   const designRef = useRef<HTMLDivElement>(null);
   const printRef = useRef<HTMLDivElement>(null);
   const lastPrintStepRef = useRef<HTMLElement>(null);
@@ -84,24 +86,27 @@ export function ThreeDServiceExperience() {
 
     const measure = () => {
       frame = 0;
+      const mobile = window.innerWidth <= 800;
+      const viewportHeight = mobile
+        ? (gridRef.current?.getBoundingClientRect().height ?? window.innerHeight)
+        : window.innerHeight;
       const progressFor = (element: HTMLElement | null) => {
         if (!element) return 0;
         const rect = element.getBoundingClientRect();
-        const distance = Math.max(1, rect.height - window.innerHeight);
+        const distance = Math.max(1, rect.height - viewportHeight);
         return clamp(-rect.top / distance);
       };
       const nextDesign = progressFor(designRef.current);
       const nextPrint = progressFor(printRef.current);
-      const printTop = printRef.current?.getBoundingClientRect().top ?? window.innerHeight;
-      const visualHeight = visualStageRef.current?.getBoundingClientRect().height ?? window.innerHeight;
-      const mobile = window.innerWidth <= 800;
-      const handoffStart = mobile ? window.innerHeight - visualHeight * .1 : window.innerHeight * .5;
-      const handoffDistance = mobile ? visualHeight * .8 : window.innerHeight * .45;
+      const printTop = printRef.current?.getBoundingClientRect().top ?? viewportHeight;
+      const visualHeight = visualStageRef.current?.getBoundingClientRect().height ?? viewportHeight;
+      const handoffStart = mobile ? viewportHeight - visualHeight * .1 : viewportHeight * .5;
+      const handoffDistance = mobile ? visualHeight * .8 : viewportHeight * .45;
       const transition = clamp(
         (handoffStart - printTop) / Math.max(1, handoffDistance)
       );
       const nextHandoff = transition * transition * (3 - 2 * transition);
-      const lastStepTop = lastPrintStepRef.current?.getBoundingClientRect().top ?? window.innerHeight;
+      const lastStepTop = lastPrintStepRef.current?.getBoundingClientRect().top ?? viewportHeight;
       // Carry the drawing through the entire final step at the same scroll distance as its text.
       const nextPrintExitOffset = Math.max(0, -lastStepTop);
       setDesignProgress((previous) => Math.abs(previous - nextDesign) < 0.001 ? previous : nextDesign);
@@ -126,7 +131,7 @@ export function ThreeDServiceExperience() {
 
   return (
     <main className={styles.page}>
-      <div className={styles.grid} aria-hidden="true" />
+      <div ref={gridRef} className={styles.grid} aria-hidden="true" />
       <div className={styles.experience}>
         <div ref={visualStageRef} className={styles.visualStage}>
           <aside className={`${styles.visual} ${styles.designVisual}`} style={{ opacity: 1 - handoff }} aria-label="Modello dimostrativo tridimensionale che si trasforma durante lo scorrimento">
@@ -165,6 +170,11 @@ export function ThreeDServiceExperience() {
           ))}
         </div>
       </div>
+      <section className={styles.quoteCta} aria-label="Preventivatore 3D">
+        <Link href="/preventivatore" className={styles.quoteLink}>
+          Vai al preventivatore
+        </Link>
+      </section>
     </main>
   );
 }

@@ -101,7 +101,10 @@ export function LayerPrintScene({ progress, exitOffset = 0 }: { progress: number
   }, [progress]);
 
   useEffect(() => () => {
-    if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
+    if (frameRef.current !== null) {
+      window.cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
   }, []);
 
   const scaled = Math.min(layerCount, prebuiltLayers + Math.max(0, visibleProgress) * (layerCount - prebuiltLayers));
