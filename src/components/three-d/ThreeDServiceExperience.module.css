@@ -21,32 +21,49 @@
   background-size: 48px 48px, 48px 48px, 240px 240px, 240px 240px;
 }
 
-.layout {
+.experience {
+  position: relative;
+  z-index: 1;
+}
+
+.visualStage {
+  position: sticky;
+  top: 60px;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  height: calc(100svh - 60px);
+  margin-bottom: calc(60px - 100svh);
+  pointer-events: none;
+}
+
+.visual {
+  position: relative;
+  min-width: 0;
+  grid-row: 1;
+  overflow: hidden;
+  will-change: opacity;
+  background: radial-gradient(circle at 50% 48%, rgba(31, 78, 35, .36), transparent 62%);
+}
+.designVisual { grid-column: 1; }
+.printVisual { grid-column: 2; }
+
+.story {
   position: relative;
   z-index: 1;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  min-width: 0;
 }
-
-.visual {
-  position: sticky;
-  top: 60px;
-  align-self: start;
-  height: calc(100svh - 60px);
-  overflow: hidden;
-  background: radial-gradient(circle at 50% 48%, rgba(31, 78, 35, .36), transparent 62%);
-}
-.printVisual { grid-column: 2; grid-row: 1; }
-.printStory { grid-column: 1; grid-row: 1; }
-
-.story { min-width: 0; }
+.designStory .step { grid-column: 2; }
+.printStory .step { grid-column: 1; }
 .step {
   display: flex;
   align-items: center;
   min-height: 100svh;
   padding: 110px clamp(32px, 7.6vw, 148px) 80px;
 }
-.stepInner { max-width: 630px; }
+.stepInner { width: 100%; max-width: 630px; }
 
 .eyebrow,
 .overline {
@@ -74,15 +91,13 @@
   line-height: 1.48;
 }
 @media (max-width: 800px) {
-  .layout { display: block; }
-  .printVisual,
-  .printStory { grid-column: auto; grid-row: auto; }
-  .visual {
-    --scene-height: clamp(225px, 42svh, 400px);
+  .experience { --scene-height: clamp(360px, 66svh, 570px); }
+  .visualStage {
+    --fade-height: 76px;
     top: calc(100svh - var(--scene-height));
-    z-index: 3;
     height: var(--scene-height);
     margin-bottom: calc(0px - var(--scene-height));
+    grid-template-columns: minmax(0, 1fr);
     background-color: #060c08;
     background-image:
       radial-gradient(circle at 50% 48%, rgba(31, 78, 35, .36), transparent 62%),
@@ -91,12 +106,35 @@
     background-size: auto, 48px 48px, 48px 48px;
     background-position: center, 0 calc(var(--scene-height) - 100svh), 0 calc(var(--scene-height) - 100svh);
   }
+  .visualStage::before {
+    position: absolute;
+    z-index: 4;
+    top: calc(0px - var(--fade-height));
+    right: 0;
+    left: 0;
+    height: calc(var(--fade-height) + 10px);
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(130, 176, 131, .055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(130, 176, 131, .055) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(6, 12, 8, 0), rgba(6, 12, 8, .65) 45%, #060c08 72%);
+    background-size: 48px 48px, 48px 48px, auto;
+    background-position:
+      0 calc(var(--scene-height) + var(--fade-height) - 100svh),
+      0 calc(var(--scene-height) + var(--fade-height) - 100svh),
+      center;
+    content: "";
+  }
+  .visual { grid-column: 1; background: none; }
+  .story { grid-template-columns: minmax(0, 1fr); }
+  .designStory .step,
+  .printStory .step { grid-column: 1; }
   .step {
     position: relative;
     z-index: 2;
-    align-items: flex-start;
+    align-items: flex-end;
     min-height: 100svh;
-    padding: clamp(98px, 13svh, 125px) 28px 40px;
+    padding: 72px 28px calc(var(--scene-height) + 30px);
   }
   .eyebrow { margin-bottom: 35px; }
   .title { max-width: 600px; font-size: clamp(47px, 11vw, 74px); }
@@ -104,8 +142,8 @@
 }
 
 @media (max-width: 480px) {
-  .visual { --scene-height: clamp(225px, 38svh, 340px); }
-  .step { padding: 82px 24px 36px; }
+  .experience { --scene-height: clamp(340px, 66svh, 530px); }
+  .step { padding: 72px 24px calc(var(--scene-height) + 26px); }
   .eyebrow { margin-bottom: 24px; }
   .title { font-size: clamp(36px, 10.2vw, 50px); }
   .copy { font-size: 17px; }

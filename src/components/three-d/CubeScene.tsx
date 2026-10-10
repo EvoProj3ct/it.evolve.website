@@ -83,6 +83,10 @@ export function CubeScene({ progress }: CubeSceneProps) {
       const cameraPosition = new THREE.Vector3(0, 12, .001).lerp(new THREE.Vector3(6.7, 7, 9.3), cameraLift);
       camera.position.copy(cameraPosition);
       camera.lookAt(0, .3, 0);
+      if (window.innerWidth <= 800) {
+        const screenUp = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
+        camera.position.addScaledVector(screenUp, -camera.top * .24);
+      }
       camera.updateProjectionMatrix();
       assembly.rotation.y = turn * .7;
       assembly.rotation.x = turn * .1;
@@ -112,7 +116,10 @@ export function CubeScene({ progress }: CubeSceneProps) {
       const width = Math.max(1, mount.clientWidth);
       const height = Math.max(1, mount.clientHeight);
       const aspect = width / height;
-      const span = aspect < .85 ? 4.6 : 4.05;
+      const compactSpan = aspect < .85 ? 3.7 : 3.25;
+      const span = window.innerWidth <= 800
+        ? (aspect < .85 ? 4.8 : 4.3)
+        : width <= 800 ? compactSpan : (aspect < .85 ? 4.6 : 4.05);
       camera.left = -span * aspect;
       camera.right = span * aspect;
       camera.top = span;

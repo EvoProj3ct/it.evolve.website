@@ -9,25 +9,19 @@
 
 .curtain {
   position: absolute;
-  right: 0;
-  left: 0;
-  height: 50%;
-  overflow: hidden;
+  inset: 0;
   background-color: #0b120e;
   background-image: radial-gradient(ellipse at 51% 48%, #16261b 0%, #101a13 45%, #0b120e 100%);
   background-repeat: no-repeat;
-  background-size: 100vw 100svh;
   will-change: transform;
 }
 
 .curtainTop {
-  top: 0;
-  background-position: center top;
+  clip-path: inset(0 0 calc(50% - 1px) 0);
 }
 
 .curtainBottom {
-  bottom: 0;
-  background-position: center bottom;
+  clip-path: inset(calc(50% - 1px) 0 0 0);
 }
 
 .logoPiece {
@@ -38,8 +32,7 @@
   pointer-events: none;
 }
 
-.logoTop { top: 100%; }
-.logoBottom { top: 0; }
+.logoTop, .logoBottom { top: 50%; }
 
 .logoPiece img {
   display: block;

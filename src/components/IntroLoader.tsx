@@ -45,7 +45,7 @@ export function IntroLoader() {
       <motion.div
         className={`${styles.curtain} ${styles.curtainTop}`}
         initial={{ y: "0%" }}
-        animate={{ y: phase === "reveal" ? "-102%" : "0%" }}
+        animate={{ y: phase === "reveal" ? "-51%" : "0%" }}
         transition={{ duration: CURTAIN_DURATION_S, delay: phase === "reveal" ? CURTAIN_DELAY_S : 0, ease: [0.76, 0, 0.2, 1] }}
       >
         <div className={`${styles.logoPiece} ${styles.logoTop}`}>
@@ -55,7 +55,7 @@ export function IntroLoader() {
       <motion.div
         className={`${styles.curtain} ${styles.curtainBottom}`}
         initial={{ y: "0%" }}
-        animate={{ y: phase === "reveal" ? "102%" : "0%" }}
+        animate={{ y: phase === "reveal" ? "51%" : "0%" }}
         transition={{ duration: CURTAIN_DURATION_S, delay: phase === "reveal" ? CURTAIN_DELAY_S : 0, ease: [0.76, 0, 0.2, 1] }}
       >
         <div className={`${styles.logoPiece} ${styles.logoBottom}`}>

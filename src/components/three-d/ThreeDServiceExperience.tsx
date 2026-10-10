@@ -72,8 +72,10 @@ function clamp(value: number) {
 export function ThreeDServiceExperience() {
   const designRef = useRef<HTMLDivElement>(null);
   const printRef = useRef<HTMLDivElement>(null);
+  const visualStageRef = useRef<HTMLDivElement>(null);
   const [designProgress, setDesignProgress] = useState(0);
   const [printProgress, setPrintProgress] = useState(0);
+  const [handoff, setHandoff] = useState(0);
 
   useEffect(() => {
     let frame = 0;
@@ -88,8 +90,18 @@ export function ThreeDServiceExperience() {
       };
       const nextDesign = progressFor(designRef.current);
       const nextPrint = progressFor(printRef.current);
+      const printTop = printRef.current?.getBoundingClientRect().top ?? window.innerHeight;
+      const visualHeight = visualStageRef.current?.getBoundingClientRect().height ?? window.innerHeight;
+      const mobile = window.innerWidth <= 800;
+      const handoffStart = mobile ? window.innerHeight - visualHeight * .1 : window.innerHeight * .5;
+      const handoffDistance = mobile ? visualHeight * .8 : window.innerHeight * .45;
+      const transition = clamp(
+        (handoffStart - printTop) / Math.max(1, handoffDistance)
+      );
+      const nextHandoff = transition * transition * (3 - 2 * transition);
       setDesignProgress((previous) => Math.abs(previous - nextDesign) < 0.001 ? previous : nextDesign);
       setPrintProgress((previous) => Math.abs(previous - nextPrint) < 0.001 ? previous : nextPrint);
+      setHandoff((previous) => Math.abs(previous - nextHandoff) < 0.001 ? previous : nextHandoff);
     };
 
     const schedule = () => {
@@ -109,12 +121,17 @@ export function ThreeDServiceExperience() {
   return (
     <main className={styles.page}>
       <div className={styles.grid} aria-hidden="true" />
-      <div ref={designRef} className={styles.layout}>
-        <aside className={styles.visual} aria-label="Modello dimostrativo tridimensionale che si trasforma durante lo scorrimento">
-          <CubeScene progress={designProgress} />
-        </aside>
+      <div className={styles.experience}>
+        <div ref={visualStageRef} className={styles.visualStage}>
+          <aside className={`${styles.visual} ${styles.designVisual}`} style={{ opacity: 1 - handoff }} aria-label="Modello dimostrativo tridimensionale che si trasforma durante lo scorrimento">
+            <CubeScene progress={designProgress} />
+          </aside>
+          <aside className={`${styles.visual} ${styles.printVisual}`} style={{ opacity: handoff }} aria-label="Animazione vettoriale della stampa di un cubo strato dopo strato">
+            <LayerPrintScene progress={printProgress} />
+          </aside>
+        </div>
 
-        <div className={styles.story}>
+        <div ref={designRef} className={`${styles.story} ${styles.designStory}`}>
           {steps.map((step, index) => (
             <section key={step.number} className={styles.step} aria-labelledby={`three-d-step-${index}`}>
               <div className={styles.stepInner}>
@@ -130,13 +147,7 @@ export function ThreeDServiceExperience() {
             </section>
           ))}
         </div>
-      </div>
-
-      <div ref={printRef} className={styles.layout}>
-        <aside className={`${styles.visual} ${styles.printVisual}`} aria-label="Animazione vettoriale della stampa di un cubo strato dopo strato">
-          <LayerPrintScene progress={printProgress} />
-        </aside>
-        <div className={`${styles.story} ${styles.printStory}`}>
+        <div ref={printRef} className={`${styles.story} ${styles.printStory}`}>
           {printSteps.map((step) => (
             <section key={step.number} className={styles.step} aria-labelledby={`three-d-step-${step.number}`}>
               <div className={styles.stepInner}>

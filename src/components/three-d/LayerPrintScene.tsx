@@ -83,6 +83,8 @@ export function LayerPrintScene({ progress }: { progress: number }) {
   const partial = completeCount === layerCount ? 1 : scaled - completeCount;
   const nozzle = pointOnPerimeter(activeLayer, partial);
   const topCorners = corners(layerCount - 1);
+  const [baseA, baseB, baseC] = corners(0);
+  const [topA, topB, topC, topD] = corners(scaled - 1);
 
   return (
     <div className={styles.scene}>
@@ -95,17 +97,14 @@ export function LayerPrintScene({ progress }: { progress: number }) {
           ))}
         </g>
 
+        <polygon className={styles.front} points={points([topA, topB, { x: baseB.x, y: baseB.y + layerHeight }, { x: baseA.x, y: baseA.y + layerHeight }])} />
+        <polygon className={styles.side} points={points([topB, topC, { x: baseC.x, y: baseC.y + layerHeight }, { x: baseB.x, y: baseB.y + layerHeight }])} />
         {Array.from({ length: completeCount }, (_, index) => {
-          const [a, b, c, d] = corners(index);
-          return (
-            <g key={index} className={styles.layer}>
-              <polygon className={styles.front} points={points([a, b, { x: b.x, y: b.y + layerHeight }, { x: a.x, y: a.y + layerHeight }])} />
-              <polygon className={styles.side} points={points([b, c, { x: c.x, y: c.y + layerHeight }, { x: b.x, y: b.y + layerHeight }])} />
-              <polygon className={styles.top} points={points([a, b, c, d])} />
-              <path d={perimeterPath(index)} />
-            </g>
-          );
+          const [a, b, c] = corners(index);
+          return <path key={index} className={styles.contour} d={`M ${a.x} ${a.y} L ${b.x} ${b.y} L ${c.x} ${c.y}`} />;
         })}
+        <polygon className={styles.top} points={points([topA, topB, topC, topD])} />
+        <path className={styles.topOutline} d={perimeterPath(scaled - 1)} />
 
         {completeCount < layerCount && (
           <path
