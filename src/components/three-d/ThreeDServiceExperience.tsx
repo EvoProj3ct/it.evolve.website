@@ -107,8 +107,8 @@ export function ThreeDServiceExperience() {
       );
       const nextHandoff = transition * transition * (3 - 2 * transition);
       const lastStepTop = lastPrintStepRef.current?.getBoundingClientRect().top ?? viewportHeight;
-      // Carry the drawing through the entire final step at the same scroll distance as its text.
-      const nextPrintExitOffset = Math.max(0, -lastStepTop);
+      // The full-height mobile stage leaves with the last step on its own.
+      const nextPrintExitOffset = mobile ? 0 : Math.max(0, -lastStepTop);
       setDesignProgress((previous) => Math.abs(previous - nextDesign) < 0.001 ? previous : nextDesign);
       setPrintProgress((previous) => Math.abs(previous - nextPrint) < 0.001 ? previous : nextPrint);
       setHandoff((previous) => Math.abs(previous - nextHandoff) < 0.001 ? previous : nextHandoff);

@@ -138,22 +138,16 @@
   .experience { --scene-height: clamp(330px, 56svh, 470px); }
   .visualStage {
     --fade-height: 96px;
-    top: calc(100svh - var(--scene-height));
-    height: var(--scene-height);
-    margin-bottom: calc(0px - var(--scene-height));
+    top: 0;
+    height: 100svh;
+    margin-bottom: -100svh;
     grid-template-columns: minmax(0, 1fr);
-    background-color: #060c08;
-    background-image:
-      radial-gradient(circle at 50% 48%, rgba(31, 78, 35, .36), transparent 62%),
-      linear-gradient(rgba(130, 176, 131, .085) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(130, 176, 131, .085) 1px, transparent 1px);
-    background-size: auto, 48px 48px, 48px 48px;
-    background-position: center, 0 calc(var(--scene-height) - 100svh), 0 calc(var(--scene-height) - 100svh);
+    background: linear-gradient(to bottom, transparent calc(100% - var(--scene-height)), #060c08 calc(100% - var(--scene-height)));
   }
   .visualStage::before {
     position: absolute;
     z-index: 4;
-    top: calc(0px - var(--fade-height));
+    top: calc(100% - var(--scene-height) - var(--fade-height));
     right: 0;
     left: 0;
     height: calc(var(--fade-height) + 10px);
@@ -185,7 +179,18 @@
     background-position: 0 -100svh;
     content: "";
   }
-  .visual { grid-column: 1; background: none; }
+  .visual {
+    grid-column: 1;
+    align-self: end;
+    height: var(--scene-height);
+    background-color: #060c08;
+    background-image:
+      radial-gradient(circle at 50% 48%, rgba(31, 78, 35, .36), transparent 62%),
+      linear-gradient(rgba(130, 176, 131, .085) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(130, 176, 131, .085) 1px, transparent 1px);
+    background-size: auto, 48px 48px, 48px 48px;
+    background-position: center, 0 calc(var(--scene-height) - 100svh), 0 calc(var(--scene-height) - 100svh);
+  }
   .story { z-index: 1; grid-template-columns: minmax(0, 1fr); }
   .designStory .step,
   .printStory .step { grid-column: 1; }
