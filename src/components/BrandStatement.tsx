@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./BrandStatement.module.css";
 
-const STATEMENT = "In Evolve, crediamo che la conoscenza delle tecnologie più moderne sia il bene più importante di un'azienda moderna.";
+const STATEMENT = "In Evolve, crediamo che la conoscenza delle tecnologie più moderne sia lo strumento più importante a disposizione dell'imprenditore moderno.";
 const CHARACTERS = Array.from(STATEMENT);
 
 export function BrandStatement() {

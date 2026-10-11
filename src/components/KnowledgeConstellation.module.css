@@ -1,19 +1,23 @@
-.section {
+.surface {
   --light-x: 50%;
   --light-y: 52%;
   position: relative;
   isolation: isolate;
+  background: #080d0a;
+  color: #f6faf5;
+}
+
+.section {
+  composes: surface;
   display: flex;
   flex-direction: column;
   height: 100svh;
   padding: clamp(70px, 9svh, 96px) clamp(24px, 5vw, 96px) clamp(16px, 3svh, 30px);
   overflow: hidden;
-  background: #080d0a;
-  color: #f6faf5;
 }
 
-.section::before,
-.section::after {
+.surface::before,
+.surface::after {
   position: absolute;
   inset: 0;
   z-index: -1;
@@ -21,16 +25,31 @@
   content: "";
 }
 
-.section::before {
+.surface::before {
   background: radial-gradient(570px circle at var(--light-x) var(--light-y), rgb(111 194 82 / 9%), transparent 72%);
 }
 
-.section::after {
+.surface::after {
   background:
     radial-gradient(ellipse 43% 40% at 66% 62%, rgb(30 74 43 / 13%), transparent),
     linear-gradient(180deg, #0b110d 0%, #070b09 100%);
   z-index: -2;
 }
+
+.surfaceToFooter::after {
+  background:
+    radial-gradient(850px 550px at 12% calc(100% + 42svh), rgb(91 188 65 / 8%), transparent 70%),
+    radial-gradient(ellipse 43% 40% at 66% 62%, rgb(30 74 43 / 13%), transparent),
+    linear-gradient(180deg, #0b110d 0%, #070b09 78%, #0c1710 100%);
+}
+
+.embedded {
+  isolation: auto;
+  background: transparent;
+}
+
+.embedded::before,
+.embedded::after { display: none; }
 
 .intro {
   position: relative;
@@ -39,6 +58,7 @@
   flex: 0 0 auto;
 }
 
+.intro h1,
 .intro h2 {
   margin: 0;
   font-size: clamp(36px, 3.5vw, 56px);
@@ -58,6 +78,11 @@
 
 .desktopGraph {
   max-width: 1400px;
+}
+
+.embedded .desktopGraph {
+  max-width: min(1160px, calc(100% - 340px));
+  margin-left: 0;
 }
 
 .mobileGraph {
@@ -305,7 +330,8 @@
 
 @media (max-width: 720px) {
   .section { padding: 68px 12px 14px; }
-  .intro h2 { max-width: 390px; font-size: clamp(31px, 8.3vw, 43px); line-height: 1.06; }
+  .embedded .desktopGraph { display: none; }
+  .intro h1, .intro h2 { max-width: 390px; font-size: clamp(31px, 8.3vw, 43px); line-height: 1.06; }
   .desktopGraph { display: none; }
   .mobileGraph { display: block; max-width: 360px; height: auto; margin: 10px auto 0; }
   .mobileGraph .node { width: 48px; height: 48px; }
