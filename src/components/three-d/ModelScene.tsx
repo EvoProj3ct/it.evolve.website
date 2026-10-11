@@ -62,9 +62,9 @@ export function ModelScene({ progress }: ModelSceneProps) {
     let disposed = false;
 
     const draw = () => {
-      const cameraLift = ease((current - .18) / .44);
-      const lift = ease((current - .1) / .52);
-      const turn = ease((current - .66) / .3);
+      const cameraLift = ease((current - .06) / .34);
+      const lift = ease((current - .06) / .3);
+      const turn = ease((current - .34) / .6);
       const cameraPosition = new THREE.Vector3(0, 12, .001).lerp(new THREE.Vector3(6.7, 7, 9.3), cameraLift);
       const mobile = window.innerWidth <= 800;
       const focusHeight = mobile ? lift * 1.1 : 0;
@@ -73,7 +73,7 @@ export function ModelScene({ progress }: ModelSceneProps) {
       camera.lookAt(0, .3 + focusHeight, 0);
       if (mobile) {
         const screenUp = new THREE.Vector3(0, 1, 0).applyQuaternion(camera.quaternion);
-        camera.position.addScaledVector(screenUp, -camera.top * .16);
+        camera.position.addScaledVector(screenUp, -camera.top * .32);
       }
       camera.updateProjectionMatrix();
       assembly.rotation.y = turn * .7;
