@@ -89,6 +89,7 @@ export function ThreeDServiceExperience() {
     const measure = () => {
       frame = 0;
       const mobile = window.innerWidth <= 800;
+      const compactPhone = window.innerWidth <= 600;
       setMobileView(mobile);
       const viewportHeight = mobile
         ? (gridRef.current?.getBoundingClientRect().height ?? window.innerHeight)
@@ -96,7 +97,7 @@ export function ThreeDServiceExperience() {
       const progressFor = (element: HTMLElement | null) => {
         if (!element) return 0;
         const rect = element.getBoundingClientRect();
-        const distance = Math.max(1, rect.height - viewportHeight);
+        const distance = Math.max(1, (rect.height - viewportHeight) * (compactPhone ? .95 : 1));
         return clamp(-rect.top / distance);
       };
       const nextDesign = progressFor(designRef.current);
