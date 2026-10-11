@@ -1,21 +1,27 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { readdir } from "node:fs/promises";
+import path from "node:path";
+import { QuoteConfigurator } from "@/components/three-d/QuoteConfigurator";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
   title: "Preventivatore 3D | Evolve",
-  description: "Il preventivatore per i progetti di stampa 3D di Evolve.",
+  description: "Scegli un modello, il materiale e le dimensioni per il tuo progetto di stampa 3D.",
 };
 
-export default function QuoteCalculatorPage() {
+export default async function QuoteCalculatorPage() {
+  const files = await readdir(path.join(process.cwd(), "public", "modelli_3d"));
+  const models = files
+    .filter((file) => file.toLowerCase().endsWith(".stl"))
+    .sort((a, b) => a.localeCompare(b, "it", { numeric: true }))
+    .map((file) => ({
+      label: file.replace(/\.stl$/i, "").replace(/\s+/g, " ").trim(),
+      url: `/modelli_3d/${encodeURIComponent(file)}`,
+    }));
+
   return (
     <main className={styles.page}>
-      <div className={styles.content}>
-        <span className={styles.eyebrow}>Progettazione e stampa 3D</span>
-        <h1>Il tuo progetto<br />prende forma qui.</h1>
-        <p>Il preventivatore è in preparazione. Per raccontarci cosa vorresti realizzare, puoi già contattarci.</p>
-        <Link href="/contact" className={styles.contactLink}>Parliamo del tuo progetto <span aria-hidden="true">↗</span></Link>
-      </div>
+      <QuoteConfigurator models={models} />
     </main>
   );
 }

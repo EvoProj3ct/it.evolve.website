@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { MenuGhost } from "@/components/MenuGhost";
 import { ModelScene } from "./ModelScene";
 import { LayerPrintScene } from "./LayerPrintScene";
 import styles from "./ThreeDServiceExperience.module.css";
@@ -176,7 +177,10 @@ export function ThreeDServiceExperience() {
       </div>
       <section className={styles.quoteCta} aria-label="Preventivatore 3D">
         <Link href="/preventivatore" className={styles.quoteLink}>
-          Vai al preventivatore
+          <span className={styles.quoteLabel}>
+            <span className={styles.quoteGhost}><MenuGhost /></span>
+            Vai al preventivatore
+          </span>
         </Link>
       </section>
     </main>
