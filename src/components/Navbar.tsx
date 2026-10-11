@@ -29,7 +29,7 @@ const MENUS: Record<MenuKey, Menu> = {
       { label: "Software per il mondo finestra", href: "/portfolio" },
       { label: "Consulenza e Sviluppo", href: "/portfolio" },
       { label: "Progettazione e Stampa 3D", href: "/progettazione-e-stampa-3d" },
-      { label: "Progettazione Agenti IA", href: "/portfolio" },
+      { label: "Progettazione Agenti IA", href: "/progettazione-agenti-ia" },
       { label: "Bandi", href: "/contact" },
     ],
   },
