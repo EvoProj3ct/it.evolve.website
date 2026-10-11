@@ -208,29 +208,48 @@
 @media (max-width: 800px) {
   .experience { --scene-height: clamp(340px, 55svh, 510px); }
   .visualStage {
-    top: calc(100svh - var(--scene-height));
+    --fade-height: 52px;
+    position: fixed;
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
     grid-template-columns: minmax(0, 1fr);
-    height: var(--scene-height);
-    margin-bottom: calc(0px - var(--scene-height));
+    height: 100dvh;
+    margin-bottom: 0;
+    will-change: transform;
+    background: linear-gradient(to bottom, transparent calc(100% - var(--scene-height)), #060c08 calc(100% - var(--scene-height)));
   }
   .visualStage::before {
     position: absolute;
-    top: -68px;
+    top: calc(100% - var(--scene-height) - var(--fade-height));
     right: 0;
     left: 0;
     z-index: 4;
-    height: 69px;
-    background: linear-gradient(to bottom, rgba(6, 12, 8, 0), #060c08 98%);
+    height: calc(var(--fade-height) + 10px);
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(130, 176, 131, .055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(130, 176, 131, .055) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(6, 12, 8, 0), rgba(6, 12, 8, .55) 60%, #060c08 100%);
+    background-size: 48px 48px, 48px 48px, auto;
+    background-position:
+      0 calc(var(--scene-height) + var(--fade-height) - 100svh),
+      0 calc(var(--scene-height) + var(--fade-height) - 100svh),
+      center;
     content: "";
   }
   .visual {
     grid-column: 1;
+    align-self: end;
+    height: var(--scene-height);
     background-color: #060c08;
     background-image:
       radial-gradient(ellipse at 50% 50%, rgba(31, 85, 39, .3), transparent 65%),
       linear-gradient(rgba(130, 176, 131, .085) 1px, transparent 1px),
       linear-gradient(90deg, rgba(130, 176, 131, .085) 1px, transparent 1px);
     background-size: auto, 48px 48px, 48px 48px;
+    background-position: center, 0 calc(var(--scene-height) - 100svh), 0 calc(var(--scene-height) - 100svh);
   }
   .componentsVisual canvas { pointer-events: none; }
   .callout { display: none; }

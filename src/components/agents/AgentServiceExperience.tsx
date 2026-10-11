@@ -65,6 +65,7 @@ export function AgentServiceExperience() {
   const gridRef = useRef<HTMLDivElement>(null);
   const introductionRef = useRef<HTMLDivElement>(null);
   const componentsRef = useRef<HTMLDivElement>(null);
+  const lastComponentStepRef = useRef<HTMLElement>(null);
   const ctaRef = useRef<HTMLElement>(null);
   const componentsVisualRef = useRef<HTMLDivElement>(null);
   const calloutRefs = useRef<Array<HTMLDivElement | null>>([]);
@@ -72,6 +73,8 @@ export function AgentServiceExperience() {
   const [componentsProgress, setComponentsProgress] = useState(0);
   const [handoff, setHandoff] = useState(0);
   const [visualFade, setVisualFade] = useState(0);
+  const [mobileExitOffset, setMobileExitOffset] = useState(0);
+  const [mobileView, setMobileView] = useState(false);
   const [hoveredPart, setHoveredPart] = useState<number | null>(null);
   const [leaders, setLeaders] = useState<Leader[]>([]);
 
@@ -81,6 +84,7 @@ export function AgentServiceExperience() {
       frame = 0;
       // The svh-sized grid is stable when a phone's browser toolbar hides.
       const viewport = gridRef.current?.offsetHeight ?? window.innerHeight;
+      const mobile = window.innerWidth <= 800;
       const progressFor = (element: HTMLElement | null) => {
         if (!element) return 0;
         const rect = element.getBoundingClientRect();
@@ -90,14 +94,18 @@ export function AgentServiceExperience() {
       const components = progressFor(componentsRef.current);
       const componentTop = componentsRef.current?.getBoundingClientRect().top ?? viewport;
       const ctaTop = ctaRef.current?.getBoundingClientRect().top ?? viewport;
+      const lastStepTop = lastComponentStepRef.current?.getBoundingClientRect().top ?? viewport;
       const transition = clamp((viewport * .65 - componentTop) / Math.max(1, viewport * .5));
       const nextHandoff = transition * transition * (3 - 2 * transition);
-      const fade = clamp((viewport * 1.2 - ctaTop) / Math.max(1, viewport * .45));
+      const fade = clamp((viewport * (mobile ? .55 : 1.2) - ctaTop) / Math.max(1, viewport * (mobile ? .3 : .45)));
       const nextVisualFade = fade * fade * (3 - 2 * fade);
+      const nextExitOffset = mobile ? Math.max(0, -lastStepTop) : 0;
+      setMobileView((previous) => previous === mobile ? previous : mobile);
       setIntroductionProgress((previous) => Math.abs(previous - intro) < .001 ? previous : intro);
       setComponentsProgress((previous) => Math.abs(previous - components) < .001 ? previous : components);
       setHandoff((previous) => Math.abs(previous - nextHandoff) < .001 ? previous : nextHandoff);
       setVisualFade((previous) => Math.abs(previous - nextVisualFade) < .001 ? previous : nextVisualFade);
+      setMobileExitOffset((previous) => Math.abs(previous - nextExitOffset) < .5 ? previous : nextExitOffset);
     };
     const schedule = () => {
       if (!frame) frame = window.requestAnimationFrame(measure);
@@ -141,7 +149,7 @@ export function AgentServiceExperience() {
     <main className={styles.page}>
       <div ref={gridRef} className={styles.grid} aria-hidden="true" />
       <div className={styles.experience}>
-        <div className={styles.visualStage} style={{ opacity: 1 - visualFade }}>
+        <div className={styles.visualStage} style={{ opacity: 1 - visualFade, transform: mobileView ? `translate3d(0, -${mobileExitOffset}px, 0)` : undefined }}>
           <div className={`${styles.visual} ${styles.introductionVisual}`} style={{ opacity: 1 - handoff }} role="img" aria-label="Raspberry Pi 5 che ruota durante lo scorrimento">
             <AgentHardwareScene progress={introductionProgress} mode="rotate" activePart={0} />
           </div>
@@ -186,7 +194,7 @@ export function AgentServiceExperience() {
         </div>
         <div ref={componentsRef} className={`${styles.story} ${styles.componentsStory}`}>
           {componentSteps.map((step, index) => (
-            <section key={step.label} className={styles.step} aria-labelledby={`agent-component-${index}`}>
+            <section key={step.label} ref={index === componentSteps.length - 1 ? lastComponentStepRef : undefined} className={styles.step} aria-labelledby={`agent-component-${index}`}>
               <div className={styles.stepInner}>
                 <span className={styles.eyebrow}>{String(index + introductionSteps.length + 1).padStart(2, "0")} / {step.label}</span>
                 <h2 id={`agent-component-${index}`} className={styles.title}>{step.title}</h2>
