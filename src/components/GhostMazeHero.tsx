@@ -235,26 +235,29 @@ function distancesFrom(neighbors: number[][], target: number) {
 function Ghost({
   color,
   bodyRef,
+  hatRef,
   pupilRef,
   worker = false,
 }: {
   color: string;
   bodyRef: (element: SVGPathElement | null) => void;
+  hatRef: (element: SVGGElement | null) => void;
   pupilRef: (element: SVGGElement | null) => void;
   worker?: boolean;
 }) {
   return (
-    <g className={styles.ghostShape} transform={worker ? "scale(2.2)" : undefined}>
+    <g className={styles.ghostShape} transform={worker ? "scale(1.48)" : undefined}>
       <path
         ref={bodyRef}
         d="M-4-10H4V-8H6V-6H8V-4H10V8H6V6H3V8H-3V6H-6V8H-10V-4H-8V-6H-6V-8H-4Z"
         fill={color}
       />
       {worker && (
-        <g>
-          <path d="M-8-10V-13H-6V-16H-3V-18H3V-16H6V-13H8V-10Z" fill="#F5C950" />
-          <path d="M-11-11H11V-9H-11Z" fill="#D99D2F" />
-          <path d="M-2-17H2V-11H-2Z" fill="#FFF0A9" opacity="0.55" />
+        <g ref={hatRef}>
+          <path d="M-8-8V-12H-6V-15H-3V-17H3V-15H6V-12H8V-8Z" fill="#F5C950" />
+          <path d="M-10-9H10V-5H-10Z" fill="#D99D2F" />
+          <path d="M-2-16H2V-8H-2Z" fill="#FFF0A9" opacity="0.52" />
+          <path d="M-8-5H8V-4H-8Z" fill="#98672A" opacity="0.5" />
         </g>
       )}
       <rect x="-6" y="-2" width="4" height="5" fill="#FCFDFB" />
@@ -276,6 +279,7 @@ export function GhostMazeHero({ variant = "home" }: { variant?: "home" | "constr
   const maskRef = useRef<SVGCircleElement>(null);
   const ghostRefs = useRef<(SVGGElement | null)[]>([]);
   const ghostBodyRefs = useRef<(SVGPathElement | null)[]>([]);
+  const ghostHatRefs = useRef<(SVGGElement | null)[]>([]);
   const ghostPupilRefs = useRef<(SVGGElement | null)[]>([]);
   const pointerRef = useRef({ x: 600, y: 440, active: false, lastMovedAt: 0 });
   const [size, setSize] = useState<Size>({ width: 1200, height: 720 });
@@ -514,9 +518,12 @@ export function GhostMazeHero({ variant = "home" }: { variant?: "home" | "constr
         const ghostY = from.y + (to.y - from.y) * ghost.t;
 
         // Contact leaves just the two pixel eyes, which travel back through the corridors.
-        if (!construction && ghost.phase === "chase" && pointer.active && time - pointer.lastMovedAt < 160
+        const touchesGhost = construction
+          ? Math.abs(ghostX - pointer.x) < 18 && pointer.y - ghostY > -27 && pointer.y - ghostY < 17
+          : Math.hypot(ghostX - pointer.x, ghostY - pointer.y) < 19;
+        if (ghost.phase === "chase" && pointer.active && time - pointer.lastMovedAt < 160
           && elapsed > ghost.immuneUntil
-          && Math.hypot(ghostX - pointer.x, ghostY - pointer.y) < 19) {
+          && touchesGhost) {
           ghost.phase = "returning";
           ghost.phaseStarted = elapsed;
         }
@@ -540,6 +547,8 @@ export function GhostMazeHero({ variant = "home" }: { variant?: "home" | "constr
           const isRespawning = ghost.phase === "respawning";
           body.setAttribute("opacity", ghost.phase === "returning" || ghost.phase === "resting" ? "0" : "1");
           body.setAttribute("fill", isRespawning ? (blinkIsWhite ? "#EDF4ED" : "#1C2A20") : GHOST_COLORS[index]);
+          ghostHatRefs.current[index]?.setAttribute("opacity", ghost.phase === "returning" || ghost.phase === "resting"
+            || (isRespawning && !blinkIsWhite) ? "0" : "1");
         }
         ghostPupilRefs.current[index]?.setAttribute("transform", `translate(${Math.sign(to.x - from.x)} ${Math.sign(to.y - from.y)})`);
         ghostRefs.current[index]?.setAttribute("transform", `translate(${ghostX.toFixed(1)} ${ghostY.toFixed(1)})`);
@@ -602,6 +611,7 @@ export function GhostMazeHero({ variant = "home" }: { variant?: "home" | "constr
               color={color}
               worker={construction}
               bodyRef={(element) => { ghostBodyRefs.current[index] = element; }}
+              hatRef={(element) => { ghostHatRefs.current[index] = element; }}
               pupilRef={(element) => { ghostPupilRefs.current[index] = element; }}
             />
           </g>

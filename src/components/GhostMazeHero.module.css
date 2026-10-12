@@ -64,9 +64,9 @@
 }
 
 .constructionHero .mazeWalls line {
-  stroke: #85d469;
-  stroke-width: 1.5;
-  opacity: 0.64;
+  stroke: #92d981;
+  stroke-width: 2.5;
+  opacity: 0.82;
 }
 
 .ghostShape {
