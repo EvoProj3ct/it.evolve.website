@@ -1,10 +1,5 @@
-import ContactPage from "@/components/ContactUs";
-
-export const metadata = {
-  title: "Contatti | Evolve",
-  description: "Contatta Evolve: email, telefono e info. Risposta rapida e chiara.",
-};
+import { redirect } from "next/navigation";
 
 export default function Page() {
-  return <ContactPage />;
+  redirect("/lavori-in-corso");
 }

@@ -21,17 +21,18 @@ type GhostState = {
 // Three existing brand colors: green, violet and coral-red (documentation/brand/palette.md).
 const GHOST_COLORS = ["#72C94F", "#8567C1", "#FF6666"] as const;
 const MAZE_CELL_SIZE = 48;
+const WORK_MAZE_CELL_SIZE = 72;
 const GHOST_SAFE_INSET = 18;
 
-function mazeDimensions({ width, height }: Size) {
+function mazeDimensions({ width, height }: Size, cellSize = MAZE_CELL_SIZE) {
   // Fixed square cells retain the crisp, consistent maze strokes.
-  const cols = clamp(Math.ceil(width / MAZE_CELL_SIZE) + 1, 7, 48);
-  const rows = clamp(Math.floor(height / MAZE_CELL_SIZE) + 1, 8, 19);
+  const cols = clamp(Math.ceil(width / cellSize) + 1, 7, 48);
+  const rows = clamp(Math.floor(height / cellSize) + 1, 8, 19);
   return {
     cols,
     rows,
-    originX: Math.round((width - cols * MAZE_CELL_SIZE) / 2),
-    originY: Math.round((height - rows * MAZE_CELL_SIZE) / 2),
+    originX: Math.round((width - cols * cellSize) / 2),
+    originY: Math.round((height - rows * cellSize) / 2),
   };
 }
 
@@ -39,7 +40,8 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-function defaultLightPoint({ width, height }: Size): Point {
+function defaultLightPoint({ width, height }: Size, construction = false): Point {
+  if (construction) return { x: width * 0.5, y: height * 0.52 };
   return width < 640
     ? { x: width * 0.24, y: height * 0.24 }
     : { x: width * 0.78, y: height * 0.72 };
@@ -53,8 +55,8 @@ function randomGenerator(seed: number) {
   };
 }
 
-function createMaze({ width, height }: Size): Maze {
-  const { cols, rows, originX, originY } = mazeDimensions({ width, height });
+function createMaze({ width, height }: Size, cellSize = MAZE_CELL_SIZE, safeInset = GHOST_SAFE_INSET): Maze {
+  const { cols, rows, originX, originY } = mazeDimensions({ width, height }, cellSize);
   const homeCenter = 2 * cols + cols - 3;
   const homeCells = new Set([homeCenter - 1, homeCenter, homeCenter + 1]);
   const homeEntrance = homeCenter + cols;
@@ -67,8 +69,8 @@ function createMaze({ width, height }: Size): Maze {
       || (b === homeCenter && a === homeEntrance);
   };
   const nodes: Point[] = Array.from({ length: cols * rows }, (_, index) => ({
-    x: originX + (index % cols + 0.5) * MAZE_CELL_SIZE,
-    y: originY + (Math.floor(index / cols) + 0.5) * MAZE_CELL_SIZE,
+    x: originX + (index % cols + 0.5) * cellSize,
+    y: originY + (Math.floor(index / cols) + 0.5) * cellSize,
   }));
   const candidates = nodes.map((_, index) => {
     const col = index % cols;
@@ -115,8 +117,8 @@ function createMaze({ width, height }: Size): Maze {
 
   // Connect the on-screen corridors before the wall outlines are traced.
   // Ghosts can then stay inside visible cells without crossing a drawn wall.
-  const safe = nodes.map(({ x, y }) => x >= GHOST_SAFE_INSET && x <= width - GHOST_SAFE_INSET
-    && y >= GHOST_SAFE_INSET && y <= height - GHOST_SAFE_INSET);
+  const safe = nodes.map(({ x, y }) => x >= safeInset && x <= width - safeInset
+    && y >= safeInset && y <= height - safeInset);
   const parent = nodes.map((_, index) => index);
   const root = (index: number): number => {
     let current = index;
@@ -151,7 +153,7 @@ function createMaze({ width, height }: Size): Maze {
 
   // Outline the joined corridors. Every line belongs to a closed contour, with no loose wall ends.
   const walls: [Point, Point][] = [];
-  const tile = MAZE_CELL_SIZE / 2;
+  const tile = cellSize / 2;
   const tileCols = cols * 2 - 1;
   const tileRows = rows * 2 - 1;
   const tileX = originX + tile / 2;
@@ -234,18 +236,27 @@ function Ghost({
   color,
   bodyRef,
   pupilRef,
+  worker = false,
 }: {
   color: string;
   bodyRef: (element: SVGPathElement | null) => void;
   pupilRef: (element: SVGGElement | null) => void;
+  worker?: boolean;
 }) {
   return (
-    <g className={styles.ghostShape}>
+    <g className={styles.ghostShape} transform={worker ? "scale(2.2)" : undefined}>
       <path
         ref={bodyRef}
         d="M-4-10H4V-8H6V-6H8V-4H10V8H6V6H3V8H-3V6H-6V8H-10V-4H-8V-6H-6V-8H-4Z"
         fill={color}
       />
+      {worker && (
+        <g>
+          <path d="M-8-10V-13H-6V-16H-3V-18H3V-16H6V-13H8V-10Z" fill="#F5C950" />
+          <path d="M-11-11H11V-9H-11Z" fill="#D99D2F" />
+          <path d="M-2-17H2V-11H-2Z" fill="#FFF0A9" opacity="0.55" />
+        </g>
+      )}
       <rect x="-6" y="-2" width="4" height="5" fill="#FCFDFB" />
       <rect x="2" y="-2" width="4" height="5" fill="#FCFDFB" />
       <g ref={pupilRef}>
@@ -256,7 +267,10 @@ function Ghost({
   );
 }
 
-export function GhostMazeHero() {
+export function GhostMazeHero({ variant = "home" }: { variant?: "home" | "construction" } = {}) {
+  const construction = variant === "construction";
+  const cellSize = construction ? WORK_MAZE_CELL_SIZE : MAZE_CELL_SIZE;
+  const safeInset = construction ? 46 : GHOST_SAFE_INSET;
   const sectionRef = useRef<HTMLElement>(null);
   const lightRef = useRef<SVGCircleElement>(null);
   const maskRef = useRef<SVGCircleElement>(null);
@@ -265,28 +279,35 @@ export function GhostMazeHero() {
   const ghostPupilRefs = useRef<(SVGGElement | null)[]>([]);
   const pointerRef = useRef({ x: 600, y: 440, active: false, lastMovedAt: 0 });
   const [size, setSize] = useState<Size>({ width: 1200, height: 720 });
-  const initialLight = defaultLightPoint(size);
-  const maze = useMemo(() => createMaze(size), [size]);
+  const initialLight = defaultLightPoint(size, construction);
+  const maze = useMemo(() => createMaze(size, cellSize, safeInset), [size, cellSize, safeInset]);
   const homeNode = useMemo(() => {
-    const { cols } = mazeDimensions(size);
+    const { cols } = mazeDimensions(size, cellSize);
     return 2 * cols + cols - 3;
-  }, [size]);
+  }, [size, cellSize]);
   const safeGhostNodes = useMemo(() => maze.nodes.reduce<number[]>((safe, point, index) => {
-    if (point.x >= GHOST_SAFE_INSET && point.x <= size.width - GHOST_SAFE_INSET
-      && point.y >= GHOST_SAFE_INSET && point.y <= size.height - GHOST_SAFE_INSET) safe.push(index);
+    if (point.x >= safeInset && point.x <= size.width - safeInset
+      && point.y >= safeInset && point.y <= size.height - safeInset) safe.push(index);
     return safe;
-  }, []), [maze, size]);
+  }, []), [maze, size, safeInset]);
   const safeGhostNeighbors = useMemo(() => {
     const safe = new Set(safeGhostNodes);
     return maze.neighbors.map((links, index) => safe.has(index) ? links.filter((next) => safe.has(next)) : []);
   }, [maze, safeGhostNodes]);
   const ghostStarts = useMemo(() => {
-    const { cols, rows } = mazeDimensions(size);
+    if (construction) {
+      return [
+        { x: size.width * 0.2, y: size.height * 0.25 },
+        { x: size.width * 0.82, y: size.height * 0.3 },
+        { x: size.width * 0.73, y: size.height * 0.78 },
+      ].map((point) => nearestNode(maze.nodes, point, safeGhostNodes));
+    }
+    const { cols, rows } = mazeDimensions(size, cellSize);
     const anchor = Math.floor(rows * (size.width < 640 ? 0.78 : 0.72)) * cols
       + Math.floor(cols * (size.width < 640 ? 0.5 : 0.78));
     return [anchor - 1, anchor + 1, Math.min(maze.nodes.length - 1, anchor + cols)]
       .map((node) => nearestNode(maze.nodes, maze.nodes[clamp(node, 0, maze.nodes.length - 1)], safeGhostNodes));
-  }, [maze, safeGhostNodes, size]);
+  }, [maze, safeGhostNodes, size, cellSize, construction]);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -298,13 +319,13 @@ export function GhostMazeHero() {
       setSize((previous) =>
         previous.width === width && previous.height === height ? previous : { width, height },
       );
-      const defaultPoint = defaultLightPoint({ width, height });
+      const defaultPoint = defaultLightPoint({ width, height }, construction);
       pointerRef.current.x = defaultPoint.x;
       pointerRef.current.y = defaultPoint.y;
     });
     observer.observe(section);
     return () => observer.disconnect();
-  }, []);
+  }, [construction]);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -335,7 +356,7 @@ export function GhostMazeHero() {
 
   useEffect(() => {
     const section = sectionRef.current;
-    if (!section) return;
+    if (!section || construction) return;
     let lockedUntil = 0;
     let touchStartY = 0;
     const isHeroActive = () => {
@@ -377,7 +398,7 @@ export function GhostMazeHero() {
       section.removeEventListener("touchstart", onTouchStart);
       section.removeEventListener("touchend", onTouchEnd);
     };
-  }, []);
+  }, [construction]);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -388,7 +409,7 @@ export function GhostMazeHero() {
       next: at,
       previous: -1,
       t: 0,
-      speed: [154, 138, 122][index],
+      speed: construction ? [152, 144, 136][index] : [154, 138, 122][index],
       phase: "chase",
       phaseStarted: 0,
       immuneUntil: 0,
@@ -397,7 +418,7 @@ export function GhostMazeHero() {
     let visible = false;
     let previousTime = 0;
     let elapsed = 0;
-    const defaultPoint = defaultLightPoint(size);
+    const defaultPoint = defaultLightPoint(size, construction);
     let x = defaultPoint.x;
     let y = defaultPoint.y;
     let lagX = x;
@@ -423,8 +444,8 @@ export function GhostMazeHero() {
       const pointer = pointerRef.current;
       const restX = defaultPoint.x;
       const restY = defaultPoint.y;
-      const idleX = restX + Math.sin(elapsed * 0.43) * Math.min(56, size.width * 0.06);
-      const idleY = restY + Math.sin(elapsed * 0.37) * 20;
+      const idleX = restX + Math.sin(elapsed * 0.43) * Math.min(construction ? 130 : 56, size.width * (construction ? 0.17 : 0.06));
+      const idleY = restY + Math.sin(elapsed * 0.37) * (construction ? 58 : 20);
       const targetX = motionQuery.matches ? restX : pointer.active ? pointer.x : idleX;
       const targetY = motionQuery.matches ? restY : pointer.active ? pointer.y : idleY;
       const oldX = x;
@@ -436,8 +457,9 @@ export function GhostMazeHero() {
       lagY += (y - lagY) * (1 - Math.exp(-delta * 1.7));
       const velocityX = (x - oldX) / delta;
       const velocityY = (y - oldY) / delta;
-      const scrollProgress = clamp(-section.getBoundingClientRect().top / (size.height * 0.9), 0, 1);
-      const radius = (size.width < 640 ? 160 : 270) + (pointer.active ? 12 : 0) + scrollProgress * 60;
+      const scrollProgress = construction ? 0 : clamp(-section.getBoundingClientRect().top / (size.height * 0.9), 0, 1);
+      const radius = (size.width < 640 ? (construction ? 190 : 160) : (construction ? 340 : 270))
+        + (pointer.active ? 12 : 0) + scrollProgress * 60;
       for (const circle of [lightRef.current, maskRef.current]) {
         circle?.setAttribute("cx", x.toFixed(1));
         circle?.setAttribute("cy", y.toFixed(1));
@@ -447,6 +469,10 @@ export function GhostMazeHero() {
         { x, y },
         { x: clamp(x + velocityX * 0.22, 0, size.width), y: clamp(y + velocityY * 0.22, 0, size.height) },
         { x: lagX, y: lagY },
+      ] : construction ? [
+        { x: clamp(size.width * (0.21 + Math.sin(elapsed * 0.21) * 0.14), 0, size.width), y: clamp(size.height * (0.26 + Math.cos(elapsed * 0.16) * 0.18), 0, size.height) },
+        { x: clamp(size.width * (0.8 - Math.sin(elapsed * 0.17) * 0.14), 0, size.width), y: clamp(size.height * (0.31 + Math.sin(elapsed * 0.2) * 0.2), 0, size.height) },
+        { x: clamp(size.width * (0.66 + Math.cos(elapsed * 0.2) * 0.16), 0, size.width), y: clamp(size.height * (0.74 - Math.sin(elapsed * 0.18) * 0.16), 0, size.height) },
       ] : [
         { x: clamp(x - 58, 0, size.width), y: clamp(y - 28, 0, size.height) },
         { x: clamp(x + 54, 0, size.width), y: clamp(y + 18, 0, size.height) },
@@ -488,7 +514,7 @@ export function GhostMazeHero() {
         const ghostY = from.y + (to.y - from.y) * ghost.t;
 
         // Contact leaves just the two pixel eyes, which travel back through the corridors.
-        if (ghost.phase === "chase" && pointer.active && time - pointer.lastMovedAt < 160
+        if (!construction && ghost.phase === "chase" && pointer.active && time - pointer.lastMovedAt < 160
           && elapsed > ghost.immuneUntil
           && Math.hypot(ghostX - pointer.x, ghostY - pointer.y) < 19) {
           ghost.phase = "returning";
@@ -535,19 +561,19 @@ export function GhostMazeHero() {
       observer.disconnect();
       window.cancelAnimationFrame(frame);
     };
-  }, [ghostStarts, homeNode, maze, safeGhostNeighbors, safeGhostNodes, size]);
+  }, [construction, ghostStarts, homeNode, maze, safeGhostNeighbors, safeGhostNodes, size]);
 
   return (
     <section
       ref={sectionRef}
-      className={styles.hero}
-      aria-label="Evolve: consulenza, software e stampa 3D"
+      className={`${styles.hero} ${construction ? styles.constructionHero : ""}`}
+      aria-label={construction ? "Lavori in corso" : "Evolve: consulenza, software e stampa 3D"}
     >
       <svg className={styles.scene} viewBox={`0 0 ${size.width} ${size.height}`} preserveAspectRatio="none" aria-hidden="true">
         <defs>
           <radialGradient id="ghost-maze-light">
-            <stop offset="0%" stopColor="#E7F4E8" stopOpacity="0.54" />
-            <stop offset="68%" stopColor="#EDF7EF" stopOpacity="0.31" />
+            <stop offset="0%" stopColor={construction ? "#72C94F" : "#E7F4E8"} stopOpacity={construction ? "0.18" : "0.54"} />
+            <stop offset="68%" stopColor={construction ? "#72C94F" : "#EDF7EF"} stopOpacity={construction ? "0.08" : "0.31"} />
             <stop offset="100%" stopColor="#FFFFFF" stopOpacity="0" />
           </radialGradient>
           <radialGradient id="ghost-maze-mask">
@@ -568,12 +594,13 @@ export function GhostMazeHero() {
         </g>
       </svg>
 
-      <div className={styles.copyWash} aria-hidden="true" />
+      {!construction && <div className={styles.copyWash} aria-hidden="true" />}
       <svg className={styles.ghostLayer} viewBox={`0 0 ${size.width} ${size.height}`} preserveAspectRatio="none" aria-hidden="true">
         {GHOST_COLORS.map((color, index) => (
           <g key={color} ref={(element) => { ghostRefs.current[index] = element; }} transform={`translate(${maze.nodes[ghostStarts[index]].x} ${maze.nodes[ghostStarts[index]].y})`}>
             <Ghost
               color={color}
+              worker={construction}
               bodyRef={(element) => { ghostBodyRefs.current[index] = element; }}
               pupilRef={(element) => { ghostPupilRefs.current[index] = element; }}
             />
@@ -581,7 +608,11 @@ export function GhostMazeHero() {
         ))}
       </svg>
 
-      <div className={styles.copy}>
+      {construction ? (
+        <div className={styles.workPanel}>
+          <h1>Lavori in corso<span className={styles.workDots} aria-hidden="true"><span /><span /><span /></span></h1>
+        </div>
+      ) : <div className={styles.copy}>
         <div className={styles.eyebrow}>EVOLVE</div>
         {/* Provisional copy for this visual study; original slides remain in HeroSlider and the inventory. */}
         <h1 className={styles.title}>Consulenza, software<br />e stampa 3D</h1>
@@ -598,7 +629,7 @@ export function GhostMazeHero() {
             <svg className={styles.secondaryArrow} aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2.5 8h10M8.5 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square" strokeLinejoin="miter" /></svg>
           </Link>
         </div>
-      </div>
+      </div>}
 
     </section>
   );
