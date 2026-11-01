@@ -1,0 +1,125 @@
+/* Stessa palette di navigazione, banner e Chi siamo. */
+.page {
+  --paper: #fcfdfb;
+  --ink: #101914;
+  --green: #72c94f;
+  --forest: #2c7a62;
+  --mint: #cde8d1;
+  --muted: #647067;
+  --line: #e1e7df;
+  --gutter: clamp(24px, 4.8vw, 92px);
+  min-height: 100svh;
+  padding: 142px var(--gutter) 100px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--fonts-body), Arial, sans-serif;
+}
+.inner { max-width: 1400px; margin: 0 auto; }
+.page a, .page button { -webkit-tap-highlight-color: transparent; }
+.page a:focus-visible, .page button:focus-visible { outline: 2px solid var(--forest); outline-offset: 6px; }
+.hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 310px); align-items: center; gap: clamp(50px, 8vw, 130px); padding-bottom: 70px; border-bottom: 1px solid var(--line); }
+.eyebrow { margin: 0 0 27px; color: var(--forest); font-size: 9px; font-weight: 500; letter-spacing: .14em; line-height: 1.6; }
+.heading h1 { margin: 0; font-size: clamp(64px, 7.7vw, 118px); font-weight: 400; letter-spacing: -.078em; line-height: 1.03; }
+.heading h1 > span { color: var(--green); }
+.introduction { max-width: 480px; margin: 28px 0 0; color: var(--muted); font-size: 15px; line-height: 1.85; letter-spacing: -.015em; }
+.updated { display: flex; flex-wrap: wrap; gap: 5px 12px; margin: 31px 0 0; color: var(--muted); font-size: 10px; line-height: 1.7; }
+.updated time { color: var(--ink); }
+.summary { padding: 31px; border: 1px solid #dce8d6; border-radius: 22px; background: #eef4eb; }
+.summaryIcon { display: block; margin-bottom: 25px; color: var(--forest); }
+.summary h2 { margin: 0; font-size: 32px; font-weight: 400; letter-spacing: -.055em; line-height: 1.12; }
+.summary p { margin: 17px 0 0; color: #52634f; font-size: 12px; line-height: 1.8; }
+
+.document { display: grid; grid-template-columns: minmax(190px, .35fr) minmax(0, 1fr); align-items: start; gap: clamp(60px, 10vw, 160px); padding-top: 65px; }
+.index { position: sticky; top: 100px; }
+.indexLabel { margin: 0 0 18px; color: var(--muted); font-size: 8px; font-weight: 500; letter-spacing: .13em; line-height: 1.6; }
+.index ol { margin: 0; padding: 0; list-style: none; }
+.index li + li { border-top: 1px solid var(--line); }
+.index a { display: flex; align-items: center; gap: 12px; min-height: 49px; color: #52634f; font-size: 12px; line-height: 1.5; text-decoration: none; transition: color .2s; }
+.index a > span:first-child { color: #94a18f; font-family: monospace; font-size: 9px; }
+.index .indexArrow { margin-left: auto; color: var(--forest); opacity: 0; transform: translate(-3px, 3px); transition: opacity .2s, transform .2s; }
+.index a:hover, .index a:focus-visible { color: var(--ink); }
+.index a:hover .indexArrow, .index a:focus-visible .indexArrow { opacity: 1; transform: none; }
+.content { min-width: 0; max-width: 830px; }
+.section { scroll-margin-top: 95px; }
+.section + .section { margin-top: 65px; }
+.sectionNumber { margin: 0 0 20px; color: var(--forest); font-size: 8px; font-weight: 500; line-height: 1.6; letter-spacing: .12em; }
+.section h2 { margin: 0; font-size: clamp(32px, 3.2vw, 46px); font-weight: 400; line-height: 1.12; letter-spacing: -.06em; }
+.section > p:not(.sectionNumber) { margin: 23px 0 0; color: var(--muted); font-size: 14px; line-height: 1.95; }
+.section code { padding: 2px 5px; border-radius: 4px; background: #eef4eb; color: #37563d; font-family: monospace; font-size: .86em; overflow-wrap: anywhere; }
+.cookieRecord { margin: 28px 0 0; border-top: 1px solid var(--line); }
+.cookieRecord > div { display: grid; grid-template-columns: 100px minmax(0, 1fr); gap: 20px; padding: 15px 0; border-bottom: 1px solid var(--line); font-size: 12px; line-height: 1.7; }
+.cookieRecord dt { color: var(--muted); }
+.cookieRecord dd { margin: 0; }
+.cookieRecord code { background: transparent; padding: 0; font-size: 12px; }
+.categoryList { margin: 27px 0 0; padding: 0; list-style: none; }
+.categoryList li { display: flex; align-items: flex-start; justify-content: space-between; gap: 25px; padding: 24px 0; border-bottom: 1px solid var(--line); }
+.categoryList li:first-child { border-top: 1px solid var(--line); }
+.categoryList li > div { min-width: 0; max-width: 430px; }
+.categoryList h3 { margin: 0; font-size: 16px; font-weight: 400; letter-spacing: -.025em; line-height: 1.5; }
+.categoryList p { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.8; }
+.categoryStatus { display: inline-flex; align-items: center; flex: 0 0 auto; gap: 6px; margin-top: 2px; padding: 5px 10px; border: 1px solid var(--line); border-radius: 20px; color: #6b7868; font-size: 9px; line-height: 1.5; white-space: nowrap; }
+.activeStatus { border-color: #d9e9d0; background: #eef4eb; color: var(--forest); }
+.activeStatus > span { width: 4px; height: 4px; border-radius: 50%; background: var(--forest); }
+.preferences { padding: 35px; border-radius: 22px; background: var(--mint); }
+.preferences > p:not(.sectionNumber) { color: #4b6b51; }
+.preferencesButton { display: inline-flex; align-items: center; justify-content: center; gap: 32px; min-height: 46px; margin-top: 28px; padding: 12px 22px; border: 1px solid #12271a; border-radius: 28px; background: #12271a; color: #fff; font: inherit; font-size: 12px; font-weight: 500; line-height: 1.6; cursor: pointer; transition: background .2s, border-color .2s, color .2s; }
+.preferencesButton::after { content: '↗'; font-size: 18px; line-height: 1; }
+.preferencesButton:hover { border-color: var(--forest); background: var(--forest); }
+.related { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px; margin-top: 55px; padding-top: 25px; border-top: 1px solid var(--line); }
+.related > span { max-width: 290px; color: var(--muted); font-size: 11px; line-height: 1.8; }
+.related a { display: inline-flex; align-items: center; gap: 18px; min-height: 44px; color: var(--forest); font-size: 13px; text-decoration: none; }
+.related a svg { transition: transform .2s; }
+.related a:hover svg { transform: translate(2px, -2px); }
+
+@media (max-width: 1000px) {
+  .page { padding-top: 120px; }
+  .hero { grid-template-columns: minmax(0, 1fr) 240px; gap: 36px; padding-bottom: 55px; }
+  .heading h1 { font-size: clamp(57px, 7.7vw, 80px); }
+  .summary { padding: 25px; }
+  .summary h2 { font-size: 28px; }
+  .document { grid-template-columns: 175px minmax(0, 1fr); gap: 45px; }
+  .categoryList li { gap: 18px; }
+  .categoryStatus { font-size: 8px; padding: 5px 8px; }
+}
+@media (max-width: 700px) {
+  .page { padding-top: 110px; padding-bottom: 65px; }
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 30px; padding-bottom: 38px; }
+  .eyebrow { margin-bottom: 22px; font-size: 8px; }
+  .heading h1 { font-size: clamp(56px, 11.5vw, 78px); }
+  .introduction { max-width: 360px; margin-top: 24px; font-size: 13px; }
+  .updated { margin-top: 23px; }
+  .summary { position: relative; padding: 25px 25px 25px 76px; border-radius: 18px; }
+  .summaryIcon { position: absolute; top: 27px; left: 25px; width: 27px; height: 27px; }
+  .summary h2 { font-size: 27px; }
+  .summary h2 br { display: none; }
+  .summary p { margin-top: 12px; font-size: 11px; }
+  .document { grid-template-columns: minmax(0, 1fr); gap: 42px; padding-top: 30px; }
+  .index { position: static; }
+  .indexLabel { margin-bottom: 10px; }
+  .index ol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 22px; }
+  .index li + li { border-top: 0; }
+  .index li { border-bottom: 1px solid var(--line); }
+  .index a { gap: 9px; min-height: 47px; font-size: 11px; }
+  .index .indexArrow { display: none; }
+  .section + .section { margin-top: 45px; }
+  .sectionNumber { margin-bottom: 17px; }
+  .section h2 { font-size: 35px; }
+  .section > p:not(.sectionNumber) { margin-top: 20px; font-size: 13px; line-height: 1.9; }
+  .cookieRecord > div { grid-template-columns: 70px minmax(0, 1fr); gap: 15px; font-size: 11px; }
+  .cookieRecord code { font-size: 10px; }
+  .categoryList li { gap: 15px; padding: 21px 0; }
+  .categoryList h3 { font-size: 15px; }
+  .categoryList p { font-size: 11px; }
+  .categoryStatus { font-size: 8px; }
+  .preferences { padding: 28px; border-radius: 18px; }
+  .preferencesButton { gap: 25px; margin-top: 24px; }
+  .related { margin-top: 35px; gap: 8px 24px; }
+}
+@media (max-width: 370px) {
+  .heading h1 { font-size: 51px; }
+  .index ol { gap: 0 15px; }
+  .categoryList li { flex-wrap: wrap; gap: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page a, .page a svg, .page a span, .preferencesButton { transition: none; }
+}

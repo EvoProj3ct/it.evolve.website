@@ -6,6 +6,8 @@ Il cookie consent e' globale e viene montato nel root layout `src/app/layout.tsx
 
 Il banner è un pannello inferiore flottante con logo Evolve a colori, fondo carta, bordo sottile e pulsanti arrotondati. La palette riprende il sito attuale: carta `#fcfdfb`, testo `#101914`, verde `#72c94f`, foresta `#2c7a62` e menta `#cde8d1`. Sostituisce fondo scuro, griglia e azioni in vetro della versione precedente. Anche la finestra dei dettagli usa la stessa veste chiara. Banner e finestra condividono `cookie-consent.module.css`, categorie e pulsanti.
 
+Il banner contiene il solo collegamento alla Cookie Policy, senza il comando “Mostra dettagli”. Il pannello preferenze resta accessibile dalla policy e dal footer. La Cookie Policy riprende la stessa palette, con indice delle sezioni, scheda del cookie tecnico e stato delle categorie condiviso con il banner.
+
 - Compare dopo l'inizializzazione client su qualunque pagina se manca un cookie valido. L'intro iniziale del sito rimane sopra il banner durante la propria animazione.
 - Non viene riproposto a ogni navigazione o aggiornamento quando è già presente una scelta valida.
 - Un cookie malformato, scaduto, privo di una data valida o con versione diversa viene ignorato.

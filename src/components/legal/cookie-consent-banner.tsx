@@ -8,7 +8,7 @@ import { CookieConsentActions } from "./cookie-consent-actions";
 import styles from "./cookie-consent.module.css";
 
 export function CookieConsentBanner() {
-  const { bannerOpen, confirmSettings, openPreferences } = useCookieConsent();
+  const { bannerOpen, confirmSettings } = useCookieConsent();
 
   if (!bannerOpen) return null;
 
@@ -29,10 +29,6 @@ export function CookieConsentBanner() {
             <CookieCategories />
           </div>
           <div className={styles.contentFooter}>
-            <button type="button" onClick={openPreferences} className={styles.detailsButton} aria-haspopup="dialog">
-              Mostra dettagli
-              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 12 12 4M4 4h8v8" stroke="currentColor" strokeWidth="1.2" /></svg>
-            </button>
             <Link href="/cookie-policy" className={styles.policyLink}>Cookie Policy</Link>
           </div>
         </div>

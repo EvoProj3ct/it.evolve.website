@@ -89,7 +89,6 @@
 .action:hover { border-color: var(--cookie-forest); background: #edf5e9; transform: translateY(-1px); }
 .acceptAction:hover { border-color: var(--cookie-forest); background: var(--cookie-mint); }
 .contentFooter { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; }
-.detailsButton,
 .policyLink {
   display: inline-flex;
   align-items: center;
@@ -107,11 +106,8 @@
   text-decoration: none;
   cursor: pointer;
 }
-.detailsButton { white-space: nowrap; }
-.detailsButton svg { transition: transform 220ms ease; }
-.detailsButton:hover svg { transform: translate(2px, -2px); }
 .policyLink { color: var(--cookie-muted); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: #b5c3ae; }
-.detailsButton:hover, .policyLink:hover { color: var(--cookie-text); }
+.policyLink:hover { color: var(--cookie-text); }
 .closeButton {
   position: absolute;
   top: 12px;
@@ -129,7 +125,7 @@
   transition: background-color 220ms ease, color 220ms ease;
 }
 .closeButton:hover { background: #edf5e9; color: var(--cookie-text); }
-.action:focus-visible, .detailsButton:focus-visible, .policyLink:focus-visible, .closeButton:focus-visible { outline: 2px solid var(--cookie-forest); outline-offset: 4px; }
+.action:focus-visible, .policyLink:focus-visible, .closeButton:focus-visible { outline: 2px solid var(--cookie-forest); outline-offset: 4px; }
 .preferencesDialog {
   position: fixed;
   inset: 0;
@@ -210,6 +206,6 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .banner { animation: none; }
-  .action, .detailsButton svg, .closeButton { transition: none; }
-  .action:hover, .detailsButton:hover svg { transform: none; }
+  .action, .closeButton { transition: none; }
+  .action:hover { transform: none; }
 }
