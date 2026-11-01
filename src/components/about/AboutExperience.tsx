@@ -6,7 +6,7 @@ export function AboutExperience() {
     <main className={styles.page}>
       <section className={styles.hero} aria-labelledby="about-title">
         <div className={styles.heroHeading}>
-          <h1 id="about-title">Il futuro ha<br />un lato <span className={styles.human}>umano<span className={styles.period}>.</span></span></h1>
+          <h1 id="about-title"><span className={styles.titleLine}>Il futuro che sognamo</span>{" "}<span className={styles.titleLine}>ha un lato <span className={styles.human}>umano<span className={styles.period}>.</span></span></span></h1>
         </div>
 
         <OrbitTeam />
