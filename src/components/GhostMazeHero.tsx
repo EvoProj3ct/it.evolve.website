@@ -630,7 +630,7 @@ export function GhostMazeHero({ variant = "home" }: { variant?: "home" | "constr
           Progettiamo soluzioni integrate con l&apos;IA per migliorare la tua produttività.
         </p>
         <div className={styles.actions}>
-          <Link className={styles.primaryLink} href="/about">
+          <Link className={styles.primaryLink} href="/chi-siamo">
             <span>Scopri come</span>
             <svg className={styles.primaryArrow} aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 13 13 3M5 3h8v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square" strokeLinejoin="miter" /></svg>
           </Link>

@@ -32,7 +32,7 @@ const SLIDES: Slide[] = [
         subtitle:
             "Trasformiamo processi complessi in strumenti digitali chiari, scalabili e integrati con il lavoro reale dell'azienda.",
         cta: "SCOPRI COME",
-        ctaHref: "/about",
+        ctaHref: "/chi-siamo",
         imageUrl: "/hero/slide1.png",
     },
     {
@@ -42,7 +42,7 @@ const SLIDES: Slide[] = [
         subtitle:
             "Partiamo dall'analisi operativa per definire priorità, perimetro e investimento corretto prima di scrivere codice.",
         cta: "IL NOSTRO METODO",
-        ctaHref: "/about",
+        ctaHref: "/chi-siamo",
         imageUrl: "/hero/slide2.png",
     },
     {

@@ -170,7 +170,7 @@ export function Navbar() {
           <nav className={styles.desktopNav} aria-label="Navigazione principale">
             <Link href="/" className={`${styles.navLink} ${pathname === "/" && !activeMenu ? styles.currentLink : ""}`} onMouseEnter={() => { menuPinnedRef.current = false; setActiveMenu(null); }} onClick={closeNavigation}>Home</Link>
             {NAV_ITEMS.map((key) => key === "about" ? (
-              <Link key={key} href="/about" className={`${styles.navLink} ${pathname === "/about" && !activeMenu ? styles.currentLink : ""}`} onMouseEnter={() => { menuPinnedRef.current = false; setActiveMenu(null); }} onClick={closeNavigation}>Chi siamo</Link>
+              <Link key={key} href="/chi-siamo" aria-current={pathname === "/chi-siamo" ? "page" : undefined} className={`${styles.navLink} ${pathname === "/chi-siamo" && !activeMenu ? styles.currentLink : ""}`} onMouseEnter={() => { menuPinnedRef.current = false; setActiveMenu(null); }} onClick={closeNavigation}>Chi siamo</Link>
             ) : (
               <button
                 key={key}
@@ -277,7 +277,7 @@ export function Navbar() {
             <div className={styles.mobileInner}>
               <Link href="/" className={styles.mobileLink} onClick={closeNavigation}>Home</Link>
               {NAV_ITEMS.map((key) => key === "about" ? (
-                <Link key={key} href="/about" className={styles.mobileLink} onClick={closeNavigation}>Chi siamo</Link>
+                <Link key={key} href="/chi-siamo" aria-current={pathname === "/chi-siamo" ? "page" : undefined} className={styles.mobileLink} onClick={closeNavigation}>Chi siamo</Link>
               ) : (
                 <div className={styles.mobileGroup} key={key}>
                   <button

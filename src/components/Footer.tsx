@@ -6,7 +6,7 @@ import styles from "./Footer.module.css";
 
 const exploreLinks = [
   { label: "Home", href: "/" },
-  { label: "Chi siamo", href: "/about" },
+  { label: "Chi siamo", href: "/chi-siamo" },
   { label: "Portfolio", href: "/portfolio" },
   { label: "Risorse", href: "/utils" },
 ];

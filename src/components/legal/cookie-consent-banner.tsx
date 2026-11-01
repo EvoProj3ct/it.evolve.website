@@ -1,7 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useCookieConsent } from "./cookie-consent-provider";
+import { CookieCategories } from "./cookie-categories";
+import { CookieConsentActions } from "./cookie-consent-actions";
+import styles from "./cookie-consent.module.css";
 
 export function CookieConsentBanner() {
   const { bannerOpen, confirmSettings, openPreferences } = useCookieConsent();
@@ -9,22 +13,34 @@ export function CookieConsentBanner() {
   if (!bannerOpen) return null;
 
   return (
-    <div role="dialog" aria-modal="false" aria-labelledby="cookie-banner-title" className="fixed right-4 bottom-4 left-4 z-50 rounded-2xl border border-zinc-300 bg-white p-4 text-zinc-900 shadow-2xl sm:left-auto sm:max-w-xl sm:p-5">
-      <h2 id="cookie-banner-title" className="text-lg font-semibold">Cookie tecnici</h2>
-      <p className="mt-2 text-sm leading-relaxed text-zinc-600">
-        Usiamo cookie tecnici necessari al funzionamento della webapp. Al momento non utilizziamo cookie analytics, marketing o profilazione. Puoi consultare o modificare le preferenze in qualsiasi momento.
-      </p>
-      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-        <button type="button" onClick={confirmSettings} className="rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:from-emerald-700 hover:to-teal-700">
-          Conferma impostazioni
-        </button>
-        <button type="button" onClick={openPreferences} className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 transition-colors hover:border-emerald-300 hover:bg-emerald-50">
-          Gestisci preferenze
-        </button>
-        <Link href="/cookie-policy" className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-medium text-zinc-800 transition-colors hover:border-emerald-300 hover:bg-emerald-50">
-          Vai alla Cookie Policy
-        </Link>
+    <section role="dialog" aria-modal="false" aria-labelledby="cookie-banner-title" aria-describedby="cookie-banner-description" className={styles.banner}>
+      <div className={styles.bannerInner}>
+        <div className={styles.brand}>
+          <Image src="/logoEvolve.png" alt="Evolve" width={64} height={51} />
+        </div>
+        <div className={styles.content}>
+          <p className={styles.eyebrow}><span className={styles.statusDot} aria-hidden="true" /> IL CONTROLLO RESTA A TE</p>
+          <h2 id="cookie-banner-title" className={styles.title}>La tua privacy, le tue scelte.</h2>
+          <p id="cookie-banner-description" className={styles.description}>
+            Usiamo solo cookie necessari per far funzionare il sito e ricordare la tua scelta.
+            Le categorie facoltative non sono utilizzate. Puoi rivedere le impostazioni in qualsiasi momento dal footer.
+          </p>
+          <div className={styles.categoryBar}>
+            <CookieCategories />
+          </div>
+          <div className={styles.contentFooter}>
+            <button type="button" onClick={openPreferences} className={styles.detailsButton} aria-haspopup="dialog">
+              Mostra dettagli
+              <svg aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 12 12 4M4 4h8v8" stroke="currentColor" strokeWidth="1.2" /></svg>
+            </button>
+            <Link href="/cookie-policy" className={styles.policyLink}>Cookie Policy</Link>
+          </div>
+        </div>
+        <CookieConsentActions />
       </div>
-    </div>
+      <button type="button" className={styles.closeButton} onClick={() => confirmSettings("rejected")} aria-label="Chiudi e continua solo con i cookie necessari">
+        <svg aria-hidden="true" width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="m4 4 9 9M13 4l-9 9" stroke="currentColor" strokeWidth="1.5" /></svg>
+      </button>
+    </section>
   );
 }

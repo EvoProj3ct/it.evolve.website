@@ -1,10 +1,11 @@
 "use client";
 
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   COOKIE_CONSENT_MAX_AGE_SECONDS,
   COOKIE_CONSENT_NAME,
   type CookieConsentState,
+  type CookieConsentChoice,
   createDefaultCookieConsentState,
   parseCookieConsent,
   serializeCookieConsent,
@@ -16,7 +17,7 @@ type CookieConsentContextValue = {
   modalOpen: boolean;
   openPreferences: () => void;
   closePreferences: () => void;
-  confirmSettings: () => void;
+  confirmSettings: (choice?: CookieConsentChoice) => void;
 };
 
 const CookieConsentContext = createContext<CookieConsentContextValue | null>(null);
@@ -25,16 +26,25 @@ const OPEN_EVENT = "open-cookie-preferences";
 function readConsentCookie() {
   if (typeof document === "undefined") return null;
 
-  const raw = document.cookie
-    .split("; ")
-    .find((item) => item.startsWith(`${COOKIE_CONSENT_NAME}=`))
-    ?.split("=")[1];
-
-  return parseCookieConsent(raw);
+  try {
+    const raw = document.cookie
+      .split(";")
+      .map((item) => item.trim())
+      .find((item) => item.startsWith(`${COOKIE_CONSENT_NAME}=`))
+      ?.slice(COOKIE_CONSENT_NAME.length + 1);
+    return parseCookieConsent(raw);
+  } catch {
+    return null;
+  }
 }
 
 function writeConsentCookie(state: CookieConsentState) {
-  document.cookie = `${COOKIE_CONSENT_NAME}=${serializeCookieConsent(state)}; Max-Age=${COOKIE_CONSENT_MAX_AGE_SECONDS}; Path=/; SameSite=Lax`;
+  try {
+    const secure = window.location.protocol === "https:" ? "; Secure" : "";
+    document.cookie = `${COOKIE_CONSENT_NAME}=${serializeCookieConsent(state)}; Max-Age=${COOKIE_CONSENT_MAX_AGE_SECONDS}; Path=/; SameSite=Lax${secure}`;
+  } catch {
+    // The in-memory choice still applies if the browser blocks cookie storage.
+  }
 }
 
 export function CookieConsentProvider({ children }: { children: React.ReactNode }) {
@@ -52,23 +62,25 @@ export function CookieConsentProvider({ children }: { children: React.ReactNode 
     return () => window.removeEventListener(OPEN_EVENT, onOpen);
   }, []);
 
-  const confirmSettings = () => {
-    const next = createDefaultCookieConsentState();
+  const openPreferences = useCallback(() => setModalOpen(true), []);
+  const closePreferences = useCallback(() => setModalOpen(false), []);
+  const confirmSettings = useCallback((choice: CookieConsentChoice = "selected") => {
+    const next = createDefaultCookieConsentState(choice);
     writeConsentCookie(next);
     setConsent(next);
     setModalOpen(false);
-  };
+  }, []);
 
   const value = useMemo<CookieConsentContextValue>(
     () => ({
       consent,
-      bannerOpen: ready && !consent && !modalOpen,
+      bannerOpen: ready && !consent,
       modalOpen,
-      openPreferences: () => setModalOpen(true),
-      closePreferences: () => setModalOpen(false),
+      openPreferences,
+      closePreferences,
       confirmSettings,
     }),
-    [consent, modalOpen, ready],
+    [consent, modalOpen, ready, openPreferences, closePreferences, confirmSettings],
   );
 
   return <CookieConsentContext.Provider value={value}>{children}</CookieConsentContext.Provider>;

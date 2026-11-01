@@ -1,54 +1,59 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useRef } from "react";
+import { CookieCategories } from "./cookie-categories";
+import { CookieConsentActions } from "./cookie-consent-actions";
 import { useCookieConsent } from "./cookie-consent-provider";
-
-const categories = [
-  { label: "Tecnici", description: "Necessari al funzionamento della webapp.", enabled: true, disabled: true },
-  { label: "Preferenze", description: "Non utilizzati al momento.", enabled: false, disabled: true },
-  { label: "Analytics", description: "Non utilizzati al momento.", enabled: false, disabled: true },
-  { label: "Marketing e profilazione", description: "Non utilizzati al momento.", enabled: false, disabled: true },
-];
+import styles from "./cookie-consent.module.css";
 
 export function CookiePreferencesModal() {
-  const { modalOpen, closePreferences, confirmSettings } = useCookieConsent();
+  const { modalOpen, closePreferences } = useCookieConsent();
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
-  if (!modalOpen) return null;
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    if (!modalOpen) {
+      if (dialog.open) dialog.close();
+      return;
+    }
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    if (!dialog.open) dialog.showModal();
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [modalOpen]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-4 sm:items-center" role="dialog" aria-modal="true" aria-labelledby="cookie-preferences-title">
-      <div className="w-full max-w-2xl rounded-2xl bg-white p-5 text-zinc-900 shadow-2xl sm:p-6">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <h2 id="cookie-preferences-title" className="text-xl font-semibold">Preferenze cookie</h2>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-600">
-              I cookie tecnici sono sempre attivi. Le categorie non tecniche sono predisposte per eventuali evoluzioni future, ma oggi sono disattivate e non utilizzate.
-            </p>
-          </div>
-          <button type="button" onClick={closePreferences} className="rounded-full border border-zinc-300 px-3 py-1 text-sm text-zinc-700 hover:bg-zinc-50" aria-label="Chiudi preferenze cookie">
-            Chiudi
+    <dialog
+      ref={dialogRef}
+      className={styles.preferencesDialog}
+      aria-labelledby="cookie-preferences-title"
+      aria-describedby="cookie-preferences-description"
+      onCancel={(event) => { event.preventDefault(); closePreferences(); }}
+      onClose={closePreferences}
+      onClick={(event) => { if (event.target === event.currentTarget) closePreferences(); }}
+    >
+      <div className={styles.preferencesInner}>
+        <div className={styles.preferencesHeader}>
+          <span className={styles.eyebrow}><span className={styles.statusDot} aria-hidden="true" /> Evolve / Privacy</span>
+          <button type="button" onClick={closePreferences} className={styles.closeButton} aria-label="Chiudi preferenze cookie" autoFocus>
+            <svg aria-hidden="true" width="17" height="17" viewBox="0 0 17 17" fill="none"><path d="m4 4 9 9M13 4l-9 9" stroke="currentColor" strokeWidth="1.5" /></svg>
           </button>
         </div>
-        <div className="mt-5 space-y-3">
-          {categories.map((category) => (
-            <label key={category.label} className="flex items-start justify-between gap-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4">
-              <span>
-                <span className="block font-medium text-zinc-900">{category.label}</span>
-                <span className="mt-1 block text-sm text-zinc-600">{category.description}</span>
-              </span>
-              <input type="checkbox" checked={category.enabled} disabled={category.disabled} readOnly className="mt-1" />
-            </label>
-          ))}
+        <h2 id="cookie-preferences-title" className={styles.preferencesTitle}>Le tue preferenze.</h2>
+        <p id="cookie-preferences-description" className={styles.description}>
+          I cookie necessari sono sempre attivi. Al momento non usiamo cookie di preferenza, statistiche o marketing:
+          queste categorie restano disattivate anche scegliendo «Accetta tutti».
+        </p>
+        <CookieCategories detailed />
+        <div className={styles.preferencesFooter}>
+          <Link href="/cookie-policy" onClick={closePreferences} className={styles.policyLink}>Leggi la Cookie Policy</Link>
+          <span>Puoi tornare qui dal footer, quando vuoi.</span>
         </div>
-        <div className="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-          <button type="button" onClick={confirmSettings} className="rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:from-emerald-700 hover:to-teal-700">
-            Conferma impostazioni
-          </button>
-          <Link href="/cookie-policy" className="rounded-lg border border-zinc-300 bg-white px-4 py-2 text-center text-sm font-medium text-zinc-800 transition-colors hover:border-emerald-300 hover:bg-emerald-50">
-            Vai alla Cookie Policy
-          </Link>
-        </div>
+        <CookieConsentActions />
       </div>
-    </div>
+    </dialog>
   );
 }
