@@ -14,9 +14,9 @@ const SIN = Math.sin(TILT);
 const RX = 430;
 const RY = 96;
 const INITIAL_PHASE = 210 * Math.PI / 180;
-const CRUISING_SPEED = .0005;
-const MAX_FLING_SPEED = .006;
-const MOMENTUM_DECAY_MS = 1200;
+const CRUISING_SPEED = TAU / 36_000;
+const MAX_FLING_SPEED = CRUISING_SPEED * 4;
+const MOMENTUM_DECAY_MS = 900;
 
 // The SVG rail and the portraits use the same projection, including its tilt.
 function orbitPoint(angle: number) {
@@ -236,7 +236,7 @@ export function OrbitTeam() {
     if (drag.moved) {
       const releasedSpeed = !cancelled && event.timeStamp - drag.time <= 100 ? drag.velocity : 0;
       if (Math.abs(releasedSpeed) > CRUISING_SPEED * .2) directionRef.current = Math.sign(releasedSpeed);
-      velocityRef.current = directionRef.current * Math.max(CRUISING_SPEED, Math.min(MAX_FLING_SPEED, Math.abs(releasedSpeed) * 1.15));
+      velocityRef.current = directionRef.current * Math.max(CRUISING_SPEED, Math.min(MAX_FLING_SPEED, Math.abs(releasedSpeed)));
     }
     dragRef.current = null;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
@@ -248,7 +248,7 @@ export function OrbitTeam() {
     if (reduceMotion) phase.set(phase.get() + direction * STEP / 3);
     else {
       directionRef.current = direction;
-      velocityRef.current = direction * Math.max(.0022, Math.abs(velocityRef.current));
+      velocityRef.current = direction * Math.min(MAX_FLING_SPEED, Math.max(CRUISING_SPEED * 2, Math.abs(velocityRef.current)));
     }
   };
 
