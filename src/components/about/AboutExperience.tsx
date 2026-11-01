@@ -13,7 +13,6 @@ export function AboutExperience() {
       </section>
 
       <section className={styles.connection} aria-labelledby="connection-title">
-        <div className={styles.sectionLabel}><span>01 / CONNESSIONI</span><span>È QUI CHE SUCCEDE.</span></div>
         <h2 id="connection-title">
           La tecnologia è il nostro<br className={styles.desktopBreak} /> terreno di gioco.<br />
           <span>Le persone, il nostro<br className={styles.desktopBreak} /> punto di partenza.</span>

@@ -14,6 +14,9 @@ const SIN = Math.sin(TILT);
 const RX = 430;
 const RY = 96;
 const INITIAL_PHASE = 210 * Math.PI / 180;
+const CRUISING_SPEED = .0005;
+const MAX_FLING_SPEED = .006;
+const MOMENTUM_DECAY_MS = 1200;
 
 // The SVG rail and the portraits use the same projection, including its tilt.
 function orbitPoint(angle: number) {
@@ -42,6 +45,7 @@ type DragSession = {
   angle: number;
   time: number;
   moved: boolean;
+  velocity: number;
   bounds: DOMRect;
 };
 
@@ -173,8 +177,8 @@ export function OrbitTeam() {
   const stageRef = useRef<HTMLDivElement>(null);
   const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]);
   const dragRef = useRef<DragSession | null>(null);
-  const velocityRef = useRef(0);
-  const hoverRef = useRef(false);
+  const velocityRef = useRef(CRUISING_SPEED);
+  const directionRef = useRef(1);
   const visibleRef = useRef(true);
   const suppressClickRef = useRef(false);
   const selectedRef = useRef<number | null>(null);
@@ -190,22 +194,21 @@ export function OrbitTeam() {
   }, []);
 
   useAnimationFrame((_time, delta) => {
-    if (reduceMotion || !visibleRef.current || dragRef.current || selectedRef.current !== null) return;
+    if (reduceMotion || !visibleRef.current || dragRef.current?.moved || selectedRef.current !== null) return;
     const dt = Math.min(delta, 32);
-    if (Math.abs(velocityRef.current) > .00001) {
-      phase.set(phase.get() + velocityRef.current * dt);
-      velocityRef.current *= Math.exp(-dt / 340);
-    } else if (!hoverRef.current) {
-      phase.set(phase.get() + dt * .000035);
-    }
+    const cruising = directionRef.current * CRUISING_SPEED;
+    const momentum = velocityRef.current - cruising;
+    const decay = Math.exp(-dt / MOMENTUM_DECAY_MS);
+    // Integrate the decaying impulse, settling into a continuous orbit.
+    phase.set(phase.get() + cruising * dt + momentum * MOMENTUM_DECAY_MS * (1 - decay));
+    velocityRef.current = cruising + momentum * decay;
   });
 
   const startDrag = (event: PointerEvent<HTMLDivElement>) => {
     if (!event.isPrimary || event.button !== 0 || selectedRef.current !== null) return;
     const bounds = event.currentTarget.getBoundingClientRect();
     suppressClickRef.current = false;
-    velocityRef.current = 0;
-    dragRef.current = { id: event.pointerId, startX: event.clientX, startY: event.clientY, angle: pointerAngle(event.clientX, event.clientY, bounds), time: event.timeStamp, moved: false, bounds };
+    dragRef.current = { id: event.pointerId, startX: event.clientX, startY: event.clientY, angle: pointerAngle(event.clientX, event.clientY, bounds), time: event.timeStamp, moved: false, velocity: 0, bounds };
   };
 
   const moveDrag = (event: PointerEvent<HTMLDivElement>) => {
@@ -222,7 +225,7 @@ export function OrbitTeam() {
     const distance = Math.atan2(Math.sin(next - drag.angle), Math.cos(next - drag.angle));
     const dt = Math.max(8, event.timeStamp - drag.time);
     phase.set(phase.get() + distance);
-    velocityRef.current = reduceMotion ? 0 : Math.max(-.006, Math.min(.006, velocityRef.current * .35 + distance / dt * .65));
+    drag.velocity = Math.max(-MAX_FLING_SPEED, Math.min(MAX_FLING_SPEED, drag.velocity * .35 + distance / dt * .65));
     drag.angle = next;
     drag.time = event.timeStamp;
   };
@@ -230,7 +233,11 @@ export function OrbitTeam() {
   const endDrag = (event: PointerEvent<HTMLDivElement>, cancelled = false) => {
     const drag = dragRef.current;
     if (!drag || drag.id !== event.pointerId) return;
-    if (cancelled || event.timeStamp - drag.time > 100) velocityRef.current = 0;
+    if (drag.moved) {
+      const releasedSpeed = !cancelled && event.timeStamp - drag.time <= 100 ? drag.velocity : 0;
+      if (Math.abs(releasedSpeed) > CRUISING_SPEED * .2) directionRef.current = Math.sign(releasedSpeed);
+      velocityRef.current = directionRef.current * Math.max(CRUISING_SPEED, Math.min(MAX_FLING_SPEED, Math.abs(releasedSpeed) * 1.15));
+    }
     dragRef.current = null;
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
     setDragging(false);
@@ -239,7 +246,10 @@ export function OrbitTeam() {
   const rotate = (direction: number) => {
     if (selectedRef.current !== null) return;
     if (reduceMotion) phase.set(phase.get() + direction * STEP / 3);
-    else velocityRef.current = direction * .0022;
+    else {
+      directionRef.current = direction;
+      velocityRef.current = direction * Math.max(.0022, Math.abs(velocityRef.current));
+    }
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -258,7 +268,7 @@ export function OrbitTeam() {
 
   const openProfile = (index: number) => {
     if (suppressClickRef.current || selectedRef.current !== null) return;
-    velocityRef.current = 0;
+    velocityRef.current = directionRef.current * CRUISING_SPEED;
     selectedRef.current = index;
     setSelected(index);
   };
@@ -272,7 +282,7 @@ export function OrbitTeam() {
 
   return (
     <div className={styles.experience}>
-      <div ref={stageRef} className={styles.stage} data-dragging={dragging} role="group" aria-label="Il team di Evolve: trascina i ritratti per ruotare l’orbita, selezionane uno per aprire la scheda" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={event => endDrag(event)} onPointerCancel={event => endDrag(event, true)} onLostPointerCapture={event => endDrag(event, true)} onPointerEnter={() => { hoverRef.current = true; }} onPointerLeave={() => { hoverRef.current = false; }} onFocusCapture={() => { hoverRef.current = true; }} onBlurCapture={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) hoverRef.current = false; }} onKeyDown={onKeyDown} onClickCapture={event => { if (suppressClickRef.current) { event.preventDefault(); event.stopPropagation(); suppressClickRef.current = false; } }} onDragStart={event => event.preventDefault()}>
+      <div ref={stageRef} className={styles.stage} data-dragging={dragging} role="group" aria-label="Il team di Evolve: trascina i ritratti per ruotare l’orbita, selezionane uno per aprire la scheda" onPointerDown={startDrag} onPointerMove={moveDrag} onPointerUp={event => endDrag(event)} onPointerCancel={event => endDrag(event, true)} onLostPointerCapture={event => endDrag(event, true)} onKeyDown={onKeyDown} onClickCapture={event => { if (suppressClickRef.current) { event.preventDefault(); event.stopPropagation(); suppressClickRef.current = false; } }} onDragStart={event => event.preventDefault()}>
         <svg className={styles.rails} viewBox="0 0 1200 520" fill="none" preserveAspectRatio="none" aria-hidden="true">
           <ellipse cx="600" cy="260" rx={RX} ry={RY} transform="rotate(-8 600 260)" className={styles.mainRail} vectorEffect="non-scaling-stroke" />
           <ellipse cx="600" cy="260" rx="358" ry="151" transform="rotate(12 600 260)" className={styles.secondaryRail} vectorEffect="non-scaling-stroke" />
@@ -282,7 +292,6 @@ export function OrbitTeam() {
         {team.map((person, index) => <OrbitPortrait key={person.id} index={index} phase={phase} selected={selected === index} register={button => { buttonsRef.current[index] = button; }} onOpen={() => openProfile(index)} />)}
       </div>
       <div className={styles.controls}>
-        <span className={styles.hint}><span aria-hidden="true">↔</span> Trascina per ruotare. Clicca per conoscere.</span>
         <div className={styles.arrows}>
           <button type="button" onClick={() => rotate(-1)} aria-label="Ruota i ritratti a sinistra">←</button>
           <button type="button" onClick={() => rotate(1)} aria-label="Ruota i ritratti a destra">→</button>

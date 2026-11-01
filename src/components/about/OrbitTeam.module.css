@@ -17,9 +17,7 @@
 .caption { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 66px; padding: 10px 10px; font-size: 14px; line-height: 1.2; letter-spacing: -.025em; pointer-events: none; }
 .caption svg { flex: none; width: 17px; height: 17px; color: #2c7a62; transition: transform .3s; }
 .portrait:hover .caption svg { transform: translate(2px, -2px); }
-.controls { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 78px; padding: 10px 0 20px; }
-.hint { display: flex; align-items: center; gap: 12px; color: #7b8977; font-size: 10px; line-height: 1.6; }
-.hint > span { color: #2c7a62; font-size: 20px; }
+.controls { display: flex; align-items: center; justify-content: flex-end; min-height: 68px; padding: 10px 0 20px; }
 .arrows { display: flex; gap: 7px; }
 .arrows button { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 1px solid #dce4d8; border-radius: 50%; background: transparent; color: #2c7a62; font-size: 17px; cursor: pointer; transition: background .2s, border-color .2s; }
 .arrows button:hover { border-color: #72c94f; background: #edf5e9; }
@@ -60,8 +58,7 @@
   .photoIndex { top: 6px; left: 6px; font-size: 7px; }
   .caption { min-height: 52px; padding: 7px 5px; font-size: 10px; }
   .caption svg { width: 12px; height: 12px; }
-  .controls { min-height: 72px; gap: 10px; padding: 12px 12px 20px; }
-  .hint { max-width: 230px; gap: 8px; font-size: 9px; }
+  .controls { min-height: 64px; padding: 8px 12px 20px; }
   .arrows button { width: 36px; height: 36px; }
   .profileViewport { padding: 24px; }
   .profileSheet { grid-template-columns: minmax(0, 1fr); max-width: 430px; }

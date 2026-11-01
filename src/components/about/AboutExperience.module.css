@@ -17,10 +17,8 @@
 .human::after { position: absolute; right: 0; bottom: -.06em; left: .025em; height: 3px; content: ''; background: var(--green); transform: rotate(-2deg); transform-origin: left; }
 .period { color: var(--green); }
 
-.sectionLabel { display: flex; align-items: center; justify-content: space-between; gap: 24px; font-size: 9px; letter-spacing: .12em; line-height: 1.6; }
 .connection { padding: 90px var(--gutter) 105px; background: #eef4eb; }
-.connection .sectionLabel { color: #64765e; }
-.connection h2 { margin: 66px 0 0; max-width: 1350px; font-size: clamp(40px, 5.5vw, 84px); font-weight: 400; line-height: 1.09; letter-spacing: -.066em; }
+.connection h2 { margin: 0; max-width: 1350px; font-size: clamp(40px, 5.5vw, 84px); font-weight: 400; line-height: 1.09; letter-spacing: -.066em; }
 .connection h2 > span { color: var(--forest); }
 
 @media (max-width: 1000px) {
@@ -33,9 +31,7 @@
   .hero h1 { font-size: clamp(59px, 11vw, 78px); }
   .human::after { height: 2px; }
   .connection { padding: 55px var(--gutter) 65px; }
-  .sectionLabel { font-size: 8px; }
-  .sectionLabel > span:last-child { max-width: 140px; text-align: right; }
-  .connection h2 { margin-top: 45px; font-size: clamp(34px, 7.5vw, 52px); line-height: 1.13; }
+  .connection h2 { font-size: clamp(34px, 7.5vw, 52px); line-height: 1.13; }
   .desktopBreak { display: none; }
 }
 
