@@ -25,6 +25,7 @@ export default function TurntableScene({ playing, reducedMotion }: { playing: bo
     renderer.toneMappingExposure = 1.15;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.domElement.setAttribute("aria-hidden", "true");
     host.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(38, 1, .1, 80);
@@ -131,11 +132,58 @@ export default function TurntableScene({ playing, reducedMotion }: { playing: bo
     let visible = true;
     const visibility = new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; });
     visibility.observe(host);
-    let target = 0;
-    const pointer = (event: PointerEvent) => { if (event.pointerType === "mouse") { const box = host.getBoundingClientRect(); target = ((event.clientX - box.left) / box.width - .5) * .16; } };
-    const leave = () => { target = 0; };
-    host.addEventListener("pointermove", pointer);
-    host.addEventListener("pointerleave", leave);
+    const initialYaw = -.09;
+    let targetYaw = initialYaw;
+    let drag: { id: number; x: number; y: number; yaw: number; sensitivity: number; started: boolean } | null = null;
+    const updateAngle = () => {
+      const degrees = Math.round(THREE.MathUtils.radToDeg(targetYaw - initialYaw));
+      const angle = ((degrees % 360) + 360) % 360;
+      host.setAttribute("aria-valuenow", String(angle));
+      host.setAttribute("aria-valuetext", `${angle} gradi`);
+    };
+    const endDrag = () => {
+      const id = drag?.id;
+      drag = null;
+      delete host.dataset.dragging;
+      if (id !== undefined && host.hasPointerCapture(id)) host.releasePointerCapture(id);
+    };
+    const pointerDown = (event: PointerEvent) => {
+      if (!event.isPrimary || event.button !== 0 || drag) return;
+      // Solo lo spostamento orizzontale controlla la rotazione attorno all'asse Y.
+      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, yaw: targetYaw, sensitivity: Math.PI * 2 / Math.max(360, host.clientWidth), started: event.pointerType === "mouse" };
+      host.setPointerCapture(event.pointerId);
+      if (drag.started) host.dataset.dragging = "true";
+      if (event.pointerType === "mouse") host.focus({ preventScroll: true });
+    };
+    const pointerMove = (event: PointerEvent) => {
+      if (!drag || event.pointerId !== drag.id) return;
+      const dx = event.clientX - drag.x;
+      const dy = event.clientY - drag.y;
+      if (!drag.started) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) < 6) return;
+        if (Math.abs(dy) > Math.abs(dx)) { endDrag(); return; }
+        drag.started = true;
+        host.dataset.dragging = "true";
+      }
+      targetYaw = drag.yaw + dx * drag.sensitivity;
+      deck.rotation.y = targetYaw;
+      updateAngle();
+    };
+    const pointerEnd = (event: PointerEvent) => { if (drag?.id === event.pointerId) endDrag(); };
+    const keyboard = (event: KeyboardEvent) => {
+      if (!["ArrowLeft", "ArrowRight", "Home"].includes(event.key)) return;
+      event.preventDefault();
+      endDrag();
+      targetYaw = event.key === "Home" ? initialYaw : targetYaw + (event.key === "ArrowRight" ? 1 : -1) * Math.PI / 18;
+      updateAngle();
+    };
+    host.addEventListener("pointerdown", pointerDown);
+    host.addEventListener("pointermove", pointerMove);
+    host.addEventListener("pointerup", pointerEnd);
+    host.addEventListener("pointercancel", pointerEnd);
+    host.addEventListener("lostpointercapture", pointerEnd);
+    host.addEventListener("keydown", keyboard);
+    window.addEventListener("blur", endDrag);
     let frame = 0, previous = 0, speed = 0;
     const tick = (now: number) => {
       frame = window.requestAnimationFrame(tick);
@@ -147,14 +195,21 @@ export default function TurntableScene({ playing, reducedMotion }: { playing: bo
       speed += ((active && !reduced ? .85 : 0) - speed) * Math.min(1, dt * 2.4);
       record.rotation.y -= speed * dt;
       arm.rotation.y += ((active ? -.28 : .12) - arm.rotation.y) * (reduced ? 1 : Math.min(1, dt * 2));
-      deck.rotation.y += ((reduced ? -.09 : -.09 + target) - deck.rotation.y) * .06;
+      deck.rotation.y += (targetYaw - deck.rotation.y) * (reduced ? 1 : Math.min(1, dt * 14));
       ledMaterial.color.set(active ? "#8ee76a" : "#57804e");
       renderer.render(scene, camera);
     };
     frame = window.requestAnimationFrame(tick);
     return () => {
       window.cancelAnimationFrame(frame); observer.disconnect(); visibility.disconnect();
-      host.removeEventListener("pointermove", pointer); host.removeEventListener("pointerleave", leave);
+      endDrag();
+      host.removeEventListener("pointerdown", pointerDown);
+      host.removeEventListener("pointermove", pointerMove);
+      host.removeEventListener("pointerup", pointerEnd);
+      host.removeEventListener("pointercancel", pointerEnd);
+      host.removeEventListener("lostpointercapture", pointerEnd);
+      host.removeEventListener("keydown", keyboard);
+      window.removeEventListener("blur", endDrag);
       const geometries = new Set<THREE.BufferGeometry>();
       const materials = new Set<THREE.Material>();
       scene.traverse(object => { if (object instanceof THREE.Mesh) { geometries.add(object.geometry); (Array.isArray(object.material) ? object.material : [object.material]).forEach(material => materials.add(material)); } });
@@ -163,5 +218,5 @@ export default function TurntableScene({ playing, reducedMotion }: { playing: bo
     };
   }, []);
 
-  return <div ref={hostRef} className={styles.scene} role="img" aria-label="Giradischi tridimensionale con disco verde trasparente">{fallback && <div className={styles.sceneFallback} data-playing={playing}><div /><span /></div>}</div>;
+  return <div ref={hostRef} className={styles.scene} role={fallback ? "img" : "slider"} tabIndex={fallback ? undefined : 0} aria-label={fallback ? "Giradischi con disco verde trasparente" : "Ruota il giradischi: trascina oppure usa le frecce sinistra e destra"} aria-orientation={fallback ? undefined : "horizontal"} aria-valuemin={fallback ? undefined : 0} aria-valuemax={fallback ? undefined : 360} aria-valuenow={fallback ? undefined : 0} data-fallback={fallback}>{fallback && <div className={styles.sceneFallback} data-playing={playing}><div /><span /></div>}</div>;
 }

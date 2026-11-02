@@ -11,15 +11,37 @@ import styles from "./EDisk.module.css";
 
 const TurntableScene = dynamic(() => import("./TurntableScene"), { ssr: false });
 type Modal = { kind: "add" } | { kind: "edit" | "write" | "remove"; track: DiskTrack } | { kind: "import"; tracks: DiskTrack[] } | { kind: "connection" };
-const COLORS = ["#83c967", "#b0a0d1", "#df9b83", "#a3cbbd", "#ddca8c"];
+const COVER_COLORS = ["#83c967", "#b0a0d1", "#df9b83", "#a3cbbd", "#ddca8c"];
+const RECORD_COLORS = ["#b4ef78", "#8cebd9", "#9fd5ff", "#c6a7f5", "#ffa6d4", "#ffbf92", "#e9ee84", "#a7efbd"];
+function recordColor(code: string) {
+  // Distribuzione casuale alla vista, stabile per codice anche dopo un'importazione.
+  let hash = 2166136261;
+  for (const character of code) hash = Math.imul(hash ^ character.charCodeAt(0), 16777619);
+  return RECORD_COLORS[(hash >>> 0) % RECORD_COLORS.length];
+}
 const motorLabel: Record<EDiskState["motor"], string> = { unknown: "In attesa", idle: "Fermo", accel: "In accelerazione", max: "A regime", decel: "In rallentamento" };
 const time = (value: number) => `${Math.floor(Math.max(0, value) / 60)}:${String(Math.floor(Math.max(0, value) % 60)).padStart(2, "0")}`;
+
+const NOTE_HEAD = "M2 21h2v-2h5v2h2v4H9v2H4v-2H2Z";
+const PAIRED_HEADS = "M0 22h2v-2h5v2h2v4H7v2H2v-2H0ZM14 18h2v-2h5v2h2v4h-2v2h-5v-2h-2Z";
+const PAIRED_STEMS = "M7 6h3v18H7ZM21 3h3v17h-3Z";
+const NOTE_BEAM = "M7 6h4V5h4V4h4V3h5v4h-5v1h-4v1h-4v1H7Z";
+const NOTES = [
+  { kind: "single", path: `${NOTE_HEAD}M9 3h3v3h3v2h3v2h2v5h-3v-3h-3V9h-2v14H9Z` },
+  { kind: "pair", path: `${PAIRED_HEADS}${PAIRED_STEMS}${NOTE_BEAM}` },
+  { kind: "single", path: `${NOTE_HEAD}M9 3h3v20H9Z` },
+  { kind: "pair", path: `${PAIRED_HEADS}${PAIRED_STEMS}${NOTE_BEAM}M7 12h4v-1h4v-1h4V9h5v3h-5v1h-4v1h-4v1H7Z` },
+  { kind: "pair", path: `${PAIRED_HEADS}${PAIRED_STEMS}${NOTE_BEAM}` },
+  { kind: "single", path: `${NOTE_HEAD}M9 3h3v3h3v2h3v2h2v5h-3v-3h-3V9h-2v14H9Z` },
+  { kind: "single", path: `${NOTE_HEAD}M9 3h3v20H9Z` },
+  { kind: "pair", path: `${PAIRED_HEADS}${PAIRED_STEMS}${NOTE_BEAM}` },
+];
 
 function Ghosts({ playing }: { playing: boolean }) {
   return (
     <div className={styles.ghosts} data-playing={playing} aria-hidden="true">
       <div className={styles.notes}>
-        {Array.from({ length: 6 }, (_, index) => <svg key={index} style={{ "--i": index } as CSSProperties} viewBox="0 0 14 18"><path d="M6 2h2V0h6v6H8v8H6v2H0v-6h6Z" fill="currentColor" /></svg>)}
+        {NOTES.map((note, index) => <svg key={index} data-note={note.kind} style={{ "--i": index, "--drift": `${(index % 3 - 1) * 23}px`, "--rise": `${88 + index % 3 * 19}px`, "--tilt": `${(index % 2 ? 1 : -1) * 12}deg` } as CSSProperties} viewBox="0 0 26 30" shapeRendering="crispEdges"><path d={note.path} fill="currentColor" /></svg>)}
       </div>
       {["#72c94f", "#8567c1", "#ff7771"].map((color, index) => (
         <svg key={color} className={styles.ghost} style={{ "--i": index } as CSSProperties} viewBox="-15 -18 30 30">
@@ -27,7 +49,7 @@ function Ghosts({ playing }: { playing: boolean }) {
             <path d="M-4-10H4V-8H6V-6H8V-4H10V8H6V6H3V8H-3V6H-6V8H-10V-4H-8V-6H-6V-8H-4Z" fill={color} />
             <path d="M-6-2h4v5h-4ZM2-2h4v5H2Z" fill="#fcfdfb" />
             <path d="M-4 0h2v2h-2ZM4 0h2v2H4Z" fill="#15221a" />
-            <path d="M-10-8v-4h4v-2H6v2h4v4H8v-2H5v-2H-5v2H-8v2Z" fill="#253a2e" />
+            <path d="M-10-8v-4h4v-2H6v2h4v4H8v-2H5v-2H-5v2H-8v2Z" fill="#9bb292" />
             <path d="M-13-6h5v9h-5ZM8-6h5v9H8Z" fill="#253a2e" />
             <path d="M-12-4h2v5h-2ZM10-4h2v5h-2Z" fill="#afc7ac" />
           </g>
@@ -190,7 +212,7 @@ export default function EDiskExperience() {
           <input ref={fileInput} type="file" accept="application/json,.json" hidden onChange={event => void importFile(event.target.files?.[0])} />
           {state.tracks.length ? <div className={styles.records}>
             {state.tracks.map((track, index) => <article key={track.code} className={styles.recordCard} data-active={state.active?.code === track.code}>
-              <button className={styles.recordCover} style={{ "--cover-color": COLORS[index % COLORS.length] } as CSSProperties} onClick={() => void controller.current?.select(track)} aria-label={`Riproduci ${track.title}`}><span className={styles.coverTitle}>{track.title}</span><Vinyl color={COLORS[index % COLORS.length]} small /><span className={styles.coverCode}>{track.code}</span><span className={styles.coverPlay}><Play size={18} fill="currentColor" /></span></button>
+              <button className={styles.recordCover} style={{ "--cover-color": COVER_COLORS[index % COVER_COLORS.length] } as CSSProperties} onClick={() => void controller.current?.select(track)} aria-label={`Riproduci ${track.title}`}><span className={styles.coverTitle}>{track.title}</span><Vinyl color={recordColor(track.code)} small /><span className={styles.coverCode}>{track.code}</span><span className={styles.coverPlay}><Play size={18} fill="currentColor" /></span></button>
               <div className={styles.recordInfo}><div><h3>{track.title}</h3><span>{state.active?.code === track.code && playing ? "In riproduzione" : `Disco ${track.code}`}</span></div><details className={styles.dropdown}><summary className={styles.iconButton} aria-label={`Opzioni per ${track.title}`}><Ellipsis size={20} /></summary><div className={styles.dropdownPanel}><button onClick={event => { closeMenu(event); open({ kind: "write", track }); }}><Nfc size={16} />Scrivi NFC</button><button onClick={event => { closeMenu(event); open({ kind: "edit", track }); }}><Pencil size={16} />Modifica</button><button className={styles.deleteAction} onClick={event => { closeMenu(event); open({ kind: "remove", track }); }}><Trash2 size={16} />Rimuovi</button></div></details></div>
             </article>)}
           </div> : <div className={styles.emptyCollection}><div className={styles.emptyRecord} aria-hidden="true"><Vinyl color="#b4cbaa" small /><Nfc size={22} /></div><div><h3>Ogni disco ha una storia.<br />Inizia dalla tua.</h3><p>Un nome, un link YouTube. Il resto è musica.</p></div><button className={styles.roundArrow} onClick={() => open({ kind: "add" })} aria-label="Aggiungi il primo disco"><ArrowUpRight size={26} /></button></div>}
