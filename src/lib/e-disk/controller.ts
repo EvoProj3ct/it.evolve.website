@@ -338,8 +338,9 @@ export class EDiskController {
     if (!originalCode && this.state.tracks.length >= 200) throw new Error("La collezione può contenere fino a 200 dischi.");
     const clean = { ...track, title: track.title.trim().slice(0, 90) };
     this.persist([clean, ...this.state.tracks.filter(item => item.code !== originalCode && item.code !== track.code)]);
-    if (this.state.active?.code === originalCode) {
-      if (this.state.active.youtubeId !== clean.youtubeId) void this.select(clean);
+    const active = this.state.active;
+    if (active && active.code === originalCode) {
+      if (active.youtubeId !== clean.youtubeId) void this.select(clean);
       else this.emit({ active: clean });
     }
     this.notify("Disco salvato.");
