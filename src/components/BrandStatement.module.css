@@ -1,8 +1,18 @@
 .section {
+  --statement-background: #fff;
+  --statement-text: #101914;
+  --statement-glow: #3d8741;
   min-height: 100svh;
   padding: clamp(150px, 19svh, 210px) clamp(24px, 4.8vw, 92px) 120px;
-  background: #fff;
-  color: #101914;
+  background: var(--statement-background);
+  color: var(--statement-text);
+}
+
+/* Variante Chi siamo: bianco -> nero-verde del footer, testo scuro -> bianco. */
+.inverted {
+  --statement-background: #0c1710;
+  --statement-text: #f7faf6;
+  --statement-glow: #92dd72;
 }
 
 .statement {
@@ -33,8 +43,8 @@
 }
 
 @keyframes letterGlow {
-  0% { color: #3d8741; text-shadow: 0 0 12px rgb(114 201 79 / 48%); }
-  100% { color: #101914; text-shadow: 0 0 0 rgb(114 201 79 / 0%); }
+  0% { color: var(--statement-glow); text-shadow: 0 0 12px rgb(114 201 79 / 48%); }
+  100% { color: var(--statement-text); text-shadow: 0 0 0 rgb(114 201 79 / 0%); }
 }
 
 @keyframes caretBlink {

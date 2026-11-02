@@ -12,7 +12,7 @@ const exploreLinks = [
 ];
 
 const moreLinks = [
-  { label: "Eventi", href: "/rimani-aggiornato" },
+  { label: "Formazione", href: "/rimani-aggiornato" },
   { label: "Chiedilo all'IA", href: "/chiedilo-all-ia" },
   { label: "Contatti", href: "/contact" },
 ];

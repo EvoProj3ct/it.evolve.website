@@ -76,7 +76,6 @@ function OrbitPortrait({ index, phase, selected, register, onOpen }: {
       <button ref={register} type="button" className={styles.portrait} onClick={onOpen} aria-label={`Conosci ${person.name} ${person.surname}`} aria-haspopup="dialog" aria-controls="team-profile">
         <span className={styles.photo} data-orbit-photo="">
           <Image src={person.image} alt={`${person.name} ${person.surname}`} fill sizes="(max-width: 700px) 29vw, (max-width: 1200px) 21vw, 242px" style={{ objectPosition: person.position }} draggable={false} priority />
-          <span className={styles.photoIndex}>0{index + 1}</span>
         </span>
         <span className={styles.caption}><span>{person.name}<br />{person.surname}</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14" stroke="currentColor" strokeWidth="1.4" /></svg></span>
       </button>
@@ -151,11 +150,9 @@ function ProfileDialog({ index, getOrigin, onClosed }: { index: number; getOrigi
           <div ref={slotRef} className={styles.profileSlot}>
             <motion.div className={styles.profilePhoto} initial={{ opacity: 0 }} animate={controls}>
               <Image src={person.image} alt={`Ritratto di ${person.name} ${person.surname}`} fill sizes="(max-width: 700px) 90vw, 430px" style={{ objectPosition: person.position }} draggable={false} priority />
-              <span className={styles.profilePhotoIndex}>EVOLVE / 0{index + 1}</span>
             </motion.div>
           </div>
           <motion.div className={styles.profileCopy} initial={{ opacity: 0, y: reduceMotion ? 0 : 12 }} animate={{ opacity: leaving ? 0 : 1, y: leaving && !reduceMotion ? 8 : 0 }} transition={{ duration: reduceMotion ? 0 : .28, delay: leaving || reduceMotion ? 0 : .22 }}>
-            <p className={styles.profileEyebrow}>0{index + 1} / EVOLVE</p>
             <h2 id="team-profile-title">{person.name}<br />{person.surname}<span>.</span></h2>
             <div className={styles.profileBiography}>
               <p className={styles.bioLabel}>DESCRIZIONE IN ARRIVO</p>

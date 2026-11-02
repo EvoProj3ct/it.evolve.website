@@ -1,3 +1,4 @@
+import { BrandStatement } from "@/components/BrandStatement";
 import { OrbitTeam } from "./OrbitTeam";
 import styles from "./AboutExperience.module.css";
 
@@ -12,12 +13,11 @@ export function AboutExperience() {
         <OrbitTeam />
       </section>
 
-      <section className={styles.connection} aria-labelledby="connection-title">
-        <h2 id="connection-title">
-          La tecnologia è il nostro<br className={styles.desktopBreak} /> terreno di gioco.<br />
-          <span>Le persone, il nostro<br className={styles.desktopBreak} /> punto di partenza.</span>
-        </h2>
-      </section>
+      <BrandStatement
+        text={"La tecnologia è il nostro terreno di gioco.\nLe persone, il nostro punto di partenza."}
+        variant="inverted"
+        label="Le persone e la tecnologia in Evolve"
+      />
 
     </main>
   );

@@ -1,7 +1,8 @@
 "use client";
 
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import React, { useEffect, useRef, useState } from "react";
+import styles from "./SupportChat.module.css";
 
 import { supportChatApi } from "@/lib/support-chat/client";
 import { supportChatConfig } from "@/lib/support-chat/config";
@@ -25,6 +26,16 @@ const BOT_GREETING = supportChatConfig.greeting;
 const BOT_FALLBACK_REPLY =
     "Perfetto, grazie. Al momento non riesco a rispondere bene. Se vuoi, scrivici obiettivo, budget e tempistiche e ti ricontattiamo subito.";
 
+function LeoMark() {
+    return (
+        <svg className={styles.leoMark} width="22" height="20" viewBox="-10 -10 20 18" fill="none" aria-hidden="true" focusable="false">
+            <path d="M-4-10H4V-8H6V-6H8V-4H10V8H6V6H3V8H-3V6H-6V8H-10V-4H-8V-6H-6V-8H-4Z" fill="currentColor" />
+            <path d="M-6-2h4v5h-4zm8 0h4v5H2Z" fill="#fcfdfb" />
+            <path d="M-4 0h2v2h-2zm8 0h2v2H4Z" fill="#101914" />
+        </svg>
+    );
+}
+
 function MessageText({ text }: { text: string }) {
     const normalized = text.replace(/\r\n/g, "\n").trim();
 
@@ -33,7 +44,7 @@ function MessageText({ text }: { text: string }) {
     const blocks = normalized.split(/\n{2,}/);
 
     return (
-        <div className="supportChatBubbleText">
+        <div className={styles.bubbleText}>
             {blocks.map((block, blockIndex) => {
                 const lines = block.split("\n").filter(Boolean);
 
@@ -76,6 +87,7 @@ function MessageText({ text }: { text: string }) {
 }
 
 export function SupportChat({ open, onClose }: SupportChatProps) {
+    const reduceMotion = useReducedMotion();
     const [text, setText] = useState("");
     const [messages, setMessages] = useState<UiMessage[]>([]);
     const [isSending, setIsSending] = useState(false);
@@ -292,65 +304,70 @@ export function SupportChat({ open, onClose }: SupportChatProps) {
         <AnimatePresence>
             {open && (
                 <motion.div
-                    className="supportChatOverlay"
-                    initial={{ opacity: 0 }}
+                    className={styles.overlay}
+                    initial={{ opacity: reduceMotion ? 1 : 0 }}
                     animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                    exit={{ opacity: reduceMotion ? 1 : 0 }}
+                    transition={{ duration: reduceMotion ? 0 : 0.22 }}
                 >
-                    <div className="supportChatBackdrop" onClick={onClose} />
+                    <div className={styles.backdrop} onClick={onClose} />
 
                     <motion.div
-                        className="supportChatPanel"
-                        initial={{ y: 10, opacity: 0, scale: 0.98 }}
+                        className={styles.panel}
+                        initial={{ y: reduceMotion ? 0 : 14, opacity: reduceMotion ? 1 : 0, scale: reduceMotion ? 1 : 0.98 }}
                         animate={{ y: 0, opacity: 1, scale: 1 }}
-                        exit={{ y: 10, opacity: 0, scale: 0.98 }}
-                        transition={{ duration: 0.18, ease: "easeOut" }}
+                        exit={{ y: reduceMotion ? 0 : 8, opacity: reduceMotion ? 1 : 0, scale: reduceMotion ? 1 : 0.99 }}
+                        transition={{ duration: reduceMotion ? 0 : 0.3, ease: [0.22, 1, 0.36, 1] }}
                         role="dialog"
                         aria-modal="true"
-                        aria-label="Powered by Evolve IA"
+                        aria-labelledby="support-chat-title"
                     >
-                        <div className="supportChatHeader">
-                            <div className="supportChatTitle">
-                                Leo <span className="supportChatTitleSub">• Powered by Evolve IA</span>
+                        <div className={styles.header}>
+                            <div className={styles.identity}>
+                                <span className={styles.leoBadge}><LeoMark /></span>
+                                <div>
+                                    <div id="support-chat-title" className={styles.title}>Chiedilo a Leo</div>
+                                    <div className={styles.subtitle}>Powered by Evolve IA</div>
+                                </div>
                             </div>
 
                             <button
                                 type="button"
-                                className="supportChatClose"
+                                className={styles.close}
                                 onClick={onClose}
                                 aria-label="Chiudi chat"
                             >
-                                ✕
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" stroke="currentColor" strokeWidth="1.5" /></svg>
                             </button>
                         </div>
 
-                        <div className="supportChatBody" ref={bodyRef}>
+                        <div className={styles.body} ref={bodyRef} role="log" aria-label="Conversazione con Leo">
                             {messages.map((m) => {
                                 const isUser = m.role === "user";
 
                                 return (
-                                    <div key={m.id} className="supportChatRow">
+                                    <div key={m.id} className={styles.row}>
                                         {isUser ? (
-                                            <div className="supportChatSpacer" />
+                                            <div className={styles.spacer} />
                                         ) : (
-                                            <div className="supportChatAvatar">L</div>
+                                            <div className={styles.avatar}><LeoMark /></div>
                                         )}
 
                                         <div
                                             className={[
-                                                "supportChatBubble",
-                                                isUser ? "isUser" : "isBot",
-                                                m.typing ? "isTyping" : "",
+                                                styles.bubble,
+                                                isUser ? styles.userBubble : styles.botBubble,
+                                                m.typing ? styles.typingBubble : "",
                                             ].join(" ")}
                                         >
                                             {m.typing ? (
                                                 <span
-                                                    className="supportChatTyping"
+                                                    className={styles.typing}
                                                     aria-label="Leo sta scrivendo"
                                                 >
-                                                    <span className="dot" />
-                                                    <span className="dot" />
-                                                    <span className="dot" />
+                                                    <span />
+                                                    <span />
+                                                    <span />
                                                 </span>
                                             ) : (
                                                 <MessageText text={m.text ?? ""} />
@@ -358,31 +375,32 @@ export function SupportChat({ open, onClose }: SupportChatProps) {
                                         </div>
 
                                         {isUser ? (
-                                            <div className="supportChatAvatar isUser">TU</div>
+                                            <div className={`${styles.avatar} ${styles.userAvatar}`}>TU</div>
                                         ) : (
-                                            <div className="supportChatSpacer" />
+                                            <div className={styles.spacer} />
                                         )}
                                     </div>
                                 );
                             })}
                         </div>
 
-                        <form className="supportChatComposer" onSubmit={onSubmit}>
+                        <form className={styles.composer} onSubmit={onSubmit}>
                             <input
                                 ref={inputRef}
                                 value={text}
                                 onChange={(e) => setText(e.target.value)}
-                                className="supportChatInput"
+                                className={styles.input}
                                 placeholder="Scrivi un messaggio…"
+                                aria-label="Scrivi un messaggio a Leo"
                                 disabled={isSending}
                             />
                             <button
                                 type="submit"
-                                className="supportChatSend"
+                                className={styles.send}
                                 aria-label="Invia"
                                 disabled={!text.trim() || isSending}
                             >
-                                ➤
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" /></svg>
                             </button>
                         </form>
                     </motion.div>

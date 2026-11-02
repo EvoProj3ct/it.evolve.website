@@ -9,8 +9,8 @@ import { SupportChat } from "@/components/SupportChat";
 import { MenuGhost } from "@/components/MenuGhost";
 import styles from "./Navbar.module.css";
 
-type MenuKey = "services" | "events" | "utils";
-const NAV_ITEMS = ["services", "events", "about", "utils"] as const;
+type MenuKey = "services" | "training" | "utils";
+const NAV_ITEMS = ["services", "training", "about", "utils"] as const;
 type Menu = {
   label: string;
   heading: string;
@@ -33,15 +33,15 @@ const MENUS: Record<MenuKey, Menu> = {
       { label: "Bandi", href: "/contact" },
     ],
   },
-  events: {
-    label: "Eventi",
+  training: {
+    label: "Formazione",
     heading: "La tecnologia è un bene da condividere.",
     overviewLabel: "Rimani aggiornato",
     overviewHref: "/rimani-aggiornato",
     items: [
+      { label: "Cicli Formativi", href: "/rimani-aggiornato" },
       { label: "Seminari", href: "/rimani-aggiornato" },
-      { label: "Chiedilo all'IA", href: "/chiedilo-all-ia" },
-      { label: "Festival IA di Palestrina", href: "/rimani-aggiornato" },
+      { label: "Eventi", href: "/rimani-aggiornato" },
     ],
   },
   utils: {
@@ -50,9 +50,9 @@ const MENUS: Record<MenuKey, Menu> = {
     overviewLabel: "Tutte le risorse",
     overviewHref: "/utils",
     items: [
-      { label: "Brochure", href: "/utils#brochure" },
-      { label: "Corsi", href: "/utils#corsi" },
-      { label: "PDF utili", href: "/utils#pdf-utili" },
+      { label: "Documenti e materiale scaricabile", href: "/utils" },
+      { label: "Progetti e schemi open source", href: "/utils" },
+      { label: "Laboratorio Esperimenti", href: "/utils" },
     ],
   },
 };

@@ -22,6 +22,9 @@ const clients: Client[] = [
   { name: "japporomano", href: "https://japporomano.com", logo: "/clients/logo_japporomano.png" },
   { name: "FIMEP", href: "https://fimep.it/", logo: "/clients/logo_fimep.png" },
   { name: "NG Infissi", href: "https://www.nginfissisrl.com/", logo: "/clients/logo_ng.png" },
+  { name: "PM Technic", href: "https://pmtechnic.com/it/", logo: "/clients/logo_pmtechnic.png", wide: true },
+  { name: "BCC Paliano", href: "https://www.bccpaliano.it/", logo: "/clients/logo_bccpaliano.png", wide: true },
+  { name: "Next Music Awards", href: "https://www.nextmusicawards.com/", logo: "/clients/logo_nextmusicawards.png" },
 ];
 
 export function ClientsGrid() {

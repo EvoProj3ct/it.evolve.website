@@ -13,7 +13,6 @@
 .photo { position: relative; display: block; aspect-ratio: 1.12; overflow: hidden; background: #cde8d1; pointer-events: none; }
 .photo img { object-fit: cover; filter: grayscale(1); transition: filter .45s; }
 .portrait:hover img, .portrait:focus-visible img { filter: grayscale(0); }
-.photoIndex { position: absolute; top: 11px; left: 11px; color: #fff; font-family: monospace; font-size: 9px; letter-spacing: .03em; text-shadow: 0 1px 8px rgb(0 0 0 / 65%); }
 .caption { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 66px; padding: 10px 10px; font-size: 14px; line-height: 1.2; letter-spacing: -.025em; pointer-events: none; }
 .caption svg { flex: none; width: 17px; height: 17px; color: #2c7a62; transition: transform .3s; }
 .portrait:hover .caption svg { transform: translate(2px, -2px); }
@@ -32,9 +31,7 @@
 .profileSlot { position: relative; z-index: 2; min-width: 0; aspect-ratio: .84; }
 .profilePhoto { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; border-radius: 4px; background: #cde8d1; transform-origin: center; will-change: transform, width, height; }
 .profilePhoto img { object-fit: cover; }
-.profilePhotoIndex { position: absolute; bottom: 20px; left: 20px; color: #fff; font-family: monospace; font-size: 10px; letter-spacing: .1em; text-shadow: 0 1px 9px rgb(0 0 0 / 60%); }
 .profileCopy { position: relative; z-index: 1; display: flex; flex-direction: column; justify-content: center; min-width: 0; padding: 58px clamp(28px, 4vw, 52px); }
-.profileEyebrow { margin: 0 0 28px; color: #2c7a62; font-family: monospace; font-size: 9px; letter-spacing: .1em; }
 .profileCopy h2 { margin: 0; font-size: clamp(42px, 4.8vw, 66px); font-weight: 400; line-height: 1.02; letter-spacing: -.07em; }
 .profileCopy h2 > span { color: #72c94f; }
 .profileBiography { margin-top: 35px; padding-top: 24px; border-top: 1px solid #dfe6dc; }
@@ -55,7 +52,6 @@
   .portraitPosition { width: clamp(104px, 29vw, 172px); }
   .portrait { padding: 4px 4px 0; border-radius: 3px; }
   .photo { aspect-ratio: .98; }
-  .photoIndex { top: 6px; left: 6px; font-size: 7px; }
   .caption { min-height: 52px; padding: 7px 5px; font-size: 10px; }
   .caption svg { width: 12px; height: 12px; }
   .controls { min-height: 64px; padding: 8px 12px 20px; }
@@ -64,7 +60,6 @@
   .profileSheet { grid-template-columns: minmax(0, 1fr); max-width: 430px; }
   .profileSlot { aspect-ratio: 1.15; max-height: 43svh; }
   .profileCopy { padding: 26px 21px 28px; }
-  .profileEyebrow { margin-bottom: 16px; font-size: 8px; }
   .profileCopy h2 { font-size: 43px; }
   .profileBiography { margin-top: 22px; padding-top: 18px; }
   .profileBiography p { font-size: 12px; line-height: 1.8; }
