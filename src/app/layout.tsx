@@ -1,19 +1,23 @@
 import "./globals.css";
-import { Montserrat, Inter } from "next/font/google";
+import localFont from "next/font/local";
 import { CookieConsentBanner } from "@/components/legal/cookie-consent-banner";
 import { CookieConsentProvider } from "@/components/legal/cookie-consent-provider";
 import { CookiePreferencesModal } from "@/components/legal/cookie-preferences-modal";
 
-const montserrat = Montserrat({
-    subsets: ["latin"],
+const montserrat = localFont({
+    src: "./fonts/Montserrat-latin-variable.woff2",
     variable: "--fonts-display",
-    weight: ["300", "400", "600", "700", "800"],
+    weight: "100 900",
+    style: "normal",
+    display: "swap",
 });
 
-const inter = Inter({
-    subsets: ["latin"],
+const inter = localFont({
+    src: "./fonts/Inter-latin-variable.woff2",
     variable: "--fonts-body",
-    weight: ["300", "400", "500", "600", "700"],
+    weight: "100 900",
+    style: "normal",
+    display: "swap",
 });
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

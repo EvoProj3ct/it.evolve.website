@@ -89,7 +89,6 @@
 }
 .vinyl::before { content: ""; position: absolute; inset: 2%; border: 1px solid #ffffff45; border-radius: 50%; pointer-events: none; }
 .vinyl > span { position: absolute; width: 28%; height: 28%; inset: 36%; border-radius: 50%; background: #f4f2e5; box-shadow: 0 0 0 1px #35453425, 0 0 0 5px #ffffff16; }
-.vinyl > span::before { content: "e"; position: absolute; inset: 0; display: grid; place-items: center; font-size: 21px; font-weight: 600; color: #52634e; }
 .vinyl > i { position: absolute; inset: calc(50% - 2px); width: 4px; height: 4px; border-radius: 50%; background: #344837; z-index: 1; }
 .vinylSmall { width: 130px; }
 .playerArtwork > .vinyl { margin: 30px -44px 0 0; }

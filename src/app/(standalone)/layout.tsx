@@ -1,14 +1,20 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import ChiediloFooter from "@/components/chiedilo/site-footer";
 
-const geistSans = Geist({
+const geistSans = localFont({
+  src: "../fonts/Geist-latin-variable.woff2",
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  weight: "100 900",
+  style: "normal",
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: "../fonts/GeistMono-latin-variable.woff2",
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: "100 900",
+  style: "normal",
+  display: "swap",
 });
 
 export default function StandaloneLayout({ children }: { children: React.ReactNode }) {
