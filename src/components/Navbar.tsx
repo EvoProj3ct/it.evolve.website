@@ -52,7 +52,7 @@ const MENUS: Record<MenuKey, Menu> = {
     items: [
       { label: "Documenti e materiale scaricabile", href: "/utils" },
       { label: "Progetti e schemi open source", href: "/utils" },
-      { label: "Laboratorio Esperimenti", href: "/utils" },
+      { label: "Laboratorio Esperimenti", href: "/utils/laboratorio" },
     ],
   },
 };

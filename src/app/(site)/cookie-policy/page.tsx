@@ -25,7 +25,7 @@ export default function CookiePolicyPage() {
             <p className={styles.eyebrow}>COOKIE E TECNOLOGIE SIMILI</p>
             <h1>Cookie Policy<span>.</span></h1>
             <p className={styles.introduction}>Qui trovi le informazioni sui cookie utilizzati da Evolve e su come gestire le tue preferenze.</p>
-            <p className={styles.updated}>Ultimo aggiornamento <time dateTime="2026-06-18">18 giugno 2026</time></p>
+            <p className={styles.updated}>Ultimo aggiornamento <time dateTime="2026-11-02">2 novembre 2026</time></p>
           </div>
           <aside className={styles.summary} aria-labelledby="cookie-summary-title">
             <svg className={styles.summaryIcon} width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="m16 3 10 4v8c0 6-4.4 10.4-10 14C10.4 25.4 6 21 6 15V7l10-4Z" stroke="currentColor" strokeWidth="1.25" /><path d="m11 15 3.5 3.5 6.5-7" stroke="currentColor" strokeWidth="1.5" /></svg>
@@ -53,6 +53,7 @@ export default function CookiePolicyPage() {
                 <div><dt>Finalità</dt><dd>Ricordare la tua scelta sui cookie</dd></div>
                 <div><dt>Durata</dt><dd>Circa 6 mesi</dd></div>
               </dl>
+              <p>Nel <Link href="/utils/laboratorio" className={styles.inlineLink}>Laboratorio esperimenti</Link>, il gioco del fantasmino salva nel browser la propria tabella di apprendimento e le statistiche tramite memoria locale (localStorage). Puoi cancellare questi progressi con “Azzera la memoria” nel gioco o eliminando i dati del sito dal browser.</p>
             </section>
 
             <section id="categorie" className={styles.section} aria-labelledby="categories-title">

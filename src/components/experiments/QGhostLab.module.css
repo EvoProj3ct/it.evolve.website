@@ -1,0 +1,218 @@
+.page {
+  --paper: #fcfdfb;
+  --ink: #101914;
+  --forest: #2c7a62;
+  --green: #72c94f;
+  --mint: #cde8d1;
+  --muted: #647067;
+  --line: #e1e7df;
+  padding: 116px clamp(20px, 4.8vw, 92px) 70px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--fonts-body), Arial, sans-serif;
+}
+.inner { max-width: 1440px; margin: 0 auto; }
+.page button, .page a { -webkit-tap-highlight-color: transparent; }
+.page button { font-family: inherit; cursor: pointer; }
+.page button:disabled { opacity: .45; cursor: not-allowed; }
+.page button:focus-visible, .page a:focus-visible, .page summary:focus-visible { outline: 2px solid var(--forest); outline-offset: 5px; }
+.header { display: flex; justify-content: space-between; align-items: flex-end; gap: 35px; margin-bottom: 43px; }
+.breadcrumb { display: flex; flex-wrap: wrap; align-items: center; gap: 13px; margin-bottom: 26px; color: #7a8973; font-size: 10px; line-height: 1.7; }
+.breadcrumb a { color: var(--forest); text-decoration: none; }
+.header h1 { margin: 0; font-size: clamp(51px, 5.8vw, 84px); font-weight: 400; letter-spacing: -.073em; line-height: .99; }
+.header h1 > span { color: var(--forest); }
+.intro { margin: 22px 0 0; color: var(--muted); font-size: 13px; line-height: 1.9; }
+.explainButton, .secondaryButton { display: inline-flex; flex: 0 0 auto; align-items: center; justify-content: center; gap: 25px; min-height: 44px; padding: 11px 20px; border: 1px solid #cfdbca; border-radius: 28px; background: transparent; color: var(--forest); font-size: 12px; line-height: 1.6; transition: background .2s, border-color .2s; }
+.explainButton { margin-bottom: 3px; }
+.explainButton > span { font-size: 18px; }
+.explainButton:hover, .secondaryButton:hover { border-color: var(--green); background: #edf5e9; }
+
+.lab { display: grid; grid-template-columns: minmax(0, 1fr) 304px; align-items: start; gap: 28px; }
+.playground { min-width: 0; overflow: hidden; border: 1px solid #213b27; border-radius: 20px; background: #09120c; color: var(--paper); }
+.gameBar { display: flex; align-items: center; justify-content: space-between; gap: 20px; min-height: 78px; padding: 17px 25px; border-bottom: 1px solid #243b28; background: #0d1a11; }
+.roundStats { display: flex; align-items: center; gap: 33px; }
+.roundStats > span { display: flex; align-items: center; gap: 12px; color: #9bb395; font-size: 10px; }
+.roundStats strong { color: var(--paper); font-size: 21px; font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: -.04em; line-height: 1.2; }
+.roundStats small { padding-left: 2px; color: #7f9a78; font-size: 12px; }
+.pauseButton { display: inline-flex; align-items: center; gap: 17px; min-height: 36px; padding: 8px 12px; border: 1px solid #385032; border-radius: 22px; background: transparent; color: #d1e5c9; font-size: 11px; }
+.pauseButton:hover:not(:disabled) { border-color: #72c94f; background: #1b3020; }
+.pauseButton > span { font-size: 15px; }
+.playground button:focus-visible { outline-color: #a6df8d; }
+.board { position: relative; aspect-ratio: 27 / 19; margin: 8px; }
+.canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; border-radius: 3px; outline: none; }
+.canvas:focus-visible { outline: 1px solid #72c94f; outline-offset: 2px; }
+.boardOverlay { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; border-radius: 8px; background: rgb(6 14 9 / 66%); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.startCard { width: min(350px, 100%); text-align: center; }
+.startGhost { display: block; width: 34px; height: 32px; margin: 0 auto 23px; color: var(--green); shape-rendering: crispEdges; }
+.startCard h2 { margin: 0; color: #f7faf6; font-size: clamp(25px, 2.5vw, 37px); font-weight: 400; line-height: 1.12; letter-spacing: -.055em; }
+.startCard p { max-width: 290px; margin: 19px auto 0; color: #b0c3a7; font-size: 12px; line-height: 1.85; }
+.primaryButton { display: inline-flex; align-items: center; justify-content: center; gap: 30px; min-height: 45px; padding: 12px 23px; border: 1px solid var(--green); border-radius: 28px; background: var(--green); color: #101914; font-size: 12px; font-weight: 500; line-height: 1.6; transition: background .2s, border-color .2s, transform .2s; }
+.primaryButton:hover:not(:disabled) { transform: translateY(-1px); border-color: #a2d88c; background: #a2d88c; }
+.primaryButton > span { font-size: 19px; line-height: 1; }
+.startCard .primaryButton { margin-top: 25px; }
+.roundNote { display: block; margin-top: 15px; color: #9cb291; font-size: 10px; }
+.boardFooter { display: flex; align-items: center; justify-content: space-between; gap: 30px; padding: 17px 25px 22px; border-top: 1px solid #213423; }
+.boardFooter > div:first-child { flex: 1; min-width: 0; }
+.boardFooter p { margin: 11px 0 0; color: #819a77; font-size: 10px; line-height: 1.85; }
+.legend { display: flex; gap: 22px; }
+.legend > span { display: inline-flex; align-items: center; gap: 8px; color: #c3d5ba; font-size: 10px; }
+.legend svg { width: 12px; height: 11px; color: var(--green); shape-rendering: crispEdges; }
+.playerDot { width: 9px; height: 9px; border-radius: 50%; background: var(--paper); }
+.dpad { display: grid; flex: 0 0 auto; grid-template-columns: repeat(3, 34px); grid-template-rows: repeat(2, 31px); gap: 4px; }
+.dpad button { display: grid; place-items: center; min-width: 0; padding: 0; border: 1px solid #35502d; border-radius: 7px; background: #122318; color: #cde8c4; font-size: 16px; touch-action: manipulation; }
+.dpad button:hover, .dpad button:active { border-color: var(--green); background: #233d23; }
+.direction0 { grid-column: 2; grid-row: 1; }
+.direction1 { grid-column: 3; grid-row: 2; }
+.direction2 { grid-column: 2; grid-row: 2; }
+.direction3 { grid-column: 1; grid-row: 2; }
+
+.dashboard { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.rankCard { padding: 26px; border: 1px solid #dce8d5; border-radius: 20px; background: #eef4eb; }
+.rankTop { display: flex; align-items: center; gap: 11px; margin-bottom: 24px; color: var(--forest); font-size: 10px; }
+.rankTop svg { width: 22px; height: 20px; shape-rendering: crispEdges; }
+.rankCard h2 { margin: 0; font-size: 30px; font-weight: 400; line-height: 1.06; letter-spacing: -.06em; }
+.rankCard > p { margin: 15px 0 0; color: #697d60; font-size: 11px; line-height: 1.85; }
+.levelProgress { height: 3px; margin-top: 26px; overflow: hidden; border-radius: 4px; background: #d9e5d2; }
+.levelProgress > span { display: block; height: 100%; background: var(--forest); transition: width .2s; }
+.nextLevel { display: block; margin-top: 11px; color: #73846b; font-size: 9px; line-height: 1.8; }
+.statsCard { padding: 25px; border: 1px solid var(--line); border-radius: 20px; background: #fff; }
+.statsCard h2 { margin: 0; font-size: 21px; font-weight: 400; letter-spacing: -.045em; }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 25px 18px; margin: 26px 0; }
+.stats dt { min-height: 28px; color: #7a8774; font-size: 9px; line-height: 1.6; }
+.stats dd { margin: 5px 0 0; font-size: 28px; font-variant-numeric: tabular-nums; font-weight: 400; line-height: 1; letter-spacing: -.05em; }
+.record { display: flex; justify-content: space-between; align-items: center; gap: 15px; padding: 15px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.record > span { color: var(--muted); font-size: 10px; line-height: 1.7; }
+.record strong { color: var(--forest); font-size: 17px; font-weight: 400; white-space: nowrap; }
+.exploration { margin-top: 22px; }
+.exploration > div:first-child { display: flex; justify-content: space-between; align-items: center; gap: 16px; font-size: 10px; }
+.exploration strong { color: var(--forest); font-size: 12px; font-weight: 500; }
+.explorationTrack { height: 3px; margin-top: 12px; border-radius: 4px; background: #e9eee5; overflow: hidden; }
+.explorationTrack > span { display: block; height: 100%; background: var(--green); transition: width .2s; }
+.exploration > p { margin: 12px 0 0; color: #7a8774; font-size: 10px; line-height: 1.85; }
+
+.observatory { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; margin-top: 28px; }
+.chart { min-width: 0; margin: 0; padding: 28px; border: 1px solid var(--line); border-radius: 20px; }
+.chart figcaption, .thoughts h2 { margin: 0; font-size: 20px; font-weight: 400; line-height: 1.3; letter-spacing: -.04em; }
+.chart > svg { display: block; width: 100%; max-height: 145px; margin-top: 25px; }
+.chartAxis { display: flex; justify-content: space-between; gap: 20px; color: #778570; font-size: 9px; line-height: 1.7; }
+.chart > p { max-width: 420px; margin: 20px 0 0; color: #788670; font-size: 10px; line-height: 1.85; }
+.emptyChart { display: flex; flex-direction: column; justify-content: center; gap: 10px; min-height: 135px; margin-top: 20px; padding: 20px; border-radius: 10px; background: #f0f5ec; color: #5d7757; font-size: 11px; text-align: center; line-height: 1.8; }
+.emptyChart > span { color: #87977d; font-size: 10px; }
+.thoughts { min-width: 0; padding: 28px; border: 1px solid var(--line); border-radius: 20px; }
+.decision { display: flex; align-items: center; gap: 8px; margin-top: 25px; color: #65775b; font-size: 11px; line-height: 1.8; }
+.decisionDot { flex: 0 0 5px; width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
+.reward { display: flex; align-items: center; gap: 18px; min-height: 55px; margin: 20px 0 0; }
+.reward strong { min-width: 70px; color: var(--forest); font-size: 32px; font-weight: 400; font-variant-numeric: tabular-nums; letter-spacing: -.055em; }
+.reward > span { color: #7a8774; font-size: 11px; line-height: 1.8; }
+.qDetails { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); }
+.qDetails summary { color: var(--forest); font-size: 10px; line-height: 1.8; cursor: pointer; }
+.qValues { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; margin-top: 15px; }
+.qValues > div { display: flex; flex-direction: column; gap: 10px; padding: 12px 8px; border: 1px solid var(--line); border-radius: 8px; text-align: center; }
+.qValues > div[data-chosen="true"] { border-color: #8dbb77; background: #eef5e9; }
+.qValues span { color: #7a8774; font-size: 9px; }
+.qValues strong { color: var(--forest); font-family: monospace; font-size: 12px; font-weight: 400; }
+.qDetails > p { margin: 14px 0 0; color: #7a8774; font-size: 10px; line-height: 1.85; }
+.labFooter { display: flex; justify-content: space-between; align-items: center; gap: 32px; margin-top: 32px; padding-top: 22px; border-top: 1px solid var(--line); }
+.labFooter p { max-width: 600px; margin: 0; color: #7a8774; font-size: 10px; line-height: 1.9; }
+.labFooter button { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 20px; min-height: 44px; padding: 8px 0; border: 0; background: transparent; color: var(--forest); font-size: 11px; }
+.labFooter button > span { font-size: 19px; }
+
+.dialog { position: fixed; inset: 0; width: min(670px, calc(100% - 32px)); max-width: none; max-height: calc(100dvh - 40px); margin: auto; padding: 0; overflow-y: auto; overscroll-behavior: contain; border: 1px solid var(--line); border-radius: 23px; background: var(--paper); color: var(--ink); font-family: var(--fonts-body), Arial, sans-serif; }
+.dialog::backdrop { background: rgb(11 18 14 / 43%); backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px); }
+.dialogInner { position: relative; padding: 38px; }
+.dialogClose { position: absolute; top: 17px; right: 17px; display: grid; place-items: center; width: 35px; height: 35px; padding: 0; border: 1px solid var(--line); border-radius: 50%; background: transparent; color: #60755a; font-size: 24px; line-height: 1; }
+.dialogClose:hover { background: #edf5e9; }
+.dialogGhost { width: 27px; height: 25px; margin-bottom: 24px; color: var(--forest); shape-rendering: crispEdges; }
+.dialog h2 { max-width: 480px; margin: 0; font-size: 39px; font-weight: 400; line-height: 1.06; letter-spacing: -.065em; }
+.dialogInner > p { margin: 23px 0 0; color: #687a60; font-size: 12px; line-height: 1.95; }
+.lessonSteps { margin: 28px 0 0; padding: 0; list-style: none; }
+.lessonSteps > li { display: flex; align-items: flex-start; gap: 20px; padding: 20px 0; border-top: 1px solid var(--line); }
+.lessonSteps > li > span { flex: 0 0 20px; padding-top: 5px; color: var(--forest); font-family: monospace; font-size: 9px; }
+.lessonSteps h3 { margin: 0; font-size: 18px; font-weight: 400; letter-spacing: -.035em; line-height: 1.4; }
+.lessonSteps p { margin: 8px 0 0; color: #6d7c65; font-size: 12px; line-height: 1.9; }
+.lessonDetails { margin-top: 21px; padding-top: 18px; border-top: 1px solid var(--line); }
+.lessonDetails summary { color: var(--forest); font-size: 11px; line-height: 1.8; cursor: pointer; }
+.lessonDetails ol { display: grid; gap: 16px; margin: 22px 0 0; padding: 0; list-style: none; }
+.lessonDetails li { display: flex; flex-direction: column; gap: 6px; }
+.lessonDetails li > span { color: #819077; font-size: 9px; }
+.lessonDetails strong { color: var(--ink); font-size: 14px; font-weight: 400; }
+.lessonDetails code { display: block; margin-top: 19px; padding: 16px; border-radius: 10px; background: #eef4eb; color: var(--forest); font-family: monospace; font-size: 11px; line-height: 1.8; overflow-wrap: anywhere; }
+.lessonDetails p { margin-top: 13px; color: #6d7c65; font-size: 11px; line-height: 1.9; }
+.lessonDetails a { display: inline-block; margin-top: 9px; color: var(--forest); font-size: 10px; text-decoration: underline; text-underline-offset: 4px; }
+.dialogInner > .primaryButton { margin-top: 29px; }
+.dialogActions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 12px; margin-top: 28px; }
+
+@media (max-width: 1100px) {
+  .lab { grid-template-columns: minmax(0, 1fr); }
+  .dashboard { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); align-items: stretch; }
+  .rankCard { display: flex; flex-direction: column; }
+  .levelProgress { margin-top: auto; }
+  .rankCard > p { margin-bottom: 28px; }
+  .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 15px; }
+  .stats dd { font-size: 25px; }
+}
+
+@media (max-width: 700px) {
+  .page { padding-top: 103px; padding-bottom: 50px; }
+  .header { display: block; margin-bottom: 29px; }
+  .header h1 { font-size: 57px; }
+  .breadcrumb { margin-bottom: 24px; font-size: 9px; }
+  .intro { max-width: 340px; margin-top: 20px; font-size: 12px; }
+  .intro br { display: none; }
+  .explainButton { margin-top: 24px; min-height: 42px; font-size: 11px; }
+  .lab { gap: 18px; }
+  .playground { border-radius: 16px; }
+  .gameBar { min-height: 65px; padding: 13px 15px; gap: 12px; }
+  .roundStats { gap: 17px; }
+  .roundStats > span { flex-direction: column; align-items: flex-start; gap: 5px; font-size: 8px; }
+  .roundStats strong { font-size: 18px; }
+  .pauseButton { gap: 10px; font-size: 10px; }
+  .board { margin: 5px; }
+  .boardOverlay { padding: 15px; backdrop-filter: blur(3px); }
+  .startGhost { width: 23px; height: 21px; margin-bottom: 14px; }
+  .startCard h2 { font-size: 26px; }
+  .startCard p { max-width: 245px; margin-top: 12px; font-size: 10px; line-height: 1.7; }
+  .startCard .primaryButton { min-height: 40px; margin-top: 16px; padding: 9px 18px; font-size: 11px; }
+  .roundNote { margin-top: 10px; font-size: 8px; }
+  .boardFooter { gap: 13px; padding: 15px; }
+  .boardFooter p { max-width: 155px; font-size: 9px; line-height: 1.8; }
+  .legend { gap: 18px; }
+  .dpad { grid-template-columns: repeat(3, 37px); grid-template-rows: repeat(2, 35px); gap: 4px; }
+  .dashboard { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .rankCard, .statsCard { padding: 24px; border-radius: 16px; }
+  .rankTop { margin-bottom: 22px; }
+  .rankCard h2 { max-width: 290px; font-size: 31px; }
+  .rankCard > p { margin-bottom: 24px; }
+  .levelProgress { margin-top: 0; }
+  .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 23px 18px; }
+  .stats dt { min-height: auto; }
+  .stats dd { margin-top: 9px; font-size: 31px; }
+  .observatory { grid-template-columns: minmax(0, 1fr); gap: 18px; margin-top: 18px; }
+  .chart, .thoughts { padding: 24px; border-radius: 16px; }
+  .chart figcaption, .thoughts h2 { font-size: 21px; }
+  .labFooter { display: block; margin-top: 25px; }
+  .labFooter button { margin-top: 11px; }
+  .dialog { max-height: calc(100dvh - 28px); border-radius: 19px; }
+  .dialogInner { padding: 29px 25px; }
+  .dialog h2 { max-width: 290px; font-size: 34px; }
+  .dialogInner > p { font-size: 12px; }
+  .lessonSteps > li { gap: 15px; }
+}
+
+@media (max-width: 370px) {
+  .page { padding-right: 15px; padding-left: 15px; }
+  .header h1 { font-size: 50px; }
+  .gameBar { padding-right: 12px; padding-left: 12px; }
+  .boardOverlay { padding: 12px; }
+  .startGhost { margin-bottom: 10px; }
+  .startGhost { display: none; }
+  .startCard h2 { font-size: 23px; }
+  .startCard p { margin-top: 10px; font-size: 9px; }
+  .boardFooter { padding: 13px; }
+  .dpad { grid-template-columns: repeat(3, 33px); grid-template-rows: repeat(2, 33px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page *, .page *::before, .page *::after { transition: none !important; }
+  .primaryButton:hover:not(:disabled) { transform: none; }
+}
