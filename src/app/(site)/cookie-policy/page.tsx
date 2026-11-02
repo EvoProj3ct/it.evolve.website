@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CookiePreferencesButton } from "@/components/legal/cookie-preferences-button";
 import { COOKIE_CATEGORIES, COOKIE_CONSENT_NAME } from "@/lib/legal/cookie-consent";
-import styles from "./page.module.css";
+import styles from "@/components/legal/LegalPage.module.css";
 
 export const metadata: Metadata = {
   title: "Cookie Policy — Evolve",
