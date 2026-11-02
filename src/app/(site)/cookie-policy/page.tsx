@@ -30,7 +30,7 @@ export default function CookiePolicyPage() {
           <aside className={styles.summary} aria-labelledby="cookie-summary-title">
             <svg className={styles.summaryIcon} width="30" height="30" viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="m16 3 10 4v8c0 6-4.4 10.4-10 14C10.4 25.4 6 21 6 15V7l10-4Z" stroke="currentColor" strokeWidth="1.25" /><path d="m11 15 3.5 3.5 6.5-7" stroke="currentColor" strokeWidth="1.5" /></svg>
             <h2 id="cookie-summary-title">Solo i cookie<br />necessari.</h2>
-            <p>Al momento non utilizziamo cookie per statistiche, marketing o profilazione, né strumenti equivalenti di tracciamento.</p>
+            <p>Non integriamo strumenti di analytics o profilazione. I contenuti YouTube di e-disk vengono caricati soltanto quando scegli un brano.</p>
           </aside>
         </header>
 
@@ -54,6 +54,8 @@ export default function CookiePolicyPage() {
                 <div><dt>Durata</dt><dd>Circa 6 mesi</dd></div>
               </dl>
               <p>Nel <Link href="/utils/laboratorio" className={styles.inlineLink}>Laboratorio esperimenti</Link>, il gioco del fantasmino salva nel browser la propria tabella di apprendimento e le statistiche tramite memoria locale (localStorage). Puoi cancellare questi progressi con “Azzera la memoria” nel gioco o eliminando i dati del sito dal browser.</p>
+              <p>In <Link href="/utils/e-disk" className={styles.inlineLink}>e-disk</Link>, la collezione di dischi viene conservata nella memoria locale del browser con la chiave <code>evolve-edisk-catalog-v1</code>. Comprende titoli, codici NFC e identificativi YouTube; non viene inviata a un server Evolve. Puoi esportare la collezione o cancellarla eliminando i dati del sito dal browser.</p>
+              <p>Quando selezioni un brano YouTube, e-disk carica il player esterno in modalità di privacy avanzata dal dominio <code>youtube-nocookie.com</code> e le risorse necessarie di YouTube. La connessione al servizio esterno comporta la trasmissione di dati tecnici, come l’indirizzo IP, ed è soggetta alle informative di Google e YouTube. Il pulsante Test usa invece audio sintetizzato nel browser, senza caricare YouTube.</p>
             </section>
 
             <section id="categorie" className={styles.section} aria-labelledby="categories-title">
