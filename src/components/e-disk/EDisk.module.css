@@ -25,7 +25,9 @@
 .header h1 { margin: 13px 0 9px; font-size: clamp(76px, 7.5vw, 122px); font-weight: 450; line-height: .95; letter-spacing: -.075em; }
 .header h1 > span { color: var(--green); }
 .header p { margin: 18px 0 0; color: var(--muted); font-size: 16px; letter-spacing: -.02em; }
-.headerActions { display: flex; align-items: center; gap: 10px; padding-bottom: 3px; }
+.headerActions { display: flex; align-items: center; gap: 5px; padding: 6px; border: 1px solid var(--line); border-radius: 999px; background: #f4f7ee; }
+.headerActions > .connect { border-color: transparent; min-height: 42px; }
+.headerActions > .testButton { min-height: 42px; padding: 10px 18px; }
 .connect, .testButton, .primaryButton, .secondaryButton, .addButton {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 47px;
   padding: 12px 21px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink); background: transparent;
@@ -118,15 +120,6 @@
 .volume > span:last-child { width: 22px; text-align: right; font-family: monospace; font-size: 10px; }
 .volume input { flex: 1; min-width: 0; }
 .volume input::-webkit-slider-thumb { width: 8px; height: 8px; }
-.audioOutputButton { display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0; margin-top: auto; padding: 13px 0; border: 0; border-top: 1px solid var(--line); background: transparent; color: #56714f; text-align: left; }
-.audioOutputButton > span { flex: 1; min-width: 0; }
-.audioOutputButton strong { display: block; font-size: 11px; font-weight: 500; margin-bottom: 4px; }
-.audioOutputButton small { display: block; font-size: 9px; font-weight: 400; color: #8a9783; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.audioOutputButton:hover { color: var(--forest); }
-.deviceStatus { width: 100%; display: flex; align-items: center; gap: 7px; padding: 15px 0 0; margin-top: 0; border: 0; border-top: 1px solid var(--line); color: var(--muted); background: transparent; text-align: left; font-size: 10px !important; }
-.deviceStatus > span:nth-child(2) { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.statusDot { width: 5px; height: 5px; flex: none; border-radius: 50%; background: #b9c2b4; }
-.statusDot[data-connected="true"] { background: var(--forest); }
 .deviceFeedback { margin: -16px 0 24px; border: 1px solid var(--line); border-radius: 13px; background: #f6f8f2; overflow: hidden; animation: feedbackIn .28s ease-out; }
 .connectionFeedback { display: flex; align-items: center; gap: 13px; padding: 17px 21px; color: #4e6751; }
 .connectionIcon { width: 37px; height: 37px; display: grid; place-items: center; flex: none; border-radius: 50%; background: #e8efe1; color: var(--forest); }
@@ -176,19 +169,25 @@
 .dialogContent > .nfcProcess .processIcon { width: 34px; height: 34px; }
 .dialogContent > .nfcProcess .processActions { grid-column: 2; }
 .dialogContent > .nfcProcess .processContent h3 { font-size: 16px; }
-.audioRoute { display: grid; grid-template-columns: minmax(0, 1fr) 15px minmax(0, 1fr) 15px minmax(0, 1fr); align-items: center; gap: 8px; margin: 30px 0 26px; padding: 0 1px; }
-.audioRoute > div { min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
-.audioRoute > div > span { display: grid; place-items: center; width: 43px; height: 43px; margin-bottom: 12px; border: 1px solid #d7e1d0; border-radius: 50%; background: #f1f6eb; color: #63825a; }
-.audioRoute > div[data-connected="true"] > span { color: var(--forest); border-color: #b4d0a7; background: #e5f2da; }
-.audioRoute strong { display: block; font-size: 11px; font-weight: 500; line-height: 1.4; letter-spacing: -.02em; }
-.audioRoute small { display: block; font-size: 9px; line-height: 1.4; color: #8e9b87; margin-top: 4px; }
-.routeArrow { color: #b2c3a8; margin-top: -29px; }
-.systemOutput { padding: 20px; margin-bottom: 23px; background: #f0f5e9; border: 1px solid #dce6d2; border-radius: 11px; }
-.outputHeading { display: flex; align-items: center; gap: 11px; color: var(--forest); margin-bottom: 15px; }
-.outputHeading h3 { font-size: 15px; font-weight: 500; letter-spacing: -.035em; margin: 0 0 4px; }
-.outputHeading > div > span { display: block; font-size: 10px; color: #7c8f72; }
-.systemOutput > p { font-size: 12px; line-height: 1.75; color: #62765a; margin: 0; }
-.systemOutput > p + p { margin-top: 11px; }
+.connectionCard { padding: 19px; margin: 0 0 16px; border: 1px solid #dce5d4; border-radius: 12px; background: #f5f8ef; }
+.connectionCardHeading { display: flex; align-items: center; gap: 11px; }
+.connectionCardIcon { display: grid; place-items: center; width: 37px; height: 37px; flex: none; border: 1px solid #d6e1cb; border-radius: 50%; background: #eef4e7; color: #65825b; }
+.connectionCardIcon[data-connected="true"] { color: var(--forest); background: #e2f0d7; border-color: #c0d9b0; }
+.connectionCardHeading > div { flex: 1; min-width: 0; }
+.connectionCardHeading h3 { font-size: 16px; font-weight: 450; letter-spacing: -.035em; line-height: 1.25; margin: 0 0 5px; }
+.connectionCardHeading p { font-size: 10px; color: #839279; line-height: 1.5; margin: 0; overflow-wrap: anywhere; }
+.connectionBadge { flex: none; padding: 5px 7px; border: 1px solid #dce5d3; border-radius: 20px; color: #8a977f; background: #fafcf6; font-size: 8px; white-space: nowrap; }
+.connectionBadge[data-connected="true"] { color: var(--forest); background: #e7f2de; border-color: #cbdcbe; }
+.connectionCard > .secondaryButton { width: 100%; min-height: 43px; justify-content: space-between; margin-top: 18px; padding: 11px 14px; background: #fcfdf9; font-size: 11px !important; }
+.connectionCardDetail { margin: 16px 0 0; color: #7e8f74; font-size: 11px; line-height: 1.7; }
+.connectionCard > .nfcProcess { padding: 17px 0 0; margin-top: 18px; border-top: 1px solid #d8e4ce; border-radius: 0; background: transparent; grid-template-columns: 32px minmax(0, 1fr); gap: 10px; }
+.connectionCard > .nfcProcess .processIcon { width: 32px; height: 32px; }
+.connectionCard > .nfcProcess .processActions { grid-column: 2; }
+.connectionCard > .nfcProcess .processContent h3 { font-size: 14px; }
+.audioConnections .demoOutput { margin: 18px 0 0; padding: 18px 0 0; border-bottom: 0; border-top: 1px solid #dce5d4; }
+.systemOnlyOutput { display: flex; align-items: flex-start; gap: 9px; padding: 13px; margin-top: 16px; border: 1px dashed #d3dec9; border-radius: 8px; color: #8b9b80; background: #fafcf6; }
+.systemOnlyOutput > svg { flex: none; margin-top: 3px; }
+.systemOnlyOutput p { margin: 0; color: #8b9b80; font-size: 10px; line-height: 1.7; }
 .outputNote { font-size: 10px !important; line-height: 1.75; color: #8a9982 !important; margin: 13px 0 0; }
 .demoOutput { padding: 0 0 24px; margin: 0 0 22px; border-bottom: 1px solid var(--line); }
 .demoOutputHeading { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 15px; }
@@ -200,9 +199,9 @@
 .outputSelect select { display: block; width: 100%; box-sizing: border-box; min-height: 44px; padding: 11px 30px 11px 12px; background: #f6f8f2; border: 1px solid #d9e3d0; border-radius: 7px; color: #405c37; font: inherit; font-size: 12px; text-overflow: ellipsis; }
 .outputSelect select:focus-visible { outline: 2px solid var(--forest); outline-offset: 3px; }
 .dialogContent > .outputCompatibility { color: #899781; font-size: 11px; line-height: 1.75; margin: -3px 0 24px; }
-.dialogContent > .outputMessage { display: flex; align-items: flex-start; gap: 8px; color: var(--forest); background: #edf5e6; padding: 12px 14px; border-radius: 7px; font-size: 11px; line-height: 1.65; margin: 0 0 20px; }
-.dialogContent > .outputMessage > svg { flex: none; margin-top: 2px; }
-.dialogContent > .outputMessage[data-error="true"] { color: #975a3b; background: #fcf0e6; }
+.audioConnections > .outputMessage { display: flex; align-items: flex-start; gap: 8px; color: var(--forest); background: #edf5e6; padding: 12px 14px; border-radius: 7px; font-size: 11px; line-height: 1.65; margin: 17px 0 0; }
+.audioConnections > .outputMessage > svg { flex: none; margin-top: 2px; }
+.audioConnections > .outputMessage[data-error="true"] { color: #975a3b; background: #fcf0e6; }
 .textButton { padding: 5px 0; border: 0; background: transparent; color: var(--forest); display: inline-flex; align-items: center; gap: 8px; font-size: 12px !important; }
 
 .collection { margin-top: 35px; }
@@ -318,7 +317,7 @@
   .header { margin-bottom: 29px; align-items: center; }
   .header h1 { font-size: 88px; }
   .header p { font-size: 14px; }
-  .headerActions { align-items: stretch; flex-direction: column; gap: 8px; }
+  .headerActions { align-items: center; flex-direction: row; gap: 5px; }
   .connect, .testButton { min-height: 40px; padding: 10px 14px; font-size: 11px !important; }
   .listeningRoom { grid-template-columns: minmax(0, 1fr); }
   .stage { min-height: 490px; }
@@ -326,15 +325,13 @@
   .ghosts { bottom: 48px; left: 25px; }
   .stageBottom { bottom: 22px; }
   .player { display: grid; grid-template-columns: minmax(210px, 1fr) minmax(200px, 1fr); column-gap: 28px; padding: 25px; border-left: 0; border-top: 1px solid var(--line); }
-  .playerMedia { grid-row: 1 / 7; height: 100%; min-height: 235px; }
+  .playerMedia { grid-row: 1 / 5; height: 100%; min-height: 235px; }
   .youtube, .youtube iframe { min-height: 235px; height: 100%; }
   .trackHeading { margin-top: 0; min-height: 57px; grid-column: 2; }
   .trackHeading h2 { font-size: 21px; }
   .transport { gap: 17px; margin: 13px 0; }
   .playButton { width: 46px; height: 46px; }
   .volume { margin: 0 8px 16px; }
-  .deviceStatus { grid-column: 2; }
-  .audioOutputButton { grid-column: 2; margin-top: 0; }
   .artworkWord { font-size: 42px; }
   .playerArtwork > .vinyl { width: 82%; }
   .collection { margin-top: 25px; }
@@ -353,7 +350,7 @@
   .header { flex-wrap: wrap; gap: 24px; }
   .header h1 { font-size: 84px; margin-top: 12px; }
   .header p { margin-top: 16px; }
-  .headerActions { flex-direction: row; width: 100%; }
+  .headerActions { flex-direction: row; width: auto; margin-left: auto; }
   .connect { flex: 1; }
   .testButton { min-width: 91px; }
   .listeningRoom { border-radius: 13px; }
@@ -377,7 +374,11 @@
   .playButton { width: 54px; height: 54px; }
   .stopButton { right: 4px; }
   .volume { margin: 0 18px 23px; }
-  .deviceStatus { padding-top: 15px; }
+  .connectionCard { padding: 15px; }
+  .connectionCardHeading { gap: 9px; }
+  .connectionCardIcon { width: 31px; height: 31px; }
+  .connectionCardHeading h3 { font-size: 15px; }
+  .connectionBadge { padding: 4px 6px; font-size: 7px; }
   .deviceFeedback { margin-top: -10px; margin-bottom: 20px; }
   .connectionFeedback { flex-wrap: wrap; gap: 11px; padding: 16px; }
   .connectionIcon { width: 32px; height: 32px; }

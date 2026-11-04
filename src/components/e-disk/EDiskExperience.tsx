@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type MouseEvent } from "react";
 import { useReducedMotion } from "framer-motion";
-import { AlertCircle, ArrowUpRight, Bluetooth, Check, Download, Ellipsis, LoaderCircle, Nfc, Pause, Pencil, Play, Plus, RefreshCw, SkipBack, SkipForward, Speaker, Square, Trash2, Upload, Volume2, X } from "lucide-react";
+import { AlertCircle, ArrowUpRight, Bluetooth, Check, Download, Ellipsis, LoaderCircle, Nfc, Pause, Pencil, Play, Plus, RefreshCw, SkipBack, SkipForward, Square, Trash2, Upload, Volume2, X } from "lucide-react";
 import { cleanCatalog, generateCode, validCode, youtubeId, type DiskTrack } from "@/lib/e-disk/catalog";
 import { EDiskController, INITIAL_EDISK, type EDiskState } from "@/lib/e-disk/controller";
 import { CONNECTION_COPY, DeviceFeedback, NfcProcess } from "./DeviceFeedback";
@@ -12,7 +12,7 @@ import AudioOutputPanel from "./AudioOutputPanel";
 import styles from "./EDisk.module.css";
 
 const TurntableScene = dynamic(() => import("./TurntableScene"), { ssr: false });
-type Modal = { kind: "add"; code?: string } | { kind: "edit" | "write" | "remove"; track: DiskTrack } | { kind: "import"; tracks: DiskTrack[] } | { kind: "connection" | "audio" };
+type Modal = { kind: "add"; code?: string } | { kind: "edit" | "write" | "remove"; track: DiskTrack } | { kind: "import"; tracks: DiskTrack[] } | { kind: "connection" };
 const COVER_COLORS = ["#83c967", "#b0a0d1", "#df9b83", "#a3cbbd", "#ddca8c"];
 const RECORD_COLORS = ["#b4ef78", "#8cebd9", "#9fd5ff", "#c6a7f5", "#ffa6d4", "#ffbf92", "#e9ee84", "#a7efbd"];
 function recordColor(code: string) {
@@ -96,7 +96,7 @@ export default function EDiskExperience() {
     if (!element) return;
     if (modal) {
       if (!element.open) element.showModal();
-      if (modal.kind === "audio") controller.current?.refreshAudioOutputs();
+      if (modal.kind === "connection") controller.current?.refreshAudioOutputs();
       const previous = document.body.style.overflow;
       document.body.style.overflow = "hidden";
       return () => { document.body.style.overflow = previous; };
@@ -163,10 +163,10 @@ export default function EDiskExperience() {
       <div className={styles.inner}>
         <header className={styles.header}>
           <div><Link href="/utils" className={styles.breadcrumb}>Risorse <span aria-hidden="true">/</span></Link><h1>e-disk<span>.</span></h1><p>Il vinile incontra il digitale.</p></div>
-          <div className={styles.headerActions}>
-            <button className={`${styles.connect} ${state.connected ? styles.connected : ""}`} disabled={state.connecting} onClick={() => void (state.connected ? controller.current?.disconnect() : controller.current?.connect())}>
+          <div className={styles.headerActions} role="group" aria-label="Collegamenti e Test">
+            <button className={`${styles.connect} ${state.connected ? styles.connected : ""}`} onClick={() => open({ kind: "connection" })} aria-haspopup="dialog" aria-label={`Apri tutti i collegamenti${state.connected ? ", giradischi connesso" : ""}`}>
               {state.connecting ? <LoaderCircle className={styles.spinner} size={17} /> : state.connected ? <Check size={17} /> : <Bluetooth size={17} />}
-              {state.connecting ? state.connectionStep === "disconnecting" ? "Disconnessione…" : "Connessione…" : state.connected ? "Disconnetti" : "Connetti giradischi"}
+              Collegamenti
             </button>
             <button className={styles.testButton} disabled={state.writePending} aria-pressed={isTest && playing} onClick={() => { if (isTest && playing) controller.current?.pause(); else void controller.current?.test(); }}>
               {isTest && playing ? <Pause size={15} fill="currentColor" /> : <Play size={15} fill="currentColor" />} Test
@@ -202,8 +202,6 @@ export default function EDiskExperience() {
               <button className={styles.stopButton} disabled={state.source === "none"} aria-label="Ferma riproduzione" onClick={() => controller.current?.stop()}><Square size={15} fill="currentColor" /></button>
             </div>
             <label className={styles.volume}><Volume2 size={17} /><span className={styles.srOnly}>Volume</span><input type="range" min="0" max="100" value={state.volume} onChange={event => controller.current?.volume(Number(event.target.value))} /><span>{state.volume}</span></label>
-            <button className={styles.audioOutputButton} onClick={() => open({ kind: "audio" })} aria-label="Uscita audio: scegli dove ascoltare"><Speaker size={16} /><span><strong>Uscita audio</strong><small>{isTest && state.audioOutput.deviceId ? `${state.audioOutput.label} · Test` : "Di sistema · cassa o cuffie"}</small></span><ArrowUpRight size={15} /></button>
-            <button className={styles.deviceStatus} onClick={() => open({ kind: "connection" })}><span className={styles.statusDot} data-connected={state.connected} /><span>{state.connected ? state.deviceName : "Ascolto dal browser"}</span><Ellipsis size={19} /></button>
           </aside>
         </section>
 
@@ -228,7 +226,6 @@ export default function EDiskExperience() {
       <dialog ref={dialog} className={styles.dialog} onCancel={close} onClose={() => setModal(null)} onClick={event => { if (event.target === event.currentTarget) close(); }} aria-labelledby="edisk-dialog-title">
         {modal && <div className={styles.dialogContent}>
           <button className={`${styles.iconButton} ${styles.dialogClose}`} onClick={close} aria-label="Chiudi"><X size={22} /></button>
-          {modal.kind === "audio" && <AudioOutputPanel state={state} onChoose={() => void controller.current?.chooseAudioOutput()} onSelect={id => void controller.current?.selectAudioOutput(id)} onRefresh={() => controller.current?.refreshAudioOutputs()} onTest={() => { if (isTest && playing) controller.current?.pause(); else void controller.current?.test(); }} />}
           {(modal.kind === "connection" || modal.kind === "write") && state.notice.text && !(modal.kind === "write" && writeProcessVisible) && <p className={styles.dialogNotice} data-error={state.notice.error} role={state.notice.error ? "alert" : "status"}>{state.notice.text}</p>}
           {(modal.kind === "add" || modal.kind === "edit") && <>
             <span className={styles.dialogEyebrow}>LA TUA COLLEZIONE</span><h2 id="edisk-dialog-title">{modal.kind === "add" ? "Un nuovo disco." : "Il tuo disco."}</h2>
@@ -248,7 +245,17 @@ export default function EDiskExperience() {
           </>}
           {modal.kind === "remove" && <><h2 id="edisk-dialog-title">Togliamo<br />questo disco?</h2><p>“{modal.track.title}” verrà rimosso dalla collezione di questo browser. Il tag NFC resta invariato.</p><div className={styles.modalActions}><button className={styles.secondaryButton} onClick={close}>Tienilo</button><button className={styles.primaryButton} onClick={() => { controller.current?.remove(modal.track.code); close(); }}>Rimuovi <Trash2 size={17} /></button></div></>}
           {modal.kind === "import" && <><h2 id="edisk-dialog-title">Un’altra<br />collezione.</h2><p>Stai per importare <strong>{modal.tracks.length} dischi</strong>. La collezione attuale verrà sostituita. Puoi esportarla prima dal menu.</p><div className={styles.modalActions}><button className={styles.secondaryButton} onClick={close}>Annulla</button><button className={styles.primaryButton} onClick={() => { controller.current?.import(modal.tracks); close(); }}>Importa <Upload size={17} /></button></div></>}
-          {modal.kind === "connection" && <><span className={styles.dialogEyebrow}>DIETRO LA MUSICA</span><h2 id="edisk-dialog-title">Il tuo giradischi.</h2><dl className={styles.connectionData}><div><dt>Giradischi</dt><dd>{state.connecting ? CONNECTION_COPY[state.connectionStep].title : state.connected ? state.deviceName : "Non connesso"}</dd></div><div><dt>Motore</dt><dd>{state.connected ? motorLabel[state.motor] : "—"}</dd></div></dl><NfcProcess state={state} onCancel={() => void controller.current?.cancelWrite()} onDismiss={() => controller.current?.resetNfcFeedback()} onAssociate={code => open({ kind: "add", code })} /><button className={styles.primaryButton} disabled={state.connecting} onClick={() => void (state.connected ? controller.current?.disconnect() : controller.current?.connect())}>{state.connecting ? "Attendi…" : state.connected ? "Disconnetti" : "Connetti giradischi"}<Bluetooth size={18} /></button><p className={styles.fieldHint}>Bluetooth: Chrome o Edge compatibile, su HTTPS o localhost. Il Test funziona anche senza giradischi.</p><details className={styles.connectionDetails}><summary>Prova un codice NFC</summary><form onSubmit={simulate} className={styles.simulateForm}><label className={styles.srOnly} htmlFor="edisk-simulate">Codice da provare</label><input id="edisk-simulate" inputMode="numeric" pattern="[0-9]{4,8}" required maxLength={8} value={simulatedCode} placeholder="Codice del disco" onChange={event => setSimulatedCode(event.target.value.replace(/\D/g, ""))} /><button className={styles.iconButton} disabled={state.writePending} aria-label="Riproduci il disco associato al codice"><Play size={18} /></button></form>{formError && <p className={styles.formError} role="alert">{formError}</p>}</details><details className={styles.connectionDetails}><summary>Registro del collegamento</summary><pre className={styles.logs}>{state.logs.join("\n") || "In attesa del primo evento."}</pre></details></>}
+          {modal.kind === "connection" && <>
+            <span className={styles.dialogEyebrow}>COLLEGAMENTI</span><h2 id="edisk-dialog-title">Tutto parte<br />da qui.</h2>
+            <section className={styles.connectionCard} aria-labelledby="turntable-connection-title">
+              <div className={styles.connectionCardHeading}><span className={styles.connectionCardIcon} data-connected={state.connected}><Bluetooth size={21} /></span><div><h3 id="turntable-connection-title">Giradischi</h3><p>{state.connecting ? CONNECTION_COPY[state.connectionStep].title : state.connected ? state.deviceName : "Comandi e lettore NFC"}</p></div><span className={styles.connectionBadge} data-connected={state.connected}>{state.connecting ? "In corso" : state.connected ? "Collegato" : "Da collegare"}</span></div>
+              {state.connecting && <p className={styles.connectionCardDetail} role="status">{CONNECTION_COPY[state.connectionStep].detail}</p>}
+              <button className={styles.secondaryButton} disabled={state.connecting} onClick={() => void (state.connected ? controller.current?.disconnect() : controller.current?.connect())}>{state.connecting ? <LoaderCircle className={styles.spinner} size={16} /> : <Bluetooth size={16} />}{state.connecting ? "Attendi…" : state.connected ? "Disconnetti giradischi" : "Connetti giradischi"}<ArrowUpRight size={16} /></button>
+              <NfcProcess state={state} onCancel={() => void controller.current?.cancelWrite()} onDismiss={() => controller.current?.resetNfcFeedback()} onAssociate={code => open({ kind: "add", code })} />
+            </section>
+            <AudioOutputPanel state={state} onChoose={() => void controller.current?.chooseAudioOutput()} onSelect={id => void controller.current?.selectAudioOutput(id)} onRefresh={() => controller.current?.refreshAudioOutputs()} onTest={() => { if (isTest && playing) controller.current?.pause(); else void controller.current?.test(); }} />
+            <details className={styles.connectionDetails}><summary>NFC e dettagli del collegamento</summary><dl className={styles.connectionData}><div><dt>Motore</dt><dd>{state.connected ? motorLabel[state.motor] : "—"}</dd></div></dl><form onSubmit={simulate} className={styles.simulateForm}><label className={styles.srOnly} htmlFor="edisk-simulate">Codice da provare</label><input id="edisk-simulate" inputMode="numeric" pattern="[0-9]{4,8}" required maxLength={8} value={simulatedCode} placeholder="Prova un codice del disco" onChange={event => setSimulatedCode(event.target.value.replace(/\D/g, ""))} /><button className={styles.iconButton} disabled={state.writePending} aria-label="Riproduci il disco associato al codice"><Play size={18} /></button></form>{formError && <p className={styles.formError} role="alert">{formError}</p>}<pre className={styles.logs}>{state.logs.join("\n") || "In attesa del primo evento."}</pre></details>
+          </>}
         </div>}
       </dialog>
     </main>
