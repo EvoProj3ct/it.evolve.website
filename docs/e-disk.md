@@ -27,7 +27,7 @@ Payload testuali UTF-8, senza prefissi aggiunti, JSON o terminatori aggiunti. Sc
 
 I secondi sono `max(1, ceil(durata - posizione))`. Le dirette YouTube non avviano il motore perché non hanno una durata finale affidabile. La chiusura improvvisa della scheda o del collegamento BLE può impedire la consegna di STOP: l’arresto su perdita di collegamento resta responsabilità del firmware.
 
-Notifiche gestite senza cambiare sintassi: `TAG:<codice>`, `WRITE_WAIT`, `WRITE_OK:<codice>`, `ERR:NO_CODE`, `ERR:WRITE`, `ERR:WRITE_TIMEOUT`, `ERR:BAD_CODE`, `ERR:BAD_DURATION`, `STATE:ACCEL`, `STATE:PLAY`, `STATE:MAX`, `STATE:DECEL`, `STATE:STOP`.
+Notifiche gestite senza cambiare sintassi: `TAG:<codice>`, `WRITE_WAIT`, `WRITE_OK:<codice>`, `WRITE_CANCEL`, `ERR:NO_CODE`, `ERR:WRITE`, `ERR:WRITE_TIMEOUT`, `ERR:BAD_CODE`, `ERR:BAD_DURATION`, `STATE:ACCEL`, `STATE:PLAY`, `STATE:MAX`, `STATE:DECEL`, `STATE:STOP`.
 
 La voce Motore nel pannello del collegamento deriva dalle notifiche effettive. L’animazione del modello 3D rappresenta la riproduzione, non una misura dei giri del motore.
 
@@ -49,4 +49,29 @@ Bluetooth richiede un browser compatibile con Web Bluetooth, un contesto HTTPS o
 
 Riferimenti: [Web Bluetooth](https://developer.chrome.com/docs/capabilities/bluetooth), [YouTube IFrame API](https://developers.google.com/youtube/iframe_api_reference), [requisiti del player](https://developers.google.com/youtube/terms/required-minimum-functionality).
 
-Non sono stati eseguiti build, test, anteprime nel browser o prove hardware, come richiesto dall’utente.
+## Feedback della pagina
+
+- Il collegamento mostra selezione del dispositivo, connessione, attivazione dei servizi e delle notifiche, collegamento riuscito o errore.
+- La lettura mostra il codice realmente ricevuto tramite TAG. Un codice non presente in collezione propone l'associazione con il campo codice già compilato.
+- La scrittura mostra subito l'invio della richiesta; WRITE_WAIT avvia l'attesa del tag con conto alla rovescia di 30 secondi. Il pannello rimane aperto e il processo resta visibile sulla pagina anche se viene chiuso.
+- Il messaggio di successo compare soltanto dopo WRITE_OK con lo stesso codice richiesto. Il firmware ha già verificato il tag tramite rilettura prima di emettere questo evento.
+- CANCEL mostra l'annullamento in corso e attende WRITE_CANCEL. Timeout, mancata conferma, codice diverso e perdita della connessione hanno esiti distinti, senza dichiarare un successo.
+- La scrittura mette in pausa il player e sospende PLAY/TIME finché l'operazione non è conclusa o annullata, perché il firmware accede al lettore solo a motore fermo.
+
+## Formato del tag
+
+La pagina non invia al tag titolo, URL, UID, JSON o prefissi EV:. Invia al firmware soltanto WRITE seguito da due punti e dal codice, come stringa di 4–8 cifre, preservando eventuali zeri iniziali. È il firmware fornito dall'utente a scrivere il solo codice come NDEF Text sui tag NTAG/Ultralight o come testo nel blocco 4 dei MIFARE Classic.
+
+## Cassa Bluetooth e uscita audio
+
+Il telefono/computer può mantenere il collegamento BLE al giradischi per NFC e comandi e usare contemporaneamente la propria uscita audio, anche una cassa Bluetooth associata al sistema. Il giradischi non trasmette audio: è il player del dispositivo a riprodurre la musica.
+
+Il pulsante Uscita audio nel player apre un pannello dedicato. Su Android la cassa si associa nelle impostazioni Bluetooth del telefono e si sceglie come uscita multimediale. YouTube segue l'uscita di sistema: il player incorporato non espone una funzione di selezione dell'uscita tramite la IFrame API e non è possibile accedere al suo elemento audio/video da questo dominio.
+
+Per la sola demo Test, dove il browser espone AudioContext.setSinkId, la pagina può usare un'uscita specifica già autorizzata. Se disponibile, il pulsante di scelta usa MediaDevices.selectAudioOutput direttamente dal clic dell'utente. Le uscite enumerate sono solo quelle già accessibili: non viene mai richiesto l'accesso al microfono per ottenere l'elenco completo. Il selettore è nascosto nei browser che non supportano queste funzioni; il Test continua a usare l'uscita di sistema.
+
+Se un'uscita selezionata e prima disponibile scompare dall'elenco, la demo prova a tornare all'uscita di sistema e mostra un feedback. Le preferenze e gli identificativi delle uscite sono solo in memoria durante la sessione, senza invio a server o modifica dei cookie. La pagina non dichiara collegata una cassa di sistema di cui non può osservare lo stato.
+
+Riferimenti: [AudioContext.setSinkId](https://developer.chrome.com/blog/audiocontext-setsinkid), [selectAudioOutput](https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/selectAudioOutput), [audio Bluetooth Android](https://source.android.com/docs/core/connect/bluetooth/services).
+
+Il collaudo è a cura dell'utente. Non avviare test, build, typecheck, server o anteprime: vedere AGENTS.md nella radice del progetto.

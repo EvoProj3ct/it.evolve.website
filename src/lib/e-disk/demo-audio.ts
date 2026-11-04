@@ -1,3 +1,5 @@
+import { canRouteDemoAudio } from "./audio-output";
+
 // Piccolo brano originale sintetizzato: il Test suona anche senza Bluetooth o YouTube.
 export const DEMO_DURATION = 32;
 export class DemoAudio {
@@ -6,6 +8,14 @@ export class DemoAudio {
   private startedAt = 0;
   private scheduled = false;
   private volume = .55;
+  private sinkId = "";
+
+  async setOutput(id: string) {
+    if (id && !canRouteDemoAudio()) throw new Error("La scelta dell’uscita audio non è disponibile in questo browser.");
+    const context = this.context as (AudioContext & { setSinkId?: (id: string) => Promise<void> }) | null;
+    if (context && typeof context.setSinkId === "function") await context.setSinkId(id);
+    this.sinkId = id;
+  }
 
   get currentTime() { return this.context && this.scheduled ? Math.min(DEMO_DURATION, Math.max(0, this.context.currentTime - this.startedAt)) : 0; }
   get playing() { return Boolean(this.context?.state === "running" && this.scheduled && this.currentTime < DEMO_DURATION); }
@@ -22,6 +32,11 @@ export class DemoAudio {
     output.connect(compressor);
     compressor.connect(context.destination);
     await context.resume();
+    if (this.context !== context) return;
+    if (this.sinkId) {
+      try { await (context as AudioContext & { setSinkId: (id: string) => Promise<void> }).setSinkId(this.sinkId); }
+      catch { if (this.context === context) this.stop(); throw new Error("L’uscita scelta non è disponibile. Apri Uscita audio e scegli quella di sistema."); }
+    }
     if (this.context !== context) return;
     this.startedAt = context.currentTime + .06;
     const melody = [64, 67, 71, 74, 71, 67, 62, 59, 60, 64, 67, 71, 69, 67, 64, 62];

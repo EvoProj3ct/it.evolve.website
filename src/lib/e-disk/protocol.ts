@@ -20,7 +20,8 @@ interface GattServer {
 }
 interface Device extends EventTarget { name?: string; gatt?: GattServer }
 type BluetoothApi = { requestDevice(options: { filters: { namePrefix: string }[]; optionalServices: string[] }): Promise<Device> };
-type Callbacks = { connection: (connected: boolean, name: string) => void; message: (message: string) => void; log: (message: string) => void };
+export type ConnectionStep = "idle" | "choosing" | "connecting" | "services" | "notifications" | "ready" | "disconnecting" | "error";
+type Callbacks = { connection: (connected: boolean, name: string) => void; message: (message: string) => void; log: (message: string) => void; progress?: (step: ConnectionStep) => void };
 
 export class EDiskBluetooth {
   private device: Device | null = null;
@@ -63,19 +64,23 @@ export class EDiskBluetooth {
     let device: Device | null = null;
     try {
       // requestDevice viene chiamato direttamente nel gesto del pulsante Connetti.
+      this.callbacks.progress?.("choosing");
       device = await api.requestDevice({ filters: [{ namePrefix: "EVOLVE" }], optionalServices: [SERVICE_UUID] });
       if (this.disposed || generation !== this.generation) return;
       if (!device.gatt) throw new Error("Questo dispositivo non espone un servizio Bluetooth GATT.");
       this.device = device;
       device.addEventListener("gattserverdisconnected", this.disconnected);
+      this.callbacks.progress?.("connecting");
       const server = await device.gatt.connect();
       if (this.disposed || generation !== this.generation) { server.disconnect(); return; }
+      this.callbacks.progress?.("services");
       const service = await server.getPrimaryService(SERVICE_UUID);
       const events = await service.getCharacteristic(EVENT_UUID);
       const command = await service.getCharacteristic(COMMAND_UUID);
       if (this.disposed || generation !== this.generation) { server.disconnect(); return; }
       this.events = events;
       this.command = command;
+      this.callbacks.progress?.("notifications");
       events.addEventListener("characteristicvaluechanged", this.notification);
       await events.startNotifications();
       if (this.disposed || generation !== this.generation) { server.disconnect(); return; }

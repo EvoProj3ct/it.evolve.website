@@ -118,13 +118,91 @@
 .volume > span:last-child { width: 22px; text-align: right; font-family: monospace; font-size: 10px; }
 .volume input { flex: 1; min-width: 0; }
 .volume input::-webkit-slider-thumb { width: 8px; height: 8px; }
-.deviceStatus { width: 100%; display: flex; align-items: center; gap: 7px; padding: 15px 0 0; margin-top: auto; border: 0; border-top: 1px solid var(--line); color: var(--muted); background: transparent; text-align: left; font-size: 10px !important; }
+.audioOutputButton { display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0; margin-top: auto; padding: 13px 0; border: 0; border-top: 1px solid var(--line); background: transparent; color: #56714f; text-align: left; }
+.audioOutputButton > span { flex: 1; min-width: 0; }
+.audioOutputButton strong { display: block; font-size: 11px; font-weight: 500; margin-bottom: 4px; }
+.audioOutputButton small { display: block; font-size: 9px; font-weight: 400; color: #8a9783; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.audioOutputButton:hover { color: var(--forest); }
+.deviceStatus { width: 100%; display: flex; align-items: center; gap: 7px; padding: 15px 0 0; margin-top: 0; border: 0; border-top: 1px solid var(--line); color: var(--muted); background: transparent; text-align: left; font-size: 10px !important; }
 .deviceStatus > span:nth-child(2) { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .statusDot { width: 5px; height: 5px; flex: none; border-radius: 50%; background: #b9c2b4; }
 .statusDot[data-connected="true"] { background: var(--forest); }
-.noticeArea { display: flex; align-items: center; justify-content: space-between; min-height: 42px; gap: 15px; padding: 6px 2px; }
-.notice { margin: 0; color: var(--forest); font-size: 12px; line-height: 1.5; }
-.notice[data-error="true"] { color: #a34f38; }
+.deviceFeedback { margin: -16px 0 24px; border: 1px solid var(--line); border-radius: 13px; background: #f6f8f2; overflow: hidden; animation: feedbackIn .28s ease-out; }
+.connectionFeedback { display: flex; align-items: center; gap: 13px; padding: 17px 21px; color: #4e6751; }
+.connectionIcon { width: 37px; height: 37px; display: grid; place-items: center; flex: none; border-radius: 50%; background: #e8efe1; color: var(--forest); }
+.connectionCopy { min-width: 0; }
+.connectionCopy h2 { font-size: 13px; font-weight: 500; letter-spacing: -.02em; line-height: 1.4; margin: 0 0 3px; }
+.connectionCopy p { font-size: 11px; line-height: 1.5; color: #7b8b74; margin: 0; overflow-wrap: anywhere; }
+.connectionFeedback[data-error="true"] { background: #fbf3ec; color: #985338; }
+.connectionFeedback[data-error="true"] .connectionIcon { background: #f4e5d9; color: #985338; }
+.connectionProgress { display: flex; gap: 5px; align-items: center; flex: none; margin-left: auto; }
+.connectionProgress i { width: 23px; height: 3px; border-radius: 3px; background: #dce5d5; }
+.connectionProgress i[data-complete="true"] { background: var(--forest); }
+.connectionProgress i[data-current="true"] { background: var(--green); animation: connectionPulse 1.3s ease-in-out infinite; }
+.readerReady { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; font-size: 11px; color: #6a8260; }
+.connectionFeedback > .processAction { margin-left: auto; }
+.nfcProcess { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; align-items: start; gap: 14px; padding: 22px; background: #edf4e7; }
+.deviceFeedback > .nfcProcess { border-top: 1px solid #dce6d5; }
+.nfcProcess[data-tone="error"] { background: #fbf1e9; }
+.nfcProcess[data-phase="cancelled"] { background: #f2f4ee; }
+.processIcon { width: 42px; height: 42px; display: grid; place-items: center; border: 1px solid #cddfc1; border-radius: 50%; background: #f8fbf3; color: var(--forest); }
+.nfcProcess[data-tone="error"] .processIcon { border-color: #ead5c5; background: #fff9f3; color: #a45a3b; }
+.nfcProcess[data-phase="waiting"] .processIcon { box-shadow: 0 0 0 5px #72c94f0d; }
+.processContent { min-width: 0; }
+.processContent h3 { font-size: 15px; font-weight: 500; line-height: 1.35; letter-spacing: -.025em; margin: 1px 0 5px; color: #284f34; }
+.nfcProcess[data-tone="error"] .processContent h3 { color: #985338; }
+.processRecord { display: block; font-size: 11px; color: #6e8564; margin: 0 0 8px; overflow-wrap: anywhere; }
+.processContent p { margin: 0; font-size: 12px; line-height: 1.65; color: #73836b; }
+.nfcProcess[data-tone="error"] .processContent p { color: #997763; }
+.processActions { display: flex; align-items: center; justify-content: flex-end; }
+.processAction { display: inline-flex; align-items: center; justify-content: center; gap: 7px; flex: none; background: transparent; border: 0; color: var(--forest); font-size: 11px !important; padding: 8px 0 8px 8px; white-space: nowrap; }
+.processAction:hover:not(:disabled) { color: #101914; }
+.processDismiss { display: grid; place-items: center; width: 28px; height: 28px; flex: none; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #82937a; }
+.processDismiss:hover { background: #dfe9d7; color: #284f34; }
+.writeCountdown { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+.writeCountdown progress { display: block; width: 100%; flex: 1; min-width: 0; height: 3px; appearance: none; border: 0; border-radius: 3px; background: #d6e3cb; accent-color: var(--forest); overflow: hidden; }
+.writeCountdown progress::-webkit-progress-bar { border-radius: 3px; background: #d6e3cb; }
+.writeCountdown progress::-webkit-progress-value { border-radius: 3px; background: var(--forest); transition: width .5s linear; }
+.writeCountdown progress::-moz-progress-bar { border-radius: 3px; background: var(--forest); }
+.writeCountdown > span { font: 10px monospace; color: #708268; flex: none; }
+.feedbackToast { position: fixed; z-index: 90; top: 92px; right: 28px; display: flex; align-items: flex-start; gap: 11px; width: min(375px, calc(100% - 32px)); box-sizing: border-box; padding: 17px 16px 17px 18px; color: #286044; background: #f6faef; border: 1px solid #ccddc0; border-radius: 12px; box-shadow: 0 12px 36px #172b1c14; animation: feedbackIn .28s ease-out; }
+.feedbackToast > span { display: grid; place-items: center; flex: none; margin-top: 1px; }
+.feedbackToast p { flex: 1; min-width: 0; margin: 0; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.feedbackToast > button { display: grid; place-items: center; width: 20px; height: 22px; padding: 0; border: 0; background: transparent; color: #829178; flex: none; }
+.feedbackToast[data-error="true"] { color: #945031; border-color: #ead3bf; background: #fff7ef; }
+.dialogNotice { padding: 12px 14px; margin: 2px 0 23px !important; background: #eff5e9; border: 1px solid #d7e4ce; border-radius: 8px; color: var(--forest) !important; font-size: 12px !important; line-height: 1.6 !important; overflow-wrap: anywhere; }
+.dialogNotice[data-error="true"] { background: #fff4eb; border-color: #ead3bf; color: #945031 !important; }
+.dialogContent > .nfcProcess { margin: 0 -16px 22px; padding: 18px 16px; border: 1px solid #dce6d5; border-radius: 11px; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; }
+.dialogContent > .nfcProcess .processIcon { width: 34px; height: 34px; }
+.dialogContent > .nfcProcess .processActions { grid-column: 2; }
+.dialogContent > .nfcProcess .processContent h3 { font-size: 16px; }
+.audioRoute { display: grid; grid-template-columns: minmax(0, 1fr) 15px minmax(0, 1fr) 15px minmax(0, 1fr); align-items: center; gap: 8px; margin: 30px 0 26px; padding: 0 1px; }
+.audioRoute > div { min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.audioRoute > div > span { display: grid; place-items: center; width: 43px; height: 43px; margin-bottom: 12px; border: 1px solid #d7e1d0; border-radius: 50%; background: #f1f6eb; color: #63825a; }
+.audioRoute > div[data-connected="true"] > span { color: var(--forest); border-color: #b4d0a7; background: #e5f2da; }
+.audioRoute strong { display: block; font-size: 11px; font-weight: 500; line-height: 1.4; letter-spacing: -.02em; }
+.audioRoute small { display: block; font-size: 9px; line-height: 1.4; color: #8e9b87; margin-top: 4px; }
+.routeArrow { color: #b2c3a8; margin-top: -29px; }
+.systemOutput { padding: 20px; margin-bottom: 23px; background: #f0f5e9; border: 1px solid #dce6d2; border-radius: 11px; }
+.outputHeading { display: flex; align-items: center; gap: 11px; color: var(--forest); margin-bottom: 15px; }
+.outputHeading h3 { font-size: 15px; font-weight: 500; letter-spacing: -.035em; margin: 0 0 4px; }
+.outputHeading > div > span { display: block; font-size: 10px; color: #7c8f72; }
+.systemOutput > p { font-size: 12px; line-height: 1.75; color: #62765a; margin: 0; }
+.systemOutput > p + p { margin-top: 11px; }
+.outputNote { font-size: 10px !important; line-height: 1.75; color: #8a9982 !important; margin: 13px 0 0; }
+.demoOutput { padding: 0 0 24px; margin: 0 0 22px; border-bottom: 1px solid var(--line); }
+.demoOutputHeading { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-bottom: 15px; }
+.demoOutputHeading > div { min-width: 0; }
+.outputEyebrow { display: block; color: var(--forest); font: 8px monospace; letter-spacing: .13em; margin-bottom: 9px; }
+.demoOutputHeading h3 { font-size: 16px; font-weight: 450; line-height: 1.4; letter-spacing: -.03em; margin: 0; overflow-wrap: anywhere; }
+.demoOutput .secondaryButton { width: 100%; margin-top: 13px; font-size: 12px !important; justify-content: space-between; }
+.outputSelect { display: block; }
+.outputSelect select { display: block; width: 100%; box-sizing: border-box; min-height: 44px; padding: 11px 30px 11px 12px; background: #f6f8f2; border: 1px solid #d9e3d0; border-radius: 7px; color: #405c37; font: inherit; font-size: 12px; text-overflow: ellipsis; }
+.outputSelect select:focus-visible { outline: 2px solid var(--forest); outline-offset: 3px; }
+.dialogContent > .outputCompatibility { color: #899781; font-size: 11px; line-height: 1.75; margin: -3px 0 24px; }
+.dialogContent > .outputMessage { display: flex; align-items: flex-start; gap: 8px; color: var(--forest); background: #edf5e6; padding: 12px 14px; border-radius: 7px; font-size: 11px; line-height: 1.65; margin: 0 0 20px; }
+.dialogContent > .outputMessage > svg { flex: none; margin-top: 2px; }
+.dialogContent > .outputMessage[data-error="true"] { color: #975a3b; background: #fcf0e6; }
 .textButton { padding: 5px 0; border: 0; background: transparent; color: var(--forest); display: inline-flex; align-items: center; gap: 8px; font-size: 12px !important; }
 
 .collection { margin-top: 35px; }
@@ -213,6 +291,8 @@
 @keyframes dance { 0%, 100% { transform: translateY(0) rotate(-5deg); } 25% { transform: translateY(-9px) rotate(2deg); } 50% { transform: translateY(-2px) rotate(5deg); } 75% { transform: translateY(-12px) rotate(-2deg); } }
 @keyframes noteFly { 0% { opacity: 0; transform: translate(0, 0) rotate(0); } 18% { opacity: .9; } 72% { opacity: .7; } 100% { opacity: 0; transform: translate(var(--drift), calc(-1 * var(--rise))) rotate(var(--tilt)); } }
 @keyframes dialogIn { from { opacity: 0; transform: translateY(12px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes feedbackIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes connectionPulse { 0%, 100% { opacity: .4; } 50% { opacity: 1; } }
 
 @media (min-width: 1550px) {
   .listeningRoom { grid-template-columns: minmax(0, 1fr) 360px; }
@@ -246,7 +326,7 @@
   .ghosts { bottom: 48px; left: 25px; }
   .stageBottom { bottom: 22px; }
   .player { display: grid; grid-template-columns: minmax(210px, 1fr) minmax(200px, 1fr); column-gap: 28px; padding: 25px; border-left: 0; border-top: 1px solid var(--line); }
-  .playerMedia { grid-row: 1 / 6; height: 100%; min-height: 235px; }
+  .playerMedia { grid-row: 1 / 7; height: 100%; min-height: 235px; }
   .youtube, .youtube iframe { min-height: 235px; height: 100%; }
   .trackHeading { margin-top: 0; min-height: 57px; grid-column: 2; }
   .trackHeading h2 { font-size: 21px; }
@@ -254,6 +334,7 @@
   .playButton { width: 46px; height: 46px; }
   .volume { margin: 0 8px 16px; }
   .deviceStatus { grid-column: 2; }
+  .audioOutputButton { grid-column: 2; margin-top: 0; }
   .artworkWord { font-size: 42px; }
   .playerArtwork > .vinyl { width: 82%; }
   .collection { margin-top: 25px; }
@@ -297,8 +378,17 @@
   .stopButton { right: 4px; }
   .volume { margin: 0 18px 23px; }
   .deviceStatus { padding-top: 15px; }
-  .noticeArea { min-height: 38px; flex-wrap: wrap; gap: 3px; }
-  .notice { font-size: 11px; }
+  .deviceFeedback { margin-top: -10px; margin-bottom: 20px; }
+  .connectionFeedback { flex-wrap: wrap; gap: 11px; padding: 16px; }
+  .connectionIcon { width: 32px; height: 32px; }
+  .connectionCopy { flex: 1; min-width: 150px; }
+  .connectionProgress { margin-left: 43px; }
+  .readerReady { margin-left: 43px; font-size: 10px; }
+  .nfcProcess { padding: 18px 16px; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; }
+  .processIcon { width: 34px; height: 34px; }
+  .processActions { grid-column: 2; }
+  .processContent h3 { font-size: 15px; }
+  .feedbackToast { top: 80px; right: 16px; padding: 15px; }
   .collection { margin-top: 27px; }
   .collectionHeading { gap: 10px; padding-bottom: 20px; flex-wrap: wrap; }
   .collectionHeading h2 { font-size: 27px; }
