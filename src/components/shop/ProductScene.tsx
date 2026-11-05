@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { FontLoader, type Font } from "three/examples/jsm/loaders/FontLoader.js";
-import { createKeyring, createTurntable, disposeModel, type ProductModel } from "./productModels";
+import { createKeyring, createTurntable, disposeModel, type ProductModel, type RecordAppearance } from "./productModels";
 import type { ProductConfiguration, ProductId } from "./products";
 import { ProductIllustration } from "./ProductIllustration";
 import styles from "./Shop.module.css";
@@ -22,13 +22,16 @@ type Props = {
   playing?: boolean;
   reset?: number;
   onError?: (message: string) => void;
+  recordAppearance?: RecordAppearance;
+  recordPresent?: boolean;
+  recordLift?: number;
 };
 
-export default function ProductScene({ product, configuration, presentation = false, playing = true, reset = 0, onError }: Props) {
+export default function ProductScene({ product, configuration, presentation = false, playing = true, reset = 0, onError, recordAppearance, recordPresent = true, recordLift = 0 }: Props) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const stateRef = useRef({ configuration, playing, onError });
-  stateRef.current = { configuration, playing, onError };
-  const controllerRef = useRef<{ update: (config: ProductConfiguration) => void; reset: () => void; rotate: (yaw: number, pitch?: number, roll?: number) => void } | null>(null);
+  const stateRef = useRef({ configuration, playing, onError, recordAppearance, recordPresent, recordLift });
+  stateRef.current = { configuration, playing, onError, recordAppearance, recordPresent, recordLift };
+  const controllerRef = useRef<{ update: (config: ProductConfiguration) => void; reset: () => void; rotate: (yaw: number, pitch?: number, roll?: number) => void; record: (appearance?: RecordAppearance) => void } | null>(null);
   const [ready, setReady] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
 
@@ -96,6 +99,7 @@ export default function ProductScene({ product, configuration, presentation = fa
         if (model) { scene.remove(model.group); disposeModel(model.group, [primary, secondary]); }
         model = product === "e-disk" ? createTurntable(primary, secondary) : createKeyring(config, font, primary, secondary, message => stateRef.current.onError?.(message));
         model.group.quaternion.copy(currentOrientation);
+        if (stateRef.current.recordAppearance) model.setRecordAppearance?.(stateRef.current.recordAppearance);
         scene.add(model.group);
       }
       lastConfiguration = config;
@@ -176,6 +180,7 @@ export default function ProductScene({ product, configuration, presentation = fa
     window.addEventListener("blur", endDrag);
     controllerRef.current = {
       update,
+      record: appearance => { model?.setRecordAppearance?.(appearance); if (model?.record) model.record.position.y = .61 + stateRef.current.recordLift; },
       reset: () => { endDrag(); targetYaw = -.2; targetOrientation.copy(initialOrientation); },
       rotate: (yaw, pitch = 0, roll = 0) => {
         manualUntil = performance.now() + 3000;
@@ -207,7 +212,11 @@ export default function ProductScene({ product, configuration, presentation = fa
           model.group.rotation.y += (yaw - model.group.rotation.y) * rotationBlend;
         }
         if (product === "e-linker" && presentation) model.group.position.y = .32 + Math.sin(elapsed * .7) * .09;
-        if (model.record && animate) model.record.rotation.y -= dt * .8;
+        if (model.record) {
+          model.record.visible = stateRef.current.recordPresent;
+          model.record.position.y += (.61 + stateRef.current.recordLift - model.record.position.y) * rotationBlend;
+          if (animate) model.record.rotation.y -= dt * .8;
+        }
       }
       renderer.render(scene, camera);
     };
@@ -233,6 +242,7 @@ export default function ProductScene({ product, configuration, presentation = fa
   }, [product, presentation]);
 
   useEffect(() => { controllerRef.current?.update(configuration); }, [configuration]);
+  useEffect(() => { controllerRef.current?.record(recordAppearance); }, [recordAppearance]);
   useEffect(() => { if (reset > 0) controllerRef.current?.reset(); }, [reset]);
   const keyboard = (event: KeyboardEvent<HTMLDivElement>) => {
     const freeRotation = product === "e-linker";

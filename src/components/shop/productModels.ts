@@ -5,7 +5,8 @@ import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import type { Font } from "three/examples/jsm/loaders/FontLoader.js";
 import type { KeyringShape, ProductConfiguration } from "./products";
 
-export type ProductModel = { group: THREE.Group; record?: THREE.Group };
+export type RecordAppearance = { title: string; color: string };
+export type ProductModel = { group: THREE.Group; record?: THREE.Group; setRecordAppearance?: (appearance?: RecordAppearance) => void };
 
 function add(parent: THREE.Object3D, geometry: THREE.BufferGeometry, material: THREE.Material, x = 0, y = 0, z = 0) {
   const mesh = new THREE.Mesh(geometry, material);
@@ -27,7 +28,7 @@ function labelTexture(text: string, background: string, color: string, square = 
     context.fillStyle = color;
     context.textAlign = "center";
     context.font = "bold 70px Arial, sans-serif";
-    context.fillText(text, 256, square ? 245 : 135);
+    context.fillText(text, 256, square ? 245 : 135, 400);
     context.font = "20px monospace";
     context.fillText("EVOLVE", 256, square ? 315 : 185);
   }
@@ -57,7 +58,8 @@ export function createTurntable(primary: THREE.MeshStandardMaterial, secondary: 
     groove.castShadow = false;
     groove.receiveShadow = false;
   }
-  const label = add(record, new THREE.CircleGeometry(.57, 64), new THREE.MeshBasicMaterial({ map: labelTexture("e-disk", "#eae9da", "#101914", true) }), 0, .055);
+  const recordLabel = new THREE.MeshBasicMaterial({ map: labelTexture("e-disk", "#eae9da", "#101914", true) });
+  const label = add(record, new THREE.CircleGeometry(.57, 64), recordLabel, 0, .055);
   label.castShadow = false;
   label.rotation.x = -Math.PI / 2;
   add(group, new THREE.CylinderGeometry(.045, .045, .14, 24), hardware, -.65, .75);
@@ -75,7 +77,12 @@ export function createTurntable(primary: THREE.MeshStandardMaterial, secondary: 
   add(group, new THREE.SphereGeometry(.05, 12, 8), new THREE.MeshBasicMaterial({ color: "#c1ff00" }), 1.95, .48, 1.55);
   const brand = add(group, new THREE.PlaneGeometry(.82, .38), new THREE.MeshStandardMaterial({ map: labelTexture("evolve", "#101914", "#f5f1e8"), roughness: .8 }), -2.3, .04, 2.381);
   brand.rotation.x = 0;
-  return { group, record };
+  return { group, record, setRecordAppearance: appearance => {
+    vinyl.color.set(appearance?.color ?? "#090b0e");
+    recordLabel.map?.dispose();
+    recordLabel.map = labelTexture(appearance?.title ?? "e-disk", "#eae9da", "#101914", true);
+    recordLabel.needsUpdate = true;
+  } };
 }
 
 function roundedRectangle(width: number, height: number, radius: number) {
@@ -132,7 +139,14 @@ export function createKeyring(configuration: ProductConfiguration, font: Font | 
   group.add(body);
   const { shape, holeY } = keyringOutline(configuration.shape);
   add(body, new THREE.ExtrudeGeometry(shape, { depth: .23, bevelEnabled: true, bevelSegments: 3, steps: 1, bevelSize: .035, bevelThickness: .035, curveSegments: 28 }), primary);
-  add(body, new THREE.TorusGeometry(.43, .045, 12, 64), new THREE.MeshStandardMaterial({ color: "#e0e5e3", metalness: .94, roughness: .18 }), 0, holeY + .37, .15);
+  const chainMetal = new THREE.MeshStandardMaterial({ color: "#cbd2d0", metalness: .94, roughness: .2 });
+  for (let index = 0; index < 3; index++) {
+    const link = add(body, new THREE.TorusGeometry(.095, .019, 10, 40), chainMetal, 0, holeY + .03 + index * .18, .15);
+    link.scale.y = 1.35;
+    link.rotation.y = index % 2 === 0 ? Math.PI / 2 : 0;
+  }
+  add(body, new THREE.TorusGeometry(.32, .027, 12, 64), chainMetal, 0, holeY + .73, .15);
+  add(body, new THREE.TorusGeometry(.32, .018, 10, 64), chainMetal, 0, holeY + .73, .19);
   const maxWidth = configuration.shape === "triangle" ? 2 : configuration.shape === "rectangle" ? 3.35 : 2.5;
   const centerY = configuration.shape === "triangle" ? -.45 : -.15;
   if (configuration.text.trim() && font) {

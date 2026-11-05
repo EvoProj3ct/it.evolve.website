@@ -72,7 +72,7 @@ export function ProductNavigation({ product }: { product: ProductId }) {
           {highlighted === tab.id && <NavShadow id="section-shadow" reduced={reduced} />}
           <span className={styles.navLabel}>{tab.label}{tab.id === "app" && <ArrowUpRight size={12} />}</span>
         </Link>)}
-        <Link className={styles.navCta} href={`${root}#configura`} onClick={() => setSection("configura")}>Personalizza <ArrowUpRight size={14} /></Link>
+        <Link className={styles.navCta} href={`${root}${product === "e-disk" ? "#incidi" : "#configura"}`} onClick={() => setSection(product === "e-disk" ? "incidi" : "configura")}>{product === "e-disk" ? "Crea la tua musica" : "Personalizza"} <ArrowUpRight size={14} /></Link>
       </nav></LayoutGroup>
     </div>
   );

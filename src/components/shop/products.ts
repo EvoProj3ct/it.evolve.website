@@ -54,7 +54,7 @@ export const PRODUCTS = {
   "e-disk": {
     name: "e-disk",
     number: "01",
-    category: "Il tuo giradischi NFC",
+    category: "Il giradischi per la tua musica",
     tagline: "Meno scroll.\nPiù rock’n’roll!",
     description: "Il piacere di scegliere un disco, con tutta la libertà del digitale.",
     punchline: "Gira il disco.\nCambia la giornata.",
@@ -62,11 +62,16 @@ export const PRODUCTS = {
     defaultSecondary: "#F7BAD5",
     video: null as string | null,
     steps: [
-      { title: "Scegli una canzone.", description: "Dall’app e-disk associ un brano a un disco NFC e costruisci la tua collezione." },
-      { title: "Appoggia il disco.", description: "Il giradischi riconosce il tag. Quel piccolo oggetto diventa la chiave per la tua musica." },
-      { title: "Lascia che giri.", description: "Il disco prende vita. La musica parte dal player sul tuo telefono o computer." },
+      { title: "Scegli la tua musica.", description: "Un brano che ami, una dedica, una canzone creata per te. Ogni disco parte da una storia." },
+      { title: "Noi le diamo forma.", description: "Stampiamo e personalizziamo i tuoi dischi: oggetti da tenere, regalare e aggiungere alla tua collezione." },
+      { title: "Appoggia. Ascolta.", description: "Un disco sul giradischi, la sua canzone nell’app. Cambia disco ogni volta che vuoi cambiare atmosfera." },
     ],
     faq: [
+      { question: "Come vengono realizzati i dischi?", answer: "Stampiamo e personalizziamo noi i dischi, con il loro aspetto e l’associazione al contenuto scelto. “Incidere” significa dare una forma fisica alla tua musica: i brani vengono riprodotti dall’app, non letti da solchi incisi." },
+      { question: "Posso creare una canzone solo mia?", answer: "Il progetto prevede canzoni su misura create con il nostro tool IA: puoi partire da una storia, una dedica o un’occasione speciale. Il tool è attualmente in preparazione." },
+      { question: "Posso scegliere un brano da Spotify o YouTube?", answer: "Sono i due percorsi previsti per i brani esistenti. YouTube è già supportato dall’app e-disk; il collegamento automatico a Spotify è in preparazione. L’ascolto segue le disponibilità e le condizioni del servizio scelto." },
+      { question: "Cosa comprende il bundle?", answer: "Un e-disk nella tua combinazione di colori e tre dischi personalizzabili. È il punto di partenza della collezione: puoi scegliere anche il solo giradischi." },
+      { question: "E se volessi altri dischi?", answer: "Puoi acquistare altri dischi da Evolve quando vuoi, senza ricomprare il giradischi. Una nuova canzone, un altro regalo, un ricordo da aggiungere: la collezione continua." },
       { question: "È un giradischi per vinili tradizionali?", answer: "e-disk è un oggetto interattivo che legge dischi NFC. Non legge i solchi dei vinili: ogni disco richiama un brano associato nell’app." },
       { question: "Da dove esce la musica?", answer: "La musica viene riprodotta dal telefono o dal computer, tramite il player dell’app. Puoi usare la sua uscita audio, comprese cuffie o una cassa associata al dispositivo. e-disk gestisce lettura NFC e movimento del disco." },
       { question: "Serve installare un’app?", answer: "L’app e-disk si apre nel browser. Il collegamento al giradischi richiede un browser con supporto Web Bluetooth e un contesto HTTPS o localhost. La compatibilità varia in base a sistema operativo e browser." },

@@ -3,10 +3,11 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
-import { ArrowDown, ArrowUpRight, BookOpen, Check, Disc3, Download, MoveHorizontal, Nfc, Pause, Play, Plus, RotateCcw, Smartphone, Upload, X } from "lucide-react";
+import { ArrowUpRight, BookOpen, Check, Disc3, Download, MoveHorizontal, Nfc, Pause, Play, Plus, RotateCcw, ShoppingCart, Smartphone, Upload, X } from "lucide-react";
 import { ProductIllustration } from "./ProductIllustration";
 import { ProductColorPicker } from "./ProductColorPicker";
 import { CartoonNotes } from "./CartoonNotes";
+import { EDiskBundle, EDiskDiscStudio, EDiskRecordDemo } from "./EDiskRecords";
 import { colorName, defaultConfiguration, KEYRING_SHAPES, PRODUCTS, SHOP_COLORS, type ProductConfiguration, type ProductId } from "./products";
 import styles from "./Shop.module.css";
 
@@ -29,6 +30,7 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
   const isDisk = product === "e-disk";
   const otherProduct: ProductId = isDisk ? "e-linker" : "e-disk";
   const [configuration, setConfiguration] = useState<ProductConfiguration>(() => defaultConfiguration(product));
+  const [diskOffer, setDiskOffer] = useState<"device" | "bundle">("device");
   const previewConfiguration = useDeferredValue(configuration);
   const heroConfiguration = useMemo(() => defaultConfiguration(product), [product]);
   const [heroPlaying, setHeroPlaying] = useState(true);
@@ -102,7 +104,7 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
     setConfiguration(current => ({ ...current, primary: SHOP_COLORS[first].hex, secondary: SHOP_COLORS[second].hex }));
   };
   const download = () => {
-    const blob = new Blob([JSON.stringify({ version: 1, product, ...configuration, note: "Configurazione dimostrativa da confermare con Evolve prima della produzione." }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ version: 1, product, ...(isDisk ? { offer: diskOffer, includedRecords: diskOffer === "bundle" ? 3 : 0 } : {}), ...configuration, note: "Configurazione dimostrativa da confermare con Evolve prima della produzione." }, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url; link.download = `evolve-${product}-configurazione.json`; link.click();
@@ -119,8 +121,11 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
             <h1 id="product-title" className={styles.productTitle}>{info.name}</h1>
             <p className={styles.heroTagline}>{info.tagline}</p>
             <p className={styles.heroDescription}>{info.description}</p>
-            <a href="#configura" className={styles.heroCta}>{isDisk ? "Scegli i tuoi colori" : "Personalizza e-linker"} <ArrowUpRight size={21} /></a>
-            <span className={styles.heroCategory}>{isDisk ? <Nfc size={17} /> : <Plus size={17} />} {info.category}</span>
+            <div className={styles.heroActions}>
+              <a href="#configura" className={styles.heroCta}>{isDisk ? "Scegli i tuoi colori" : "Personalizza e-linker"} <ArrowUpRight size={21} /></a>
+              {isDisk && <a href="#incidi" className={`${styles.heroCta} ${styles.heroDiscsCta}`}>Incidi i tuoi dischi <ArrowUpRight size={21} /></a>}
+            </div>
+            {!isDisk && <span className={styles.heroCategory}><Plus size={17} /> {info.category}</span>}
           </div>
           <div className={styles.heroVisual}>
             <div className={styles.visualOrbit} aria-hidden="true" />
@@ -134,15 +139,16 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
             </div>
           </div>
         </div>
-        <a href="#scopri" className={styles.scrollCue}>Bello da vedere. Ancora meglio da usare. <ArrowDown size={15} /></a>
       </section>
 
       {isDisk && <div className={styles.tickerBridge} aria-hidden="true"><div className={styles.ticker}><div>{[0, 1, 2, 3].map(index => <span key={index}>OGGETTI FISICI, IDEE DIGITALI<b>✳</b> THINK TO EVOLVE <b>✳</b> METTI UN DISCO<b>✳</b></span>)}</div></div></div>}
 
       <section id="scopri" className={styles.story} aria-labelledby="story-title">
-        <div className={styles.storyHeading}><h2 id="story-title">{info.punchline}<span>.</span></h2><p>{isDisk ? "Ci piace la musica digitale. Ci mancava il piacere di scegliere un disco. e-disk mette insieme le due cose: un oggetto da toccare, una collezione da costruire e i tuoi brani preferiti, a un gesto di distanza." : "Un nome che ti rappresenta. Un logo che riconosci al volo. Un colore che si fa notare. e-linker parte dalle forme più semplici e le trasforma in qualcosa che è soltanto tuo."}</p></div>
+        <div className={styles.storyHeading}><h2 id="story-title">{info.punchline}<span>.</span></h2><p>{isDisk ? "Una canzone può diventare un regalo, un ricordo da tenere in mano, un piccolo rito. Scegli la musica e il carattere dei tuoi dischi: noi li stampiamo per te, pronti per la tua collezione e-disk." : "Un nome che ti rappresenta. Un logo che riconosci al volo. Un colore che si fa notare. e-linker parte dalle forme più semplici e le trasforma in qualcosa che è soltanto tuo."}</p></div>
         <div className={styles.steps}>{info.steps.map((step, index) => <article key={step.title} className={styles.step}><span className={styles.stepNumber}>0{index + 1}</span><div className={styles.stepGraphic} aria-hidden="true">{isDisk ? index === 0 ? <Disc3 /> : index === 1 ? <Nfc /> : <span className={styles.equalizer}>{[0, 1, 2, 3, 4, 5, 6].map(n => <i key={n} />)}</span> : <span className={styles.shapeGraphic}>{index === 0 ? "△ ○" : index === 1 ? "Aa" : "✳"}</span>}</div><h3>{step.title}</h3><p>{step.description}</p></article>)}</div>
       </section>
+
+      {isDisk && <><EDiskDiscStudio /><EDiskRecordDemo /></>}
 
       <section id="configura" className={styles.configurator} aria-labelledby="config-title">
         <div className={styles.configHeading}><h2 id="config-title">Unico.<br />Come te<span>.</span></h2><p>{isDisk ? "Due colori. Trenta possibilità per ognuno. Trova la combinazione che vorresti sul tuo tavolo." : "Parti da una forma, aggiungi la tua scritta e trova il tuo abbinamento. Il prossimo portachiavi lo disegni tu."}</p></div>
@@ -171,14 +177,17 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
             </fieldset>
             {sceneError && <p className={styles.error} role="status">{sceneError}</p>}
             <div className={styles.configurationSummary} aria-live="polite" aria-atomic="true"><span>IL TUO {product.toUpperCase()}</span><p>{colorName(configuration.primary)} <b>+</b> {colorName(configuration.secondary)}{!isDisk && <> · {KEYRING_SHAPES.find(shape => shape.id === configuration.shape)?.name}{configuration.text && <> · “{configuration.text}”</>}</>}</p></div>
-            <a href={mailHref} className={styles.requestButton}>Parliamone <ArrowUpRight size={21} /></a>
+            {isDisk && <fieldset id="offerta-edisk" className={styles.offerPicker}><legend>Da dove vuoi iniziare?</legend><div><button type="button" aria-pressed={diskOffer === "device"} onClick={() => setDiskOffer("device")}><span>Solo e-disk</span><small>Il giradischi nei tuoi colori</small>{diskOffer === "device" && <Check size={14} />}</button><button type="button" aria-pressed={diskOffer === "bundle"} onClick={() => setDiskOffer("bundle")}><span>Il bundle</span><small>e-disk + 3 dischi personalizzabili</small>{diskOffer === "bundle" && <Check size={14} />}</button></div></fieldset>}
+            {isDisk ? <button type="button" className={`${styles.requestButton} ${styles.conceptCartButton}`} disabled title="Carrello e acquisto verranno collegati in seguito">Aggiungi al carrello <ShoppingCart size={19} /></button> : <a href={mailHref} className={styles.requestButton}>Parliamone <ArrowUpRight size={21} /></a>}
             <button type="button" onClick={download} className={styles.downloadButton}><Download size={15} /> Salva la tua configurazione</button>
-            <p className={styles.requestNote}>Apri una mail con le tue scelte. Prezzo, materiali e disponibilità li definiamo insieme.{configuration.logo && " Ricorda di allegare il logo originale alla mail."}</p>
+            <p className={styles.requestNote}>{isDisk ? diskOffer === "bundle" ? "Il bundle include il giradischi e tre dischi da personalizzare. Potrai aggiungerne altri alla tua collezione quando vuoi." : "Il giradischi, nella tua combinazione. I dischi si acquistano anche separatamente." : <>Apri una mail con le tue scelte. Prezzo, materiali e disponibilità li definiamo insieme.{configuration.logo && " Ricorda di allegare il logo originale alla mail."}</>}</p>
           </div>
         </div>
       </section>
 
       <section className={styles.colorStudies} aria-labelledby="studies-title"><h2 id="studies-title">Il colore è tuo<span>.</span></h2><div className={styles.studyGrid}>{PRESETS.map((preset, index) => <figure key={preset.name}><div className={styles.studyArtwork} data-study={index}><ProductIllustration product={product} configuration={{ ...defaultConfiguration(product), primary: preset.primary, secondary: preset.secondary, shape: index === 1 ? "circle" : index === 2 ? "triangle" : "rectangle", text: index === 0 ? "EVOLVE" : index === 1 ? "CIAO." : "WOW!" }} /></div><figcaption><span>{preset.name}</span><button type="button" onClick={() => { setConfiguration(current => ({ ...current, primary: preset.primary, secondary: preset.secondary })); document.getElementById("configura")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }}>Prova il mix <ArrowUpRight size={15} /></button></figcaption></figure>)}</div><p className={styles.studyNote}>Studi illustrati di colore. Modelli, finiture e tonalità sono indicativi.</p></section>
+
+      {isDisk && <EDiskBundle onChoose={() => { setDiskOffer("bundle"); document.getElementById("offerta-edisk")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }} />}
 
       <section className={styles.resources} aria-labelledby="resources-title"><div className={styles.resourceCopy}><h2 id="resources-title">L’oggetto è solo<br />l’inizio<span>.</span></h2><p>{isDisk ? "Dietro ogni disco c’è la tua collezione. Apri l’app, organizza i brani e scopri come dare vita al tuo e-disk." : "Hai in mente qualcosa di preciso? Parti dalla guida: forme, testi e loghi spiegati senza giri di parole."}</p></div><div className={styles.resourceLinks}>{isDisk && <Link href="/shop/e-disk/app"><Smartphone size={26} /><div><span>La tua collezione, online</span><h3>App e-disk</h3><p>Dischi, brani e giradischi. Tutto in un posto.</p></div><ArrowUpRight size={25} /></Link>}<Link href={`/shop/${product}/documentazione`}><BookOpen size={26} /><div><span>Da dove si comincia?</span><h3>Dentro {product}</h3><p>{isDisk ? "Primi passi, NFC e collegamenti." : "Forme, file del logo e personalizzazione."}</p></div><ArrowUpRight size={25} /></Link></div></section>
 

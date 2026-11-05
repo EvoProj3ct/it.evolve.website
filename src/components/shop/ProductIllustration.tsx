@@ -27,7 +27,11 @@ export function ProductIllustration({ product, configuration }: { product: Produ
         <path d="M444 83v93l-65 69" stroke="#DDE9DD" strokeWidth="14" strokeLinecap="round" /><rect x="365" y="231" width="32" height="40" rx="4" fill={configuration.primary} transform="rotate(40 381 251)" />
         <circle cx="458" cy="284" r="15" fill={configuration.primary} stroke="#101914" strokeWidth="3" />
       </g> : <g transform="translate(90 40) rotate(-14 230 220) skewY(-4)" filter={`url(#${id}-shadow)`}>
-        <circle cx="230" cy="80" r="42" stroke={`url(#${id}-metal)`} strokeWidth="8" />
+        <circle cx="230" cy="40" r="28" stroke={`url(#${id}-metal)`} strokeWidth="5" />
+        <circle cx="230" cy="40" r="25" stroke={`url(#${id}-metal)`} strokeWidth="2" />
+        <ellipse cx="230" cy="75" rx="4" ry="10" stroke={`url(#${id}-metal)`} strokeWidth="3" />
+        <ellipse cx="230" cy="92" rx="7" ry="10" stroke={`url(#${id}-metal)`} strokeWidth="3" />
+        <ellipse cx="230" cy="109" rx="3.5" ry="10" stroke={`url(#${id}-metal)`} strokeWidth="3" />
         <g mask={`url(#${id}-hole)`}>
           <g transform="translate(0 7)"><KeyringOutline shape={configuration.shape} fill={configuration.primary} /><KeyringOutline shape={configuration.shape} fill="#101914" opacity={.15} /></g>
           <KeyringOutline shape={configuration.shape} fill={configuration.primary} />
