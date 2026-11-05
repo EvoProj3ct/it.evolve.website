@@ -43,6 +43,30 @@ export const SHOP_COLORS = [
   { name: "Biscotto", hex: "#BE9368" },
 ] as const;
 
+// Selezione dedicata a e-linker: neutri e colori da prodotto, senza accenti fluo.
+export const LINKER_COLORS = [
+  { name: "Ghiaccio", hex: "#E9F0ED" },
+  { name: "Bianco latte", hex: "#F5F1E8" },
+  { name: "Grigio perla", hex: "#BAC3BF" },
+  { name: "Titanio", hex: "#829BA3" },
+  { name: "Grafite", hex: "#49504E" },
+  { name: "Ardesia", hex: "#263C42" },
+  { name: "Nero", hex: "#171B19" },
+  { name: "Blu notte", hex: "#202D5A" },
+  { name: "Petrolio", hex: "#2C7A62" },
+  { name: "Foresta", hex: "#114928" },
+  { name: "Salvia", hex: "#578B60" },
+  { name: "Verde Evolve", hex: "#72C94F" },
+  { name: "Sabbia", hex: "#D7C4A0" },
+  { name: "Cacao", hex: "#795442" },
+  { name: "Terracotta", hex: "#BC634A" },
+  { name: "Viola Evolve", hex: "#8567C1" },
+] as const;
+
+export function productColors(product: ProductId) {
+  return product === "e-linker" ? LINKER_COLORS : SHOP_COLORS;
+}
+
 export const KEYRING_SHAPES: { id: KeyringShape; name: string; symbol: string }[] = [
   { id: "rectangle", name: "Rettangolo", symbol: "▭" },
   { id: "square", name: "Quadrato", symbol: "□" },
@@ -85,8 +109,8 @@ export const PRODUCTS = {
     tagline: "Piccolo oggetto.\nGrande carattere.",
     description: "Il tuo nome, il tuo logo, i tuoi colori. Un portachiavi stampato in 3D che parla di te, prima ancora delle chiavi.",
     punchline: "Lascia il segno.\nPortalo ovunque.",
-    defaultPrimary: "#F5F1E8",
-    defaultSecondary: "#114928",
+    defaultPrimary: "#E9F0ED",
+    defaultSecondary: "#263C42",
     video: null as string | null,
     steps: [
       { title: "Parti dalla forma.", description: "Rettangolo, quadrato, cerchio o triangolo. Scegli la base che ti somiglia." },
@@ -103,9 +127,9 @@ export const PRODUCTS = {
 } as const;
 
 export function defaultConfiguration(product: ProductId): ProductConfiguration {
-  return { primary: PRODUCTS[product].defaultPrimary, secondary: PRODUCTS[product].defaultSecondary, shape: "rectangle", text: "CIAO.", logo: null };
+  return { primary: PRODUCTS[product].defaultPrimary, secondary: PRODUCTS[product].defaultSecondary, shape: "rectangle", text: product === "e-linker" ? "e-linker." : "CIAO.", logo: null };
 }
 
 export function colorName(hex: string) {
-  return SHOP_COLORS.find(color => color.hex === hex)?.name ?? hex;
+  return [...SHOP_COLORS, ...LINKER_COLORS].find(color => color.hex === hex)?.name ?? hex;
 }

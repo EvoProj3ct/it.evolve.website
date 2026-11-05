@@ -207,6 +207,9 @@
 .studyGrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px 22px; }
 .studyLink { display: block; min-width: 0; color: inherit; -webkit-tap-highlight-color: transparent; }
 .studyGrid figure { min-width: 0; margin: 0; }
+.studyDetails { display: grid; min-width: 0; gap: 7px; }
+.studyDetails > small { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; color: #7b8783; font-size: 8px; line-height: 1.5; }
+.studyDetails > small > i { flex: none; width: 8px; height: 8px; border: 1px solid #10191420; border-radius: 2px; background: var(--swatch); }
 .studyArtwork { aspect-ratio: 1.04; overflow: hidden; background: #aacf7d; }
 .studyArtwork[data-study="1"] { background: #bda5ee; }
 .studyArtwork[data-study="2"] { background: #ffada5; }
@@ -305,9 +308,16 @@
 .productPage[data-product="e-linker"] .textInput { border-color: #dfe7d7; border-radius: 11px; }
 .productPage[data-product="e-linker"] .uploadButton { border-color: #ccdabc; border-radius: 11px; color: #6a7c5d; }
 .productPage[data-product="e-linker"] .requestButton { border-radius: 28px; }
-.productPage[data-product="e-linker"] .studyArtwork { border: 1px solid #edf1e8; border-radius: 22px; background: radial-gradient(ellipse at 50% 65%, #e6efdc, #fcfdfb 74%); }
-.productPage[data-product="e-linker"] .studyArtwork[data-study="1"] { background: radial-gradient(ellipse at 50% 65%, #ece6f7, #fcfdfb 74%); }
-.productPage[data-product="e-linker"] .studyArtwork[data-study="2"] { background: radial-gradient(ellipse at 50% 65%, #f9eae3, #fcfdfb 74%); }
+.productPage[data-product="e-linker"] { font-family: "HelveticaLocal", Helvetica, Arial, sans-serif; }
+.productPage[data-product="e-linker"] .colorStudies { border-top: 1px solid #e5eae6; }
+.productPage[data-product="e-linker"] .studyArtwork { aspect-ratio: 1.2; border: 1px solid #e5eae7; border-radius: 12px; background: radial-gradient(ellipse at 50% 65%, #e5ece9, #f7f9f7 76%); }
+.productPage[data-product="e-linker"] .studyArtwork[data-study="1"], .productPage[data-product="e-linker"] .studyArtwork[data-study="4"] { background: radial-gradient(ellipse at 50% 65%, #e1e7eb, #f5f7f8 76%); }
+.productPage[data-product="e-linker"] .studyArtwork[data-study="2"] { background: radial-gradient(ellipse at 50% 65%, #e2eae1, #f6f8f5 76%); }
+.productPage[data-product="e-linker"] .studyArtwork[data-study="5"] { background: radial-gradient(ellipse at 50% 65%, #eae5da, #f9f7f2 76%); }
+.productPage[data-product="e-linker"] .studyLink:hover .studyArtwork > svg, .productPage[data-product="e-linker"] .studyLink:focus-visible .studyArtwork > svg { transform: translateY(-4px) scale(1.025); }
+.productPage[data-product="e-linker"] .studyGrid figcaption { align-items: start; border-color: #dde4df; padding-block: 17px; font-size: 12px; }
+.productPage[data-product="e-linker"] .studyDetails > small { font-size: 10px; }
+.productPage[data-product="e-linker"] .studyAction { flex: none; min-height: 18px; color: #52645d; font-size: 10px; }
 .productPage[data-product="e-linker"] .resources { background: #f0f5ea; }
 .productPage[data-product="e-linker"] .resources h2 > span { color: #72c94f; }
 .productPage[data-product="e-linker"] .resourceLinks > a { padding: 28px; border: 1px solid #e0e8d7; border-radius: 18px; background: #fcfdfb; }

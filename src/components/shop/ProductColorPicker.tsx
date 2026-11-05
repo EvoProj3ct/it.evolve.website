@@ -3,7 +3,7 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import { ArrowLeftRight, ChevronDown, Shuffle, X } from "lucide-react";
-import { colorName, SHOP_COLORS, type ProductId } from "./products";
+import { colorName, productColors, type ProductId } from "./products";
 import styles from "./ProductColorPicker.module.css";
 
 type Channel = "primary" | "secondary";
@@ -17,6 +17,7 @@ type Props = {
 const colorStyle = (hex: string) => ({ "--chip-color": hex } as CSSProperties);
 
 export function ProductColorPicker({ product, value, onChange, onSwap, onShuffle }: Props) {
+  const colors = productColors(product);
   const [active, setActive] = useState<Channel | null>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [position, setPosition] = useState({ left: 0, top: 0, ready: false });
@@ -94,8 +95,8 @@ export function ProductColorPicker({ product, value, onChange, onSwap, onShuffle
     const step: Record<string, number> = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 6, ArrowUp: -6 };
     if (!(event.key in step) && event.key !== "Home" && event.key !== "End") return;
     event.preventDefault();
-    const next = event.key === "Home" ? 0 : event.key === "End" ? SHOP_COLORS.length - 1 : (index + step[event.key] + SHOP_COLORS.length) % SHOP_COLORS.length;
-    const color = SHOP_COLORS[next];
+    const next = event.key === "Home" ? 0 : event.key === "End" ? colors.length - 1 : (index + step[event.key] + colors.length) % colors.length;
+    const color = colors[next];
     onChange(active, color.hex);
     setHovered(color.hex);
     panelRef.current?.querySelector<HTMLButtonElement>(`[data-color="${color.hex}"]`)?.focus({ preventScroll: true });
@@ -109,8 +110,8 @@ export function ProductColorPicker({ product, value, onChange, onSwap, onShuffle
     </div>
     <div className={styles.actions}><span>{product === "e-disk" ? "Dettagli in nero satinato" : "Due colori, una firma"}</span><div><button type="button" onClick={() => { close(); onSwap(); }} aria-label="Scambia i due colori" title="Scambia i colori"><ArrowLeftRight size={15} /></button><button type="button" onClick={() => { close(); onShuffle(); }} aria-label="Scegli un abbinamento casuale" title="Sorprendimi"><Shuffle size={15} /></button></div></div>
     {active && createPortal(<div id={panelId} ref={panelRef} className={styles.popover} role="dialog" aria-label={`Scegli il colore: ${labels[active].toLowerCase()}`} style={{ left: position.left, top: position.top, visibility: position.ready ? "visible" : "hidden" }}>
-      <div className={styles.popoverHeader}><span>{labels[active]}<small>30 tonalità</small></span><button type="button" onClick={() => close(true)} aria-label="Chiudi la palette"><X size={15} /></button></div>
-      <div className={styles.palette} role="radiogroup" aria-label={`Colore ${labels[active].toLowerCase()}`} onPointerLeave={() => setHovered(null)}>{SHOP_COLORS.map((color, index) => <button key={color.hex} type="button" className={styles.swatch} role="radio" aria-checked={value[active] === color.hex} tabIndex={value[active] === color.hex ? 0 : -1} data-color={color.hex} aria-label={color.name} title={color.name} style={colorStyle(color.hex)} onPointerEnter={() => setHovered(color.hex)} onFocus={() => setHovered(color.hex)} onKeyDown={event => navigate(event, index)} onClick={() => { onChange(active, color.hex); close(true); }}><i /></button>)}</div>
+      <div className={styles.popoverHeader}><span>{labels[active]}<small>{colors.length} tonalità</small></span><button type="button" onClick={() => close(true)} aria-label="Chiudi la palette"><X size={15} /></button></div>
+      <div className={styles.palette} role="radiogroup" aria-label={`Colore ${labels[active].toLowerCase()}`} onPointerLeave={() => setHovered(null)}>{colors.map((color, index) => <button key={color.hex} type="button" className={styles.swatch} role="radio" aria-checked={value[active] === color.hex} tabIndex={value[active] === color.hex ? 0 : -1} data-color={color.hex} aria-label={color.name} title={color.name} style={colorStyle(color.hex)} onPointerEnter={() => setHovered(color.hex)} onFocus={() => setHovered(color.hex)} onKeyDown={event => navigate(event, index)} onClick={() => { onChange(active, color.hex); close(true); }}><i /></button>)}</div>
       <div className={styles.popoverCaption}><span>{colorName(hovered ?? value[active])}</span><span>{hovered ?? value[active]}</span></div>
     </div>, document.body)}
   </div>;

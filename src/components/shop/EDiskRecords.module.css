@@ -1,9 +1,9 @@
-.studio, .demo, .bundle { padding: 90px var(--shop-gutter); }
+.studio, .giftSection, .demo, .bundle { padding: 90px var(--shop-gutter); }
 .heading { display: grid; grid-template-columns: 1.2fr .8fr; align-items: end; gap: 8%; margin-bottom: 48px; }
 .heading h2, .demo h2, .bundle h2 { margin: 0; font-size: clamp(42px,5.1vw,80px); font-weight: 400; line-height: 1.03; letter-spacing: -.065em; }
 .heading h2 > span, .demo h2 > span, .bundle h2 > span { color: #72c94f; }
 .heading > p { max-width: 350px; margin: 0; color: #66715d; font-size: 12px; line-height: 1.9; }
-.giftIdeas { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 22px; margin-bottom: 65px; }
+.giftIdeas { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 22px; }
 .giftCard { display: flex; flex-direction: column; min-width: 0; padding: 25px; border: 1px solid #101914; background: #cabee6; box-shadow: 4px 4px 0 #3154f4; }
 .giftCard[data-gift="friends"] { background: #c1ff00; box-shadow: 4px 4px 0 #114928; }
 .giftCard[data-gift="compose"] { background: #ffada5; box-shadow: 4px 4px 0 #ff7638; }
@@ -22,8 +22,8 @@
 .previewStar { position: absolute; top: 18px; left: 22px; color: #476537; font-size: 32px; }
 .previewTag { color: #7b806d; font-size: 8px; }
 .discForm { min-width: 0; }
-.discForm > h3 { margin: 0 0 18px; font-size: 39px; font-weight: 400; line-height: 1.05; letter-spacing: -.06em; }
-.discForm > h3 > span { color: #72c94f; }
+.discForm > h2 { margin: 0 0 18px; font-size: 39px; font-weight: 400; line-height: 1.05; letter-spacing: -.06em; }
+.discForm > h2 > span { color: #72c94f; }
 .discForm > p { max-width: 350px; margin: 0 0 25px; color: #6b7861; font-size: 11px; line-height: 1.8; }
 .discForm label { display: block; margin: 0 0 18px; color: #5d6e53; font-size: 10px; }
 .discForm input { display: block; width: 100%; min-width: 0; min-height: 45px; margin-top: 9px; padding: 10px 12px; border: 1px solid #d5dfcb; border-radius: 6px; background: #fcfdfb; color: #101914; font-size: 13px; }
@@ -98,18 +98,18 @@
 .moreDiscs a { display: inline-flex; align-items: center; flex: none; gap: 16px; min-height: 44px; margin-left: auto; font-size: 11px; }
 @media (max-width: 1050px) { .giftCard { padding: 20px; } .giftCard h3 { font-size: 23px; } .recordRack { gap: 13px; } .demo { grid-template-columns: .85fr 1.15fr; } }
 @media (max-width: 860px) {
-  .studio, .demo, .bundle { padding-block: 65px; }
+  .studio, .giftSection, .demo, .bundle { padding-block: 65px; }
   .heading { grid-template-columns: 1fr; gap: 26px; margin-bottom: 35px; }
   .heading h2, .demo h2, .bundle h2 { font-size: clamp(42px,9vw,66px); }
   .heading > p { max-width: 470px; font-size: 12px; }
-  .giftIdeas { grid-template-columns: 1fr; gap: 22px; margin-bottom: 45px; }
+  .giftIdeas { grid-template-columns: 1fr; gap: 22px; }
   .giftTop { margin-bottom: 23px; }
   .giftCard { padding: 24px; }
   .giftCard h3 { max-width: none; font-size: 28px; }
   .personalize { grid-template-columns: 1fr; gap: 35px; }
   .discPreview { padding: 27px 25px; }
   .discPreview > svg { width: min(90%,300px); }
-  .discForm > h3 { font-size: 36px; }
+  .discForm > h2 { font-size: 36px; }
   .studioFoot { font-size: 9px; }
   .demo { grid-template-columns: 1fr; gap: 45px; }
   .demoCopy > p { max-width: 470px; margin-top: 23px; }

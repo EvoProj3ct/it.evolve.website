@@ -11,7 +11,7 @@ import styles from "./Shop.module.css";
 
 let fontPromise: Promise<Font> | null = null;
 function loadFont() {
-  if (!fontPromise) fontPromise = new FontLoader().loadAsync("/shop/fonts/helvetiker_bold.typeface.json").catch(error => { fontPromise = null; throw error; });
+  if (!fontPromise) fontPromise = new FontLoader().loadAsync("/shop/fonts/helvetica-regular.typeface.json").catch(error => { fontPromise = null; throw error; });
   return fontPromise;
 }
 
@@ -52,7 +52,8 @@ export default function ProductScene({ product, configuration, presentation = fa
     host.appendChild(renderer.domElement);
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(34, 1, .1, 60);
-    camera.position.set(product === "e-disk" ? 7 : 3, 8, 9);
+    if (product === "e-disk") camera.position.set(7, 8, 9);
+    else camera.position.set(0, 10, 4.5);
     camera.lookAt(0, .1, 0);
     const freeRotation = product === "e-linker" && !presentation;
     const initialOrientation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -.2);
@@ -111,7 +112,7 @@ export default function ProductScene({ product, configuration, presentation = fa
       update(stateRef.current.configuration, true);
     }).catch(() => { if (!disposed) { setUnavailable(true); stateRef.current.onError?.("Il carattere 3D non è disponibile. La sagoma mostra comunque testo e colori scelti."); } });
 
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(22, 22), new THREE.ShadowMaterial({ color: "#11171a", opacity: product === "e-linker" ? .09 : .16 }));
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(22, 22), new THREE.ShadowMaterial({ color: "#11171a", opacity: product === "e-linker" ? .055 : .16 }));
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = product === "e-disk" ? -.6 : -.37;
     floor.receiveShadow = true;

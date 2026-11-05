@@ -29,25 +29,31 @@ function RecordGraphic({ color, title, className }: { color: string; title: stri
   </svg>;
 }
 
-export function EDiskDiscStudio() {
-  const [source, setSource] = useState<"ai" | "spotify" | "youtube">("ai");
-  const [title, setTitle] = useState("La nostra canzone");
-  const [dedication, setDedication] = useState("Per le cose che restano.");
-  const [color, setColor] = useState("#cabee6");
+export type DiscSource = "ai" | "spotify" | "youtube";
+
+export function EDiskGiftIdeas({ onChoose }: { onChoose: (source: DiscSource) => void }) {
   const giftIdeas = [
     { id: "love", source: "youtube" as const, name: "La vostra storia. In un disco.", description: "La canzone che parla di voi, una dedica solo per chi ami. Un regalo da tenere vicino e riascoltare ogni volta che ne ha voglia.", icon: <Heart size={27} />, caption: "Per chi ami", action: "Dedica un disco" },
     { id: "friends", source: "youtube" as const, name: "Quella canzone siete voi.", description: "Un viaggio, una serata, un’amicizia. Regala a un amico il vostro ricordo più bello: anche a chilometri di distanza, basta una canzone per ritrovarsi.", icon: <Gift size={27} />, caption: "Per chi c’è sempre", action: "Regala un ricordo" },
     { id: "compose", source: "ai" as const, name: "Le tue parole. La sua canzone.", description: "Scrivi una dedica o racconta la vostra storia. Il nostro tool IA ti aiuterà a trasformarla in testo e musica, anche se non hai mai composto. Un regalo che prima non esisteva.", icon: <PenLine size={27} />, caption: "Con l’IA · in arrivo", action: "Scrivi la tua canzone" },
   ];
-  return <section id="incidi" className={styles.studio} aria-labelledby="disc-studio-title">
-    <div className={styles.heading}><h2 id="disc-studio-title">Un regalo che<br />si fa riascoltare<span>.</span></h2><p>Una canzone da dedicare. Un ricordo da tenere in mano. Scegli un brano che amate o immagina di scriverne uno tutto vostro: noi stampiamo e personalizziamo il disco che lo racconterà.</p></div>
+  return <section id="regala" className={styles.giftSection} aria-labelledby="disc-gift-title">
+    <div className={styles.heading}><h2 id="disc-gift-title">Un regalo che<br />si fa riascoltare<span>.</span></h2><p>Una canzone da dedicare. Un ricordo da tenere in mano. Scegli un brano che amate o immagina di scriverne uno tutto vostro: noi stampiamo e personalizziamo il disco che lo racconterà.</p></div>
     <div className={styles.giftIdeas}>{giftIdeas.map(idea => <article key={idea.id} data-gift={idea.id} className={styles.giftCard}>
-      <div className={styles.giftTop}>{idea.icon}<span>{idea.caption}</span></div><h3>{idea.name}</h3><p>{idea.description}</p><a href="#disk-editor" onClick={() => setSource(idea.source)}>{idea.action}<ArrowUpRight size={17} /></a>
+      <div className={styles.giftTop}>{idea.icon}<span>{idea.caption}</span></div><h3>{idea.name}</h3><p>{idea.description}</p><a href="#incidi" onClick={() => onChoose(idea.source)}>{idea.action}<ArrowUpRight size={17} /></a>
     </article>)}</div>
+  </section>;
+}
+
+export function EDiskDiscStudio({ source, onSourceChange: setSource }: { source: DiscSource; onSourceChange: (source: DiscSource) => void }) {
+  const [title, setTitle] = useState("La nostra canzone");
+  const [dedication, setDedication] = useState("Per le cose che restano.");
+  const [color, setColor] = useState("#cabee6");
+  return <section id="incidi" className={styles.studio} aria-labelledby="disc-editor-title">
     <div id="disk-editor" className={styles.personalize}>
       <div className={styles.discPreview}><span className={styles.previewStar} aria-hidden="true">✳</span><RecordGraphic color={color} title={title || "La tua musica"} /><p>{dedication || "La tua dedica, sul tuo disco."}</p><span className={styles.previewTag}>Un disco. La tua storia.</span></div>
       <form className={styles.discForm} onSubmit={event => event.preventDefault()}>
-        <h3>Dagli un nome<span>.</span></h3><p>Un titolo, una dedica, un colore. Rendilo vostro: noi lo stamperemo e lo personalizzeremo per te.</p>
+        <h2 id="disc-editor-title">Dagli un nome<span>.</span></h2><p>Un titolo, una dedica, un colore. Rendilo vostro: noi lo stamperemo e lo personalizzeremo per te.</p>
         <label htmlFor="custom-disc-title">Il titolo del tuo disco<input id="custom-disc-title" value={title} maxLength={38} onChange={event => setTitle(event.target.value)} placeholder="La nostra canzone" /></label>
         <label htmlFor="custom-disc-dedication">Una dedica<input id="custom-disc-dedication" value={dedication} maxLength={80} onChange={event => setDedication(event.target.value)} placeholder="Per chi, per cosa, per sempre…" /></label>
         <fieldset><legend>Il suo colore</legend><div className={styles.discColors}>{["#cabee6", "#ffab8a", "#b4df7b", "#f7bad5", "#83d7e4"].map((hex, index) => <button key={hex} type="button" style={{ "--disc-color": hex } as CSSProperties} aria-pressed={color === hex} aria-label={["Lilla", "Pesca", "Verde", "Rosa", "Azzurro"][index]} onClick={() => setColor(hex)}><span /></button>)}</div></fieldset>

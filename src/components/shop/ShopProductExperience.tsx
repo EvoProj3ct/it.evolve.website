@@ -7,9 +7,9 @@ import { ArrowUpRight, BookOpen, Check, Download, MoveHorizontal, Pause, Play, P
 import { ProductIllustration } from "./ProductIllustration";
 import { ProductColorPicker } from "./ProductColorPicker";
 import { CartoonNotes } from "./CartoonNotes";
-import { EDiskBundle, EDiskDiscStudio, EDiskRecordDemo } from "./EDiskRecords";
+import { EDiskBundle, EDiskDiscStudio, EDiskGiftIdeas, EDiskRecordDemo, type DiscSource } from "./EDiskRecords";
 import { RecordDemoAudio } from "./RecordDemoAudio";
-import { colorName, defaultConfiguration, KEYRING_SHAPES, PRODUCTS, SHOP_COLORS, type ProductConfiguration, type ProductId } from "./products";
+import { colorName, defaultConfiguration, KEYRING_SHAPES, PRODUCTS, productColors, type ProductConfiguration, type ProductId } from "./products";
 import styles from "./Shop.module.css";
 
 const ProductScene = dynamic(() => import("./ProductScene"), { ssr: false, loading: () => <span className={styles.sceneLoading}>L’oggetto prende forma…</span> });
@@ -25,6 +25,14 @@ const DISK_PRESETS = [
   { name: "Cherry", primary: "#660000", secondary: "#FF6666" },
   { name: "Afterhours", primary: "#171B19", secondary: "#CABEE6" },
 ];
+const LINKER_PRESETS = [
+  { name: "Studio", primary: "#E9F0ED", secondary: "#263C42" },
+  { name: "Graphite", primary: "#171B19", secondary: "#E9F0ED" },
+  { name: "Forest", primary: "#114928", secondary: "#E9F0ED" },
+  { name: "Slate", primary: "#829BA3", secondary: "#263C42" },
+  { name: "Blueprint", primary: "#202D5A", secondary: "#E9F0ED" },
+  { name: "Sand", primary: "#D7C4A0", secondary: "#795442" },
+];
 
 function configurationSummary(product: ProductId, configuration: ProductConfiguration) {
   const lines = [PRODUCTS[product].name, `${product === "e-disk" ? "Scocca" : "Base"}: ${colorName(configuration.primary)} (${configuration.primary})`, `${product === "e-disk" ? "Piano" : "Scritta e logo SVG"}: ${colorName(configuration.secondary)} (${configuration.secondary})`];
@@ -38,6 +46,8 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
   const otherProduct: ProductId = isDisk ? "e-linker" : "e-disk";
   const [configuration, setConfiguration] = useState<ProductConfiguration>(() => defaultConfiguration(product));
   const [diskOffer, setDiskOffer] = useState<"device" | "bundle">("device");
+  const [discSource, setDiscSource] = useState<DiscSource>("ai");
+  const presets = isDisk ? DISK_PRESETS : LINKER_PRESETS;
   const previewConfiguration = useDeferredValue(configuration);
   const heroConfiguration = useMemo(() => defaultConfiguration(product), [product]);
   const [heroPlaying, setHeroPlaying] = useState(true);
@@ -153,9 +163,10 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
   };
 
   const shuffleColors = () => {
-    const first = Math.floor(Math.random() * SHOP_COLORS.length);
-    const second = (first + 1 + Math.floor(Math.random() * (SHOP_COLORS.length - 1))) % SHOP_COLORS.length;
-    setConfiguration(current => ({ ...current, primary: SHOP_COLORS[first].hex, secondary: SHOP_COLORS[second].hex }));
+    const colors = productColors(product);
+    const first = Math.floor(Math.random() * colors.length);
+    const second = (first + 1 + Math.floor(Math.random() * (colors.length - 1))) % colors.length;
+    setConfiguration(current => ({ ...current, primary: colors[first].hex, secondary: colors[second].hex }));
   };
   const download = () => {
     const blob = new Blob([JSON.stringify({ version: 1, product, ...(isDisk ? { offer: diskOffer, includedRecords: diskOffer === "bundle" ? 3 : 0 } : {}), ...configuration, note: "Configurazione dimostrativa da confermare con Evolve prima della produzione." }, null, 2)], { type: "application/json" });
@@ -169,15 +180,15 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
   const colorStudies = (
     <section className={styles.colorStudies} aria-labelledby="studies-title">
       <h2 id="studies-title">Il colore è tuo<span>.</span></h2>
-      <div className={styles.studyGrid}>{(isDisk ? DISK_PRESETS : PRESETS).map((preset, index) => (
+      <div className={styles.studyGrid}>{presets.map((preset, index) => (
         <a key={preset.name} href="#configura" className={styles.studyLink} aria-label={`Personalizza ${product}: abbinamento ${preset.name}`} onClick={event => {
           event.preventDefault();
           setConfiguration(current => ({ ...current, primary: preset.primary, secondary: preset.secondary }));
           document.getElementById("configura")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
         }}>
           <figure>
-            <div className={styles.studyArtwork} data-study={index}><ProductIllustration product={product} configuration={{ ...defaultConfiguration(product), primary: preset.primary, secondary: preset.secondary, shape: index === 1 ? "circle" : index === 2 ? "triangle" : "rectangle", text: index === 0 ? "EVOLVE" : index === 1 ? "CIAO." : "WOW!" }} /></div>
-            <figcaption><span>{preset.name}</span><span className={styles.studyAction}>Prova il mix <ArrowUpRight size={15} /></span></figcaption>
+            <div className={styles.studyArtwork} data-study={index}><ProductIllustration product={product} configuration={{ ...defaultConfiguration(product), primary: preset.primary, secondary: preset.secondary }} /></div>
+            <figcaption><span className={styles.studyDetails}><span>{preset.name}</span>{!isDisk && <small><i style={swatchStyle(preset.primary)} /><i style={swatchStyle(preset.secondary)} />{colorName(preset.primary)} · {colorName(preset.secondary)}</small>}</span><span className={styles.studyAction}>{isDisk ? "Prova il mix" : "Scegli l’abbinamento"} <ArrowUpRight size={15} /></span></figcaption>
           </figure>
         </a>
       ))}</div>
@@ -216,12 +227,15 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
 
       {isDisk && <div className={styles.tickerBridge} aria-hidden="true"><div className={styles.ticker}><div>{[0, 1, 2, 3].map(index => <span key={index}>OGGETTI FISICI, IDEE DIGITALI<b>✳</b> THINK TO EVOLVE <b>✳</b> METTI UN DISCO<b>✳</b></span>)}</div></div></div>}
 
+      {isDisk && <EDiskGiftIdeas onChoose={setDiscSource} />}
+
       {!isDisk && <section id="scopri" className={styles.story} aria-labelledby="story-title">
         <div className={styles.storyHeading}><h2 id="story-title">{info.punchline}<span>.</span></h2><p>Un nome che ti rappresenta. Un logo che riconosci al volo. Un colore che si fa notare. e-linker parte dalle forme più semplici e le trasforma in qualcosa che è soltanto tuo.</p></div>
         <div className={styles.steps}>{info.steps.map((step, index) => <article key={step.title} className={styles.step}><span className={styles.stepNumber}>0{index + 1}</span><div className={styles.stepGraphic} aria-hidden="true"><span className={styles.shapeGraphic}>{index === 0 ? "△ ○" : index === 1 ? "Aa" : "✳"}</span></div><h3>{step.title}</h3><p>{step.description}</p></article>)}</div>
       </section>}
 
-      {isDisk && <>{colorStudies}<EDiskRecordDemo /><EDiskDiscStudio /><EDiskBundle onChoose={() => { setDiskOffer("bundle"); document.getElementById("offerta-edisk")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }} /></>}
+      {colorStudies}
+      {isDisk && <><EDiskDiscStudio source={discSource} onSourceChange={setDiscSource} /><EDiskRecordDemo /><EDiskBundle onChoose={() => { setDiskOffer("bundle"); document.getElementById("offerta-edisk")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }} /></>}
 
       <section id="configura" className={styles.configurator} aria-labelledby="config-title">
         <div className={styles.configHeading}><h2 id="config-title">Unico.<br />Come te<span>.</span></h2><p>{isDisk ? "Due colori. Trenta possibilità per ognuno. Trova la combinazione che vorresti sul tuo tavolo." : "Parti da una forma, aggiungi la tua scritta e trova il tuo abbinamento. Il prossimo portachiavi lo disegni tu."}</p></div>
@@ -246,7 +260,7 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
             </>}
             <fieldset className={styles.controlGroup}><legend>Trova i tuoi colori</legend>
               <ProductColorPicker product={product} value={configuration} onChange={(channel, hex) => setConfiguration(current => ({ ...current, [channel]: hex }))} onSwap={() => setConfiguration(current => ({ ...current, primary: current.secondary, secondary: current.primary }))} onShuffle={shuffleColors} />
-              <div className={styles.presets}><span>Abbinamenti</span><div>{(isDisk ? DISK_PRESETS : PRESETS).map(preset => <button type="button" key={preset.name} aria-pressed={configuration.primary === preset.primary && configuration.secondary === preset.secondary} onClick={() => setConfiguration(current => ({ ...current, primary: preset.primary, secondary: preset.secondary }))}><i style={swatchStyle(preset.primary)} /><i style={swatchStyle(preset.secondary)} />{preset.name}</button>)}</div></div>
+              <div className={styles.presets}><span>Abbinamenti</span><div>{presets.map(preset => <button type="button" key={preset.name} aria-pressed={configuration.primary === preset.primary && configuration.secondary === preset.secondary} onClick={() => setConfiguration(current => ({ ...current, primary: preset.primary, secondary: preset.secondary }))}><i style={swatchStyle(preset.primary)} /><i style={swatchStyle(preset.secondary)} />{preset.name}</button>)}</div></div>
             </fieldset>
             {sceneError && <p className={styles.error} role="status">{sceneError}</p>}
             <div className={styles.configurationSummary} aria-live="polite" aria-atomic="true"><span>IL TUO {product.toUpperCase()}</span><p>{colorName(configuration.primary)} <b>+</b> {colorName(configuration.secondary)}{!isDisk && <> · {KEYRING_SHAPES.find(shape => shape.id === configuration.shape)?.name}{configuration.text && <> · “{configuration.text}”</>}</>}</p></div>
@@ -257,8 +271,6 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
           </div>
         </div>
       </section>
-
-      {!isDisk && colorStudies}
 
       <section className={styles.resources} aria-labelledby="resources-title"><div className={styles.resourceCopy}><h2 id="resources-title">L’oggetto è solo<br />l’inizio<span>.</span></h2><p>{isDisk ? "Dietro ogni disco c’è la tua collezione. Apri l’app, organizza i brani e scopri come dare vita al tuo e-disk." : "Hai in mente qualcosa di preciso? Parti dalla guida: forme, testi e loghi spiegati senza giri di parole."}</p></div><div className={styles.resourceLinks}>{isDisk && <Link href="/shop/e-disk/app"><Smartphone size={26} /><div><span>La tua collezione, online</span><h3>App e-disk</h3><p>Dischi, brani e giradischi. Tutto in un posto.</p></div><ArrowUpRight size={25} /></Link>}<Link href={`/shop/${product}/documentazione`}><BookOpen size={26} /><div><span>Da dove si comincia?</span><h3>Dentro {product}</h3><p>{isDisk ? "Primi passi, NFC e collegamenti." : "Forme, file del logo e personalizzazione."}</p></div><ArrowUpRight size={25} /></Link></div></section>
 

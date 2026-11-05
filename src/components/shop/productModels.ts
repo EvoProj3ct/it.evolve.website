@@ -8,7 +8,7 @@ import type { KeyringShape, ProductConfiguration } from "./products";
 export type RecordAppearance = { title: string; color: string };
 export type ProductModel = { group: THREE.Group; record?: THREE.Group; setRecordAppearance?: (appearance?: RecordAppearance) => void };
 
-function add(parent: THREE.Object3D, geometry: THREE.BufferGeometry, material: THREE.Material, x = 0, y = 0, z = 0) {
+function add(parent: THREE.Object3D, geometry: THREE.BufferGeometry, material: THREE.Material | THREE.Material[], x = 0, y = 0, z = 0) {
   const mesh = new THREE.Mesh(geometry, material);
   mesh.position.set(x, y, z);
   mesh.castShadow = true;
@@ -114,13 +114,14 @@ function keyringOutline(kind: KeyringShape) {
     shape.lineTo(-1.65, -1.38);
     shape.quadraticCurveTo(-1.91, -1.38, -1.78, -1.16);
     shape.closePath();
-  } else shape = roundedRectangle(kind === "square" ? 3.2 : 4.15, kind === "square" ? 3.2 : 2.6, .36);
-  const topY = kind === "triangle" ? 1.815 : kind === "circle" ? 1.8 : kind === "square" ? 1.6 : 1.3;
+  } else shape = roundedRectangle(kind === "square" ? 3.2 : 3.8, kind === "square" ? 3.2 : 2.65, .4);
+  const topY = kind === "triangle" ? 1.815 : kind === "circle" ? 1.8 : kind === "square" ? 1.6 : 1.325;
   const holeY = kind === "triangle" ? 1.15 : topY - .34;
+  const holeX = kind === "rectangle" ? 1.45 : kind === "square" ? 1.15 : 0;
   const hole = new THREE.Path();
-  hole.absarc(0, holeY, .16, 0, Math.PI * 2, true);
+  hole.absarc(holeX, holeY, .16, 0, Math.PI * 2, true);
   shape.holes.push(hole);
-  return { shape, holeY, topY };
+  return { shape, holeX, holeY, topY };
 }
 
 function fitXY(object: THREE.Object3D, width: number, height: number, y: number, flipY = false) {
@@ -131,7 +132,7 @@ function fitXY(object: THREE.Object3D, width: number, height: number, y: number,
   object.scale.set(scale, flipY ? -scale : scale, 1);
   object.position.x = -center.x * scale;
   object.position.y = y - center.y * (flipY ? -scale : scale);
-  object.position.z = .217;
+  object.position.z = .152;
 }
 
 export function createKeyring(configuration: ProductConfiguration, font: Font | null, primary: THREE.MeshStandardMaterial, secondary: THREE.MeshStandardMaterial, onError: (message: string) => void): ProductModel {
@@ -141,12 +142,14 @@ export function createKeyring(configuration: ProductConfiguration, font: Font | 
   body.rotation.z = -.18;
   body.position.y = -.23;
   group.add(body);
-  const { shape, holeY, topY } = keyringOutline(configuration.shape);
-  add(body, new THREE.ExtrudeGeometry(shape, { depth: .18, bevelEnabled: true, bevelSegments: 5, steps: 1, bevelSize: .035, bevelThickness: .035, curveSegments: 40 }), primary);
+  const { shape, holeX, holeY, topY } = keyringOutline(configuration.shape);
+  const edge = new THREE.MeshStandardMaterial({ color: "#829ba3", roughness: .48, metalness: .06 });
+  // Il bordo neutro riprende il piccolo marchio: la superficie rimane del colore scelto.
+  add(body, new THREE.ExtrudeGeometry(shape, { depth: .13, bevelEnabled: true, bevelSegments: 5, steps: 1, bevelSize: .02, bevelThickness: .02, curveSegments: 40 }), [primary, edge]);
   const chainMetal = new THREE.MeshStandardMaterial({ color: "#b6bfbb", metalness: .92, roughness: .26 });
   const ovalLink = (centerY: number, halfLength: number, halfWidth: number, vertical: boolean, wire: number) => {
     const points = new THREE.EllipseCurve(0, 0, halfWidth, halfLength, 0, Math.PI * 2, false, 0).getPoints(64).slice(0, -1);
-    const path = new THREE.CatmullRomCurve3(points.map(point => new THREE.Vector3(vertical ? 0 : point.x, centerY + point.y, .09 + (vertical ? point.x : 0))), true);
+    const path = new THREE.CatmullRomCurve3(points.map(point => new THREE.Vector3(holeX + (vertical ? 0 : point.x), centerY + point.y, .065 + (vertical ? point.x : 0))), true);
     return add(body, new THREE.TubeGeometry(path, 96, wire, 10, true), chainMetal);
   };
   // Il raccordo attraversa il foro e scavalca il bordo, sopra e sotto la base.
@@ -160,17 +163,34 @@ export function createKeyring(configuration: ProductConfiguration, font: Font | 
   // Due spire ravvicinate, unite alle estremità: il classico anello apribile.
   const splitRingPoints = Array.from({ length: 193 }, (_, index) => {
     const angle = index / 192 * Math.PI * 4;
-    return new THREE.Vector3(Math.cos(angle) * .36, ringY + Math.sin(angle) * .36, .065 + index / 192 * .055);
+    return new THREE.Vector3(holeX + Math.cos(angle) * .36, ringY + Math.sin(angle) * .36, .04 + index / 192 * .055);
   });
   add(body, new THREE.TubeGeometry(new THREE.CatmullRomCurve3(splitRingPoints), 192, .023, 10, false), chainMetal);
-  const maxWidth = configuration.shape === "triangle" ? 1.9 : configuration.shape === "rectangle" ? 3.1 : 2.35;
-  const centerY = configuration.shape === "triangle" ? -.45 : -.15;
+  const maxWidth = configuration.shape === "triangle" ? 1.7 : configuration.shape === "rectangle" ? 2.2 : 2.1;
+  const centerY = configuration.shape === "triangle" ? -.45 : 0;
   if (configuration.text.trim() && font) {
     const safeText = [...configuration.text].filter(character => font.data.glyphs[character]).join("");
-    const text = new THREE.Mesh(new TextGeometry(safeText, { font, size: 1, depth: .045, curveSegments: 10, bevelEnabled: true, bevelThickness: .006, bevelSize: .006, bevelSegments: 3 }), secondary);
-    fitXY(text, maxWidth, configuration.logo ? .34 : .58, centerY - (configuration.logo ? .58 : 0));
-    text.castShadow = true;
-    body.add(text);
+    const text = new THREE.Group();
+    let cursor = 0;
+    for (const character of safeText) {
+      const glyph = font.data.glyphs[character];
+      if (glyph.o?.trim()) {
+        const material = safeText === "e-linker." && character === "." ? new THREE.MeshStandardMaterial({ color: "#72c94f", roughness: .45 }) : secondary;
+        const letter = add(text, new TextGeometry(character, { font, size: 1, depth: .018, curveSegments: 12, bevelEnabled: true, bevelThickness: .002, bevelSize: .002, bevelSegments: 2 }), material, cursor);
+        letter.castShadow = false;
+      }
+      cursor += glyph.ha / font.data.resolution + .015;
+    }
+    if (text.children.length) {
+      fitXY(text, maxWidth, configuration.logo ? .25 : .34, centerY - (configuration.logo ? .65 : 0));
+      body.add(text);
+    }
+  }
+  if (configuration.shape === "rectangle") {
+    const accent = new THREE.MeshStandardMaterial({ color: "#72c94f", roughness: .45 });
+    add(body, new THREE.BoxGeometry(.22, .025, .006), accent, -1.42, -.95, .154).castShadow = false;
+    add(body, new THREE.BoxGeometry(.07, .025, .006), accent, -1.23, -.95, .154).castShadow = false;
+    add(body, new THREE.CircleGeometry(.025, 16), edge, 1.45, -.95, .154).castShadow = false;
   }
   const logo = configuration.logo;
   if (logo?.kind === "svg") {
@@ -180,7 +200,7 @@ export function createKeyring(configuration: ProductConfiguration, font: Font | 
       for (const path of parsed.paths) {
         const pathStyle = path.userData.style as { fill?: string } | undefined;
         if (pathStyle?.fill === "none") continue;
-        for (const outline of SVGLoader.createShapes(path)) add(mark, new THREE.ExtrudeGeometry(outline, { depth: .045, bevelEnabled: false, curveSegments: 12 }), secondary);
+        for (const outline of SVGLoader.createShapes(path)) add(mark, new THREE.ExtrudeGeometry(outline, { depth: .018, bevelEnabled: false, curveSegments: 12 }), secondary);
       }
       if (!mark.children.length) throw new Error("empty logo");
       fitXY(mark, maxWidth * .8, configuration.text.trim() ? .85 : 1.3, centerY + (configuration.text.trim() ? .25 : 0), true);
@@ -190,7 +210,7 @@ export function createKeyring(configuration: ProductConfiguration, font: Font | 
     }
   } else if (logo?.kind === "image") {
     const logoMaterial = new THREE.MeshBasicMaterial({ transparent: true, side: THREE.DoubleSide });
-    const logoMesh = add(body, new THREE.PlaneGeometry(1, 1), logoMaterial, 0, centerY + (configuration.text.trim() ? .25 : 0), .22);
+    const logoMesh = add(body, new THREE.PlaneGeometry(1, 1), logoMaterial, 0, centerY + (configuration.text.trim() ? .25 : 0), .154);
     const texture = new THREE.TextureLoader().load(logo.data, loaded => {
       if (group.userData.disposed) { loaded.dispose(); return; }
       const image = loaded.image as HTMLImageElement;
