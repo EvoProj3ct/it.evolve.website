@@ -5,18 +5,18 @@ import styles from "./Shop.module.css";
 
 const SECTIONS = {
   "e-disk": [
-    { id: "inizia", title: "01 / Il disco incontra il digitale" },
-    { id: "collezione", title: "02 / La tua collezione" },
-    { id: "collegamento", title: "03 / Collegare e-disk" },
-    { id: "nfc", title: "04 / Associare un disco NFC" },
-    { id: "audio", title: "05 / Dove ascolti la musica" },
+    { id: "inizia", title: "Il disco incontra il digitale" },
+    { id: "collezione", title: "La tua collezione" },
+    { id: "collegamento", title: "Collegare e-disk" },
+    { id: "nfc", title: "Associare un disco NFC" },
+    { id: "audio", title: "Dove ascolti la musica" },
   ],
   "e-linker": [
-    { id: "inizia", title: "01 / Parti da una forma" },
-    { id: "testo", title: "02 / Una scritta in rilievo" },
-    { id: "logo", title: "03 / Prepara il tuo logo" },
-    { id: "colori", title: "04 / Due colori, il tuo stile" },
-    { id: "richiesta", title: "05 / Dall’idea all’oggetto" },
+    { id: "inizia", title: "Parti da una forma" },
+    { id: "testo", title: "Una scritta in rilievo" },
+    { id: "logo", title: "Prepara il tuo logo" },
+    { id: "colori", title: "Due colori, il tuo stile" },
+    { id: "richiesta", title: "Dall’idea all’oggetto" },
   ],
 };
 
@@ -24,7 +24,6 @@ export function ProductDocumentation({ product }: { product: ProductId }) {
   const isDisk = product === "e-disk";
   return (
     <main id="shop-content" className={styles.docs}>
-      <p className={styles.eyebrow}>Evolve objects / {product} / Guide</p>
       <h1>Dentro {product}<span>.</span></h1>
       <p className={styles.docsLead}>{isDisk ? "L’oggetto, l’app e i tuoi dischi. Tutto quello che serve per capire come si incontrano." : "Dalla prima forma al tuo logo. Qualche indicazione per dare carattere al tuo portachiavi."}</p>
       <div className={styles.docsGrid}>
@@ -37,7 +36,7 @@ export function ProductDocumentation({ product }: { product: ProductId }) {
             <section id="nfc"><h2>Un codice per ogni disco NFC.</h2><p>Associa il brano al codice della collezione, poi usa la scrittura NFC nell’app per richiedere al giradischi di scrivere quel codice sul tag. Durante la scrittura, segui i messaggi nel pannello e presenta il tag al lettore quando richiesto.</p><p>La scrittura è conclusa soltanto quando il dispositivo conferma lo stesso codice richiesto. Attesa, errore, annullamento o perdita del collegamento non equivalgono a una scrittura completata.</p><p>Il formato del tag è gestito dal firmware del giradischi. L’app associa al tag un codice numerico; titolo e collegamento del brano rimangono nella collezione del browser.</p></section>
             <section id="audio"><h2>La musica segue il tuo dispositivo.</h2><p>Puoi ascoltare dal telefono o dal computer, oppure usare cuffie o una cassa collegata al sistema. Il collegamento BLE al giradischi serve per i tag e i comandi; l’audio passa dall’uscita multimediale del tuo dispositivo.</p><p>Per una cassa Bluetooth, abbinala dalle impostazioni del telefono o del computer e selezionala come uscita audio. Le possibilità di selezione direttamente nella pagina dipendono dal browser.</p><p className={styles.docsNote}>Il modello dello shop è un’anteprima dimostrativa del prodotto. Colori, finiture, dimensioni e disponibilità vengono confermati con Evolve.</p></section>
           </> : <>
-            <section id="inizia"><h2>Quattro forme. Un punto di partenza.</h2><p>Rettangolo, quadrato, cerchio o triangolo: scegli la forma della base in PLA dal configuratore. L’anteprima include un foro e un anello per aiutarti a immaginare il portachiavi completo.</p><p>Puoi ruotare il modello trascinando in orizzontale. Da tastiera, le frecce sinistra e destra ruotano l’oggetto; il tasto Home o il pulsante di ripristino riportano alla vista iniziale.</p></section>
+            <section id="inizia"><h2>Quattro forme. Un punto di partenza.</h2><p>Rettangolo, quadrato, cerchio o triangolo: scegli la forma della base in PLA dal configuratore. L’anteprima include un foro e un anello per aiutarti a immaginare il portachiavi completo.</p><p>Trascina il modello in qualsiasi direzione per osservarlo sopra, sotto e di lato. Da tastiera, le quattro frecce lo ruotano e Q ed E lo inclinano. Il tasto Home o il pulsante di ripristino riportano alla vista iniziale.</p></section>
             <section id="testo"><h2>Lascia un segno, in rilievo.</h2><p>Inserisci una scritta fino a 18 caratteri: il modello ne mostra una prima estrusione sulla base. Il testo si adatta allo spazio disponibile nella forma scelta.</p><p>Nomi brevi e lettere ben distinte sono più leggibili su un piccolo oggetto. Puoi lasciare il campo vuoto per usare soltanto il logo, oppure combinare entrambi.</p><p>La dimensione minima delle lettere e gli spessori effettivamente stampabili vengono verificati prima della produzione.</p></section>
             <section id="logo"><h2>Il tuo logo, preparato bene.</h2><ul><li><strong>SVG:</strong> usa tracciati pieni e converti eventuali testi in tracciati. Il configuratore mostra le forme vettoriali in rilievo, nel colore scelto per la scritta.</li><li><strong>PNG:</strong> un’immagine con sfondo trasparente è adatta a vedere come si dispone il logo sulla base.</li><li><strong>JPG:</strong> viene mostrato con il proprio sfondo. Scegli un’immagine con un taglio vicino al logo.</li></ul><p>I file devono essere al massimo di 2 MB; per le immagini, fino a 4096 × 4096 pixel. Se un SVG contiene molti dettagli o risorse esterne, esportane una versione semplificata e autonoma.</p><p>PNG e JPG vengono mostrati sulla superficie: non sono trasformati automaticamente in rilievi stampabili. Il logo viene letto nel browser e non caricato su un server da questo configuratore.</p></section>
             <section id="colori"><h2>Base e dettagli, separatamente.</h2><p>Apri la palette dalla riga “Base” oppure “Rilievo”, poi scegli una delle 30 tonalità dimostrative. I due comandi sotto le righe permettono di scambiare i colori o scegliere un abbinamento casuale; puoi anche partire da uno dei mix suggeriti.</p><p>Le immagini PNG e JPG conservano i propri colori. Il colore del rilievo si applica al testo e ai tracciati dei loghi SVG.</p><p>I colori sullo schermo sono indicativi: resa del materiale, finitura e filamenti disponibili vengono concordati con Evolve.</p></section>

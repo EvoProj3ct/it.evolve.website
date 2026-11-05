@@ -29,7 +29,7 @@ function labelTexture(text: string, background: string, color: string, square = 
     context.font = "bold 70px Arial, sans-serif";
     context.fillText(text, 256, square ? 245 : 135);
     context.font = "20px monospace";
-    context.fillText("EVOLVE / OBJECTS", 256, square ? 315 : 185);
+    context.fillText("EVOLVE", 256, square ? 315 : 185);
   }
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;

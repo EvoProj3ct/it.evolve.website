@@ -28,7 +28,7 @@ export default function ProductScene({ product, configuration, presentation = fa
   const hostRef = useRef<HTMLDivElement>(null);
   const stateRef = useRef({ configuration, playing, onError });
   stateRef.current = { configuration, playing, onError };
-  const controllerRef = useRef<{ update: (config: ProductConfiguration) => void; reset: () => void; rotate: (delta: number) => void } | null>(null);
+  const controllerRef = useRef<{ update: (config: ProductConfiguration) => void; reset: () => void; rotate: (yaw: number, pitch?: number, roll?: number) => void } | null>(null);
   const [ready, setReady] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
 
@@ -51,6 +51,13 @@ export default function ProductScene({ product, configuration, presentation = fa
     const camera = new THREE.PerspectiveCamera(34, 1, .1, 60);
     camera.position.set(product === "e-disk" ? 7 : 3, 8, 9);
     camera.lookAt(0, .1, 0);
+    const freeRotation = product === "e-linker" && !presentation;
+    const initialOrientation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -.2);
+    const targetOrientation = initialOrientation.clone();
+    const cameraOrientation = camera.quaternion.clone();
+    const inverseCameraOrientation = cameraOrientation.clone().invert();
+    const rotationStep = new THREE.Quaternion();
+    const localDelta = new THREE.Quaternion();
     const pmrem = new THREE.PMREMGenerator(renderer);
     const room = new RoomEnvironment();
     const environment = pmrem.fromScene(room, .04);
@@ -85,10 +92,10 @@ export default function ProductScene({ product, configuration, presentation = fa
       const changed = !lastConfiguration || config.shape !== lastConfiguration.shape || config.text !== lastConfiguration.text || config.logo !== lastConfiguration.logo;
       if (!model || (product === "e-linker" && (changed || force))) {
         stateRef.current.onError?.("");
-        const currentYaw = model?.group.rotation.y ?? -.2;
+        const currentOrientation = model?.group.quaternion.clone() ?? initialOrientation.clone();
         if (model) { scene.remove(model.group); disposeModel(model.group, [primary, secondary]); }
         model = product === "e-disk" ? createTurntable(primary, secondary) : createKeyring(config, font, primary, secondary, message => stateRef.current.onError?.(message));
-        model.group.rotation.y = currentYaw;
+        model.group.quaternion.copy(currentOrientation);
         scene.add(model.group);
       }
       lastConfiguration = config;
@@ -104,6 +111,7 @@ export default function ProductScene({ product, configuration, presentation = fa
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = product === "e-disk" ? -.6 : -.37;
     floor.receiveShadow = true;
+    floor.visible = !freeRotation;
     scene.add(floor);
     const resize = () => {
       const { width, height } = host.getBoundingClientRect();
@@ -121,16 +129,26 @@ export default function ProductScene({ product, configuration, presentation = fa
     visibility.observe(host);
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     let targetYaw = -.2;
-    let drag: { id: number; x: number; y: number; yaw: number; started: boolean } | null = null;
+    let manualUntil = 0;
+    let drag: { id: number; x: number; y: number; yaw: number; started: boolean; vector: THREE.Vector3; orientation: THREE.Quaternion } | null = null;
+    const trackballPoint = (x: number, y: number) => {
+      const bounds = host.getBoundingClientRect();
+      const radius = Math.max(1, Math.min(bounds.width, bounds.height) / 2);
+      const point = new THREE.Vector3((x - bounds.left - bounds.width / 2) / radius, (bounds.top + bounds.height / 2 - y) / radius, 0);
+      const distance = point.x * point.x + point.y * point.y;
+      point.z = distance <= .5 ? Math.sqrt(1 - distance) : .5 / Math.sqrt(distance);
+      return point.normalize();
+    };
     const endDrag = () => {
       const id = drag?.id;
       drag = null;
+      manualUntil = performance.now() + 3000;
       delete host.dataset.dragging;
       if (id !== undefined && host.hasPointerCapture(id)) host.releasePointerCapture(id);
     };
     const pointerDown = (event: PointerEvent) => {
-      if (presentation || !event.isPrimary || event.button !== 0) return;
-      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, yaw: targetYaw, started: false };
+      if (presentation || !event.isPrimary || event.button !== 0 || drag) return;
+      drag = { id: event.pointerId, x: event.clientX, y: event.clientY, yaw: targetYaw, started: false, vector: trackballPoint(event.clientX, event.clientY), orientation: targetOrientation.clone() };
       if (event.pointerType === "mouse") host.focus({ preventScroll: true });
     };
     const pointerMove = (event: PointerEvent) => {
@@ -138,12 +156,16 @@ export default function ProductScene({ product, configuration, presentation = fa
       const dx = event.clientX - drag.x, dy = event.clientY - drag.y;
       if (!drag.started) {
         if (Math.max(Math.abs(dx), Math.abs(dy)) < 6) return;
-        if (Math.abs(dy) > Math.abs(dx)) { endDrag(); return; }
+        if (!freeRotation && Math.abs(dy) > Math.abs(dx)) { endDrag(); return; }
         drag.started = true;
         host.setPointerCapture(event.pointerId);
         host.dataset.dragging = "true";
       }
-      targetYaw = drag.yaw + dx * Math.PI * 2 / Math.max(360, host.clientWidth);
+      if (freeRotation) {
+        localDelta.setFromUnitVectors(drag.vector, trackballPoint(event.clientX, event.clientY));
+        rotationStep.copy(cameraOrientation).multiply(localDelta).multiply(inverseCameraOrientation);
+        targetOrientation.copy(rotationStep).multiply(drag.orientation).normalize();
+      } else targetYaw = drag.yaw + dx * Math.PI * 2 / Math.max(360, host.clientWidth);
     };
     const pointerEnd = (event: PointerEvent) => { if (event.pointerId === drag?.id) endDrag(); };
     host.addEventListener("pointerdown", pointerDown);
@@ -152,7 +174,19 @@ export default function ProductScene({ product, configuration, presentation = fa
     host.addEventListener("pointercancel", pointerEnd);
     host.addEventListener("lostpointercapture", pointerEnd);
     window.addEventListener("blur", endDrag);
-    controllerRef.current = { update, reset: () => { targetYaw = -.2; }, rotate: delta => { targetYaw += delta; } };
+    controllerRef.current = {
+      update,
+      reset: () => { endDrag(); targetYaw = -.2; targetOrientation.copy(initialOrientation); },
+      rotate: (yaw, pitch = 0, roll = 0) => {
+        manualUntil = performance.now() + 3000;
+        if (!freeRotation) { targetYaw += yaw; return; }
+        for (const [axis, angle] of [[new THREE.Vector3(0, 1, 0), yaw], [new THREE.Vector3(1, 0, 0), pitch], [new THREE.Vector3(0, 0, 1), roll]] as const) {
+          if (!angle) continue;
+          rotationStep.setFromAxisAngle(axis.applyQuaternion(cameraOrientation), angle);
+          targetOrientation.premultiply(rotationStep).normalize();
+        }
+      },
+    };
     let frame = 0, previous = 0, elapsed = 0;
     const tick = (now: number) => {
       frame = window.requestAnimationFrame(tick);
@@ -165,8 +199,13 @@ export default function ProductScene({ product, configuration, presentation = fa
       const animate = stateRef.current.playing && !motion.matches;
       if (animate) elapsed += dt;
       if (model) {
-        const yaw = presentation ? product === "e-disk" ? -.2 : -.2 + Math.sin(elapsed * .25) * .12 : targetYaw;
-        model.group.rotation.y += (yaw - model.group.rotation.y) * (motion.matches ? 1 : Math.min(1, dt * 12));
+        const rotationBlend = motion.matches ? 1 : 1 - Math.exp(-dt * 14);
+        if (freeRotation) model.group.quaternion.slerp(targetOrientation, rotationBlend);
+        else {
+          if (!presentation && product === "e-disk" && animate && !drag && now > manualUntil) targetYaw += dt * .16;
+          const yaw = presentation ? product === "e-disk" ? -.2 : -.2 + Math.sin(elapsed * .25) * .12 : targetYaw;
+          model.group.rotation.y += (yaw - model.group.rotation.y) * rotationBlend;
+        }
         if (product === "e-linker" && presentation) model.group.position.y = .32 + Math.sin(elapsed * .7) * .09;
         if (model.record && animate) model.record.rotation.y -= dt * .8;
       }
@@ -194,15 +233,19 @@ export default function ProductScene({ product, configuration, presentation = fa
   }, [product, presentation]);
 
   useEffect(() => { controllerRef.current?.update(configuration); }, [configuration]);
-  useEffect(() => { controllerRef.current?.reset(); }, [reset]);
+  useEffect(() => { if (reset > 0) controllerRef.current?.reset(); }, [reset]);
   const keyboard = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (presentation || !["ArrowLeft", "ArrowRight", "Home"].includes(event.key)) return;
+    const freeRotation = product === "e-linker";
+    const keys = freeRotation ? ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "q", "Q", "e", "E"] : ["ArrowLeft", "ArrowRight", "Home"];
+    if (presentation || event.ctrlKey || event.metaKey || event.altKey || !keys.includes(event.key)) return;
     event.preventDefault();
     if (event.key === "Home") controllerRef.current?.reset();
-    else controllerRef.current?.rotate((event.key === "ArrowRight" ? 1 : -1) * Math.PI / 12);
+    else if (event.key === "ArrowLeft" || event.key === "ArrowRight") controllerRef.current?.rotate((event.key === "ArrowRight" ? 1 : -1) * Math.PI / 12);
+    else if (event.key === "ArrowUp" || event.key === "ArrowDown") controllerRef.current?.rotate(0, (event.key === "ArrowDown" ? 1 : -1) * Math.PI / 12);
+    else controllerRef.current?.rotate(0, 0, (event.key.toLowerCase() === "e" ? -1 : 1) * Math.PI / 12);
   };
   return <div className={styles.sceneWrap} data-ready={ready && !unavailable}>
-    <div ref={hostRef} className={styles.scene} role={presentation ? "img" : "group"} tabIndex={presentation || unavailable ? undefined : 0} aria-label={presentation ? `Presentazione animata di ${product}` : `Anteprima ${product}. Trascina in orizzontale o usa le frecce della tastiera per ruotare; Home ripristina la vista.`} onKeyDown={keyboard} />
+    <div ref={hostRef} className={styles.scene} data-rotation={product === "e-linker" && !presentation ? "free" : "horizontal"} role={presentation ? "img" : "group"} tabIndex={presentation || unavailable ? undefined : 0} aria-label={presentation ? `Presentazione animata di ${product}` : product === "e-linker" ? "Anteprima e-linker. Trascina in ogni direzione o usa le quattro frecce per ruotare. Q ed E inclinano il modello; Home ripristina la vista." : "Anteprima e-disk. Trascina in orizzontale o usa le frecce sinistra e destra per ruotare; Home ripristina la vista."} onKeyDown={keyboard} />
     {(!ready || unavailable) && <div className={styles.sceneFallback}><ProductIllustration product={product} configuration={configuration} /></div>}
     {unavailable && <span className={styles.webglNotice}>Vista illustrata · 3D non disponibile su questo dispositivo</span>}
   </div>;
