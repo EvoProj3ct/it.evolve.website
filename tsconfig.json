@@ -30,5 +30,9 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "smart.chiedilo-ia-main"]
+  "exclude": [
+    "node_modules",
+    "smart.chiedilo-ia-main",
+    "docs/ecommerce-handoff-sito-2026-11-05"
+  ]
 }
