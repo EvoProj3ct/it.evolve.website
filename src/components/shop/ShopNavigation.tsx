@@ -66,7 +66,10 @@ export function ProductNavigation({ product }: { product: ProductId }) {
   ];
   return (
     <div className={styles.productHeader}>
-      <Link href={root} className={styles.productIdentity} onClick={() => setSection("scopri")}>{product}<span className={styles.identityDot}>.</span></Link>
+      <Link href={root} className={styles.productIdentity} onClick={() => setSection("scopri")}>
+        <Image src={`/shop/brand/${product}.svg`} alt="" width={56} height={42} className={styles.productMark} />
+        <span>{product}<span className={styles.identityDot}>.</span></span>
+      </Link>
       <LayoutGroup id={`shop-${product}-sections`}><nav aria-label={`Esplora ${product}`} className={styles.sectionLinks} onPointerLeave={() => setHovered(null)}>
         {tabs.map(tab => <Link key={tab.id} href={tab.href} aria-current={selected === tab.id ? "page" : undefined} onClick={() => setSection(tab.id)} onPointerEnter={event => { if (event.pointerType === "mouse") setHovered(tab.id); }} onFocus={() => setHovered(tab.id)} onBlur={() => setHovered(null)}>
           {highlighted === tab.id && <NavShadow id="section-shadow" reduced={reduced} />}

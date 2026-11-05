@@ -3,11 +3,12 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
-import { ArrowUpRight, BookOpen, Check, Disc3, Download, MoveHorizontal, Nfc, Pause, Play, Plus, RotateCcw, ShoppingCart, Smartphone, Upload, X } from "lucide-react";
+import { ArrowUpRight, BookOpen, Check, Download, MoveHorizontal, Pause, Play, Plus, RotateCcw, ShoppingCart, Smartphone, Upload, Volume2, VolumeX, X } from "lucide-react";
 import { ProductIllustration } from "./ProductIllustration";
 import { ProductColorPicker } from "./ProductColorPicker";
 import { CartoonNotes } from "./CartoonNotes";
 import { EDiskBundle, EDiskDiscStudio, EDiskRecordDemo } from "./EDiskRecords";
+import { RecordDemoAudio } from "./RecordDemoAudio";
 import { colorName, defaultConfiguration, KEYRING_SHAPES, PRODUCTS, SHOP_COLORS, type ProductConfiguration, type ProductId } from "./products";
 import styles from "./Shop.module.css";
 
@@ -17,6 +18,12 @@ const PRESETS = [
   { name: "Evolve", primary: "#72C94F", secondary: "#114928" },
   { name: "Pop", primary: "#8651FF", secondary: "#C1FF00" },
   { name: "Sunset", primary: "#FF7638", secondary: "#F7BAD5" },
+];
+const DISK_PRESETS = [
+  ...PRESETS,
+  { name: "Lagoon", primary: "#3154F4", secondary: "#77C8FF" },
+  { name: "Cherry", primary: "#660000", secondary: "#FF6666" },
+  { name: "Afterhours", primary: "#171B19", secondary: "#CABEE6" },
 ];
 
 function configurationSummary(product: ProductId, configuration: ProductConfiguration) {
@@ -34,6 +41,9 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
   const previewConfiguration = useDeferredValue(configuration);
   const heroConfiguration = useMemo(() => defaultConfiguration(product), [product]);
   const [heroPlaying, setHeroPlaying] = useState(true);
+  const [heroSoundOn, setHeroSoundOn] = useState(false);
+  const [heroSoundPending, setHeroSoundPending] = useState(false);
+  const [heroSoundError, setHeroSoundError] = useState("");
   const [recordPlaying, setRecordPlaying] = useState(true);
   const [viewReset, setViewReset] = useState(0);
   const [sceneError, setSceneError] = useState("");
@@ -42,6 +52,9 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
   const uploadSequence = useRef(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
+  const heroAudio = useRef<RecordDemoAudio | null>(null);
+  const heroAudioSequence = useRef(0);
 
   useEffect(() => () => { uploadSequence.current++; }, []);
   useEffect(() => {
@@ -57,6 +70,47 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
     if (heroPlaying) void video.play().catch(() => setHeroPlaying(false));
     else video.pause();
   }, [heroPlaying]);
+  useEffect(() => {
+    if (!isDisk) return;
+    const stop = () => {
+      heroAudioSequence.current++;
+      heroAudio.current?.stop(); setHeroSoundOn(false); setHeroSoundPending(false);
+    };
+    const observer = new IntersectionObserver(([entry]) => { if (!entry.isIntersecting) stop(); }, { threshold: .02 });
+    if (heroRef.current) observer.observe(heroRef.current);
+    const onVisibilityChange = () => { if (document.hidden) stop(); };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => { heroAudioSequence.current++; heroAudio.current?.stop(); observer.disconnect(); document.removeEventListener("visibilitychange", onVisibilityChange); };
+  }, [isDisk]);
+  useEffect(() => {
+    if (!heroSoundOn) return;
+    const token = heroAudioSequence.current;
+    const playback = heroPlaying ? heroAudio.current?.resume() : heroAudio.current?.pause();
+    void playback?.catch(() => {
+      if (token !== heroAudioSequence.current) return;
+      heroAudio.current?.stop(); setHeroSoundOn(false); setHeroSoundError("Non riesco a riprodurre l’audio. Tocca l’altoparlante per riprovare.");
+    });
+  }, [heroPlaying, heroSoundOn]);
+
+  const toggleHeroSound = async () => {
+    const token = ++heroAudioSequence.current;
+    setHeroSoundError("");
+    if (heroSoundOn || heroSoundPending) {
+      heroAudio.current?.stop(); setHeroSoundOn(false); setHeroSoundPending(false); return;
+    }
+    setHeroSoundPending(true); setHeroPlaying(true);
+    heroAudio.current ??= new RecordDemoAudio();
+    try {
+      const started = await heroAudio.current.play("rock", () => {
+        if (token !== heroAudioSequence.current) return;
+        heroAudioSequence.current++; setHeroSoundOn(false); setHeroSoundPending(false);
+      });
+      if (started && token === heroAudioSequence.current) { setHeroSoundOn(true); setHeroSoundPending(false); }
+    } catch {
+      if (token !== heroAudioSequence.current) return;
+      heroAudio.current?.stop(); setHeroSoundPending(false); setHeroSoundError("L’audio non è disponibile in questo browser.");
+    }
+  };
 
   const uploadLogo = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -112,10 +166,28 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
   };
   const mailBody = `Ciao Evolve!\nVorrei saperne di più su questa configurazione:\n\n${configurationSummary(product, configuration)}\n\n${configuration.logo ? "Allego alla mail il logo originale.\n\n" : ""}Mi indicate prezzo, disponibilità e prossimi passi?`;
   const mailHref = `mailto:infoevolvecompany@gmail.com?subject=${encodeURIComponent(`Il mio ${product}`)}&body=${encodeURIComponent(mailBody)}`;
+  const colorStudies = (
+    <section className={styles.colorStudies} aria-labelledby="studies-title">
+      <h2 id="studies-title">Il colore è tuo<span>.</span></h2>
+      <div className={styles.studyGrid}>{(isDisk ? DISK_PRESETS : PRESETS).map((preset, index) => (
+        <a key={preset.name} href="#configura" className={styles.studyLink} aria-label={`Personalizza ${product}: abbinamento ${preset.name}`} onClick={event => {
+          event.preventDefault();
+          setConfiguration(current => ({ ...current, primary: preset.primary, secondary: preset.secondary }));
+          document.getElementById("configura")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+        }}>
+          <figure>
+            <div className={styles.studyArtwork} data-study={index}><ProductIllustration product={product} configuration={{ ...defaultConfiguration(product), primary: preset.primary, secondary: preset.secondary, shape: index === 1 ? "circle" : index === 2 ? "triangle" : "rectangle", text: index === 0 ? "EVOLVE" : index === 1 ? "CIAO." : "WOW!" }} /></div>
+            <figcaption><span>{preset.name}</span><span className={styles.studyAction}>Prova il mix <ArrowUpRight size={15} /></span></figcaption>
+          </figure>
+        </a>
+      ))}</div>
+      <p className={styles.studyNote}>Studi illustrati di colore. Modelli, finiture e tonalità sono indicativi.</p>
+    </section>
+  );
 
   return (
     <main id="shop-content" className={styles.productPage} data-product={product}>
-      <section className={styles.hero} aria-labelledby="product-title">
+      <section ref={heroRef} className={styles.hero} aria-labelledby="product-title">
         <div className={styles.heroGrid}>
           <div className={styles.heroCopy}>
             <h1 id="product-title" className={styles.productTitle}>{info.name}</h1>
@@ -129,26 +201,27 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
           </div>
           <div className={styles.heroVisual}>
             <div className={styles.visualOrbit} aria-hidden="true" />
-            <span className={styles.visualCross} aria-hidden="true">✳</span>
+            {isDisk ? <button type="button" className={styles.heroSound} data-playing={heroSoundOn && heroPlaying} aria-pressed={heroSoundOn} aria-busy={heroSoundPending} aria-label={heroSoundOn || heroSoundPending ? "Disattiva la musica" : "Ascolta la musica"} title={heroSoundOn || heroSoundPending ? "Disattiva la musica" : "Ascolta la musica"} onClick={() => void toggleHeroSound()}>{heroSoundOn || heroSoundPending ? <Volume2 size={30} strokeWidth={1.6} /> : <VolumeX size={30} strokeWidth={1.6} />}<span className={styles.soundWaves} aria-hidden="true"><i /><i /><i /></span></button> : <span className={styles.visualCross} aria-hidden="true">✳</span>}
             <span className={styles.sticker} aria-hidden="true">{isDisk ? <>La tua<br />musica!</> : <>✳ <span>Disegnato da te</span></>}</span>
             {info.video ? <video ref={videoRef} src={info.video} className={styles.heroVideo} autoPlay muted loop playsInline aria-label={`Presentazione ${product}`} /> : <ProductScene product={product} configuration={heroConfiguration} presentation playing={heroPlaying} />}
             {isDisk && !info.video && <CartoonNotes playing={heroPlaying} />}
             <div className={styles.filmBar}>
-              <span><i /> {info.video ? "Il film" : "Studio di prodotto · 3D"}</span>
+              <span><i /> {isDisk && heroSoundOn ? "Sound on · Rock’n’roll!" : info.video ? "Il film" : "Studio di prodotto · 3D"}</span>
               <button type="button" onClick={() => setHeroPlaying(value => !value)} aria-label={heroPlaying ? "Metti in pausa la presentazione" : "Riprendi la presentazione"}>{heroPlaying ? <Pause size={15} /> : <Play size={15} />} {heroPlaying ? "Pausa" : "Play"}</button>
             </div>
+            {heroSoundError && <p className={styles.heroSoundError} role="status">{heroSoundError}</p>}
           </div>
         </div>
       </section>
 
       {isDisk && <div className={styles.tickerBridge} aria-hidden="true"><div className={styles.ticker}><div>{[0, 1, 2, 3].map(index => <span key={index}>OGGETTI FISICI, IDEE DIGITALI<b>✳</b> THINK TO EVOLVE <b>✳</b> METTI UN DISCO<b>✳</b></span>)}</div></div></div>}
 
-      <section id="scopri" className={styles.story} aria-labelledby="story-title">
-        <div className={styles.storyHeading}><h2 id="story-title">{info.punchline}<span>.</span></h2><p>{isDisk ? "Una canzone può diventare un regalo, un ricordo da tenere in mano, un piccolo rito. Scegli la musica e il carattere dei tuoi dischi: noi li stampiamo per te, pronti per la tua collezione e-disk." : "Un nome che ti rappresenta. Un logo che riconosci al volo. Un colore che si fa notare. e-linker parte dalle forme più semplici e le trasforma in qualcosa che è soltanto tuo."}</p></div>
-        <div className={styles.steps}>{info.steps.map((step, index) => <article key={step.title} className={styles.step}><span className={styles.stepNumber}>0{index + 1}</span><div className={styles.stepGraphic} aria-hidden="true">{isDisk ? index === 0 ? <Disc3 /> : index === 1 ? <Nfc /> : <span className={styles.equalizer}>{[0, 1, 2, 3, 4, 5, 6].map(n => <i key={n} />)}</span> : <span className={styles.shapeGraphic}>{index === 0 ? "△ ○" : index === 1 ? "Aa" : "✳"}</span>}</div><h3>{step.title}</h3><p>{step.description}</p></article>)}</div>
-      </section>
+      {!isDisk && <section id="scopri" className={styles.story} aria-labelledby="story-title">
+        <div className={styles.storyHeading}><h2 id="story-title">{info.punchline}<span>.</span></h2><p>Un nome che ti rappresenta. Un logo che riconosci al volo. Un colore che si fa notare. e-linker parte dalle forme più semplici e le trasforma in qualcosa che è soltanto tuo.</p></div>
+        <div className={styles.steps}>{info.steps.map((step, index) => <article key={step.title} className={styles.step}><span className={styles.stepNumber}>0{index + 1}</span><div className={styles.stepGraphic} aria-hidden="true"><span className={styles.shapeGraphic}>{index === 0 ? "△ ○" : index === 1 ? "Aa" : "✳"}</span></div><h3>{step.title}</h3><p>{step.description}</p></article>)}</div>
+      </section>}
 
-      {isDisk && <><EDiskDiscStudio /><EDiskRecordDemo /></>}
+      {isDisk && <>{colorStudies}<EDiskRecordDemo /><EDiskDiscStudio /><EDiskBundle onChoose={() => { setDiskOffer("bundle"); document.getElementById("offerta-edisk")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }} /></>}
 
       <section id="configura" className={styles.configurator} aria-labelledby="config-title">
         <div className={styles.configHeading}><h2 id="config-title">Unico.<br />Come te<span>.</span></h2><p>{isDisk ? "Due colori. Trenta possibilità per ognuno. Trova la combinazione che vorresti sul tuo tavolo." : "Parti da una forma, aggiungi la tua scritta e trova il tuo abbinamento. Il prossimo portachiavi lo disegni tu."}</p></div>
@@ -173,7 +246,7 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
             </>}
             <fieldset className={styles.controlGroup}><legend>Trova i tuoi colori</legend>
               <ProductColorPicker product={product} value={configuration} onChange={(channel, hex) => setConfiguration(current => ({ ...current, [channel]: hex }))} onSwap={() => setConfiguration(current => ({ ...current, primary: current.secondary, secondary: current.primary }))} onShuffle={shuffleColors} />
-              <div className={styles.presets}><span>Abbinamenti</span><div>{PRESETS.map(preset => <button type="button" key={preset.name} aria-pressed={configuration.primary === preset.primary && configuration.secondary === preset.secondary} onClick={() => setConfiguration(current => ({ ...current, primary: preset.primary, secondary: preset.secondary }))}><i style={swatchStyle(preset.primary)} /><i style={swatchStyle(preset.secondary)} />{preset.name}</button>)}</div></div>
+              <div className={styles.presets}><span>Abbinamenti</span><div>{(isDisk ? DISK_PRESETS : PRESETS).map(preset => <button type="button" key={preset.name} aria-pressed={configuration.primary === preset.primary && configuration.secondary === preset.secondary} onClick={() => setConfiguration(current => ({ ...current, primary: preset.primary, secondary: preset.secondary }))}><i style={swatchStyle(preset.primary)} /><i style={swatchStyle(preset.secondary)} />{preset.name}</button>)}</div></div>
             </fieldset>
             {sceneError && <p className={styles.error} role="status">{sceneError}</p>}
             <div className={styles.configurationSummary} aria-live="polite" aria-atomic="true"><span>IL TUO {product.toUpperCase()}</span><p>{colorName(configuration.primary)} <b>+</b> {colorName(configuration.secondary)}{!isDisk && <> · {KEYRING_SHAPES.find(shape => shape.id === configuration.shape)?.name}{configuration.text && <> · “{configuration.text}”</>}</>}</p></div>
@@ -185,9 +258,7 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
         </div>
       </section>
 
-      <section className={styles.colorStudies} aria-labelledby="studies-title"><h2 id="studies-title">Il colore è tuo<span>.</span></h2><div className={styles.studyGrid}>{PRESETS.map((preset, index) => <figure key={preset.name}><div className={styles.studyArtwork} data-study={index}><ProductIllustration product={product} configuration={{ ...defaultConfiguration(product), primary: preset.primary, secondary: preset.secondary, shape: index === 1 ? "circle" : index === 2 ? "triangle" : "rectangle", text: index === 0 ? "EVOLVE" : index === 1 ? "CIAO." : "WOW!" }} /></div><figcaption><span>{preset.name}</span><button type="button" onClick={() => { setConfiguration(current => ({ ...current, primary: preset.primary, secondary: preset.secondary })); document.getElementById("configura")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }}>Prova il mix <ArrowUpRight size={15} /></button></figcaption></figure>)}</div><p className={styles.studyNote}>Studi illustrati di colore. Modelli, finiture e tonalità sono indicativi.</p></section>
-
-      {isDisk && <EDiskBundle onChoose={() => { setDiskOffer("bundle"); document.getElementById("offerta-edisk")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }} />}
+      {!isDisk && colorStudies}
 
       <section className={styles.resources} aria-labelledby="resources-title"><div className={styles.resourceCopy}><h2 id="resources-title">L’oggetto è solo<br />l’inizio<span>.</span></h2><p>{isDisk ? "Dietro ogni disco c’è la tua collezione. Apri l’app, organizza i brani e scopri come dare vita al tuo e-disk." : "Hai in mente qualcosa di preciso? Parti dalla guida: forme, testi e loghi spiegati senza giri di parole."}</p></div><div className={styles.resourceLinks}>{isDisk && <Link href="/shop/e-disk/app"><Smartphone size={26} /><div><span>La tua collezione, online</span><h3>App e-disk</h3><p>Dischi, brani e giradischi. Tutto in un posto.</p></div><ArrowUpRight size={25} /></Link>}<Link href={`/shop/${product}/documentazione`}><BookOpen size={26} /><div><span>Da dove si comincia?</span><h3>Dentro {product}</h3><p>{isDisk ? "Primi passi, NFC e collegamenti." : "Forme, file del logo e personalizzazione."}</p></div><ArrowUpRight size={25} /></Link></div></section>
 

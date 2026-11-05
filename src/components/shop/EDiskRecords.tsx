@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-import { ArrowUpRight, Check, Disc3, Pause, Play, Sparkles, Volume2 } from "lucide-react";
+import { ArrowUpRight, Check, Disc3, Gift, Heart, Pause, PenLine, Play, Sparkles, Volume2 } from "lucide-react";
 import { FaSpotify, FaYoutube } from "react-icons/fa";
 import { defaultConfiguration } from "./products";
 import { ProductIllustration } from "./ProductIllustration";
@@ -34,24 +34,25 @@ export function EDiskDiscStudio() {
   const [title, setTitle] = useState("La nostra canzone");
   const [dedication, setDedication] = useState("Per le cose che restano.");
   const [color, setColor] = useState("#cabee6");
-  const choices = [
-    { id: "ai" as const, name: "Una canzone solo tua.", description: "Una storia, una dedica, le parole giuste. Crea una canzone su misura con il nostro tool IA.", icon: <Sparkles size={27} />, status: "Tool in preparazione" },
-    { id: "spotify" as const, name: "Quella che sai a memoria.", description: "Il brano che ti accompagna da sempre. Sceglilo su Spotify e immaginalo sul tuo disco.", icon: <FaSpotify size={27} />, status: "Collegamento in preparazione" },
-    { id: "youtube" as const, name: "Quel pezzo, proprio quello.", description: "Una canzone, una versione dal vivo, un ricordo. Parti da un brano su YouTube.", icon: <FaYoutube size={30} />, status: "Disponibile nell’app" },
+  const giftIdeas = [
+    { id: "love", source: "youtube" as const, name: "La vostra storia. In un disco.", description: "La canzone che parla di voi, una dedica solo per chi ami. Un regalo da tenere vicino e riascoltare ogni volta che ne ha voglia.", icon: <Heart size={27} />, caption: "Per chi ami", action: "Dedica un disco" },
+    { id: "friends", source: "youtube" as const, name: "Quella canzone siete voi.", description: "Un viaggio, una serata, un’amicizia. Regala a un amico il vostro ricordo più bello: anche a chilometri di distanza, basta una canzone per ritrovarsi.", icon: <Gift size={27} />, caption: "Per chi c’è sempre", action: "Regala un ricordo" },
+    { id: "compose", source: "ai" as const, name: "Le tue parole. La sua canzone.", description: "Scrivi una dedica o racconta la vostra storia. Il nostro tool IA ti aiuterà a trasformarla in testo e musica, anche se non hai mai composto. Un regalo che prima non esisteva.", icon: <PenLine size={27} />, caption: "Con l’IA · in arrivo", action: "Scrivi la tua canzone" },
   ];
   return <section id="incidi" className={styles.studio} aria-labelledby="disc-studio-title">
-    <div className={styles.heading}><h2 id="disc-studio-title">Tu scegli la musica.<br />Noi le diamo forma<span>.</span></h2><p>Li chiamiamo dischi “incisi”. In realtà li stampiamo e li personalizziamo per te. Tu scegli cosa ascoltare: a trasformarlo in un oggetto ci pensiamo noi.</p></div>
-    <div className={styles.sources}>{choices.map(choice => <article key={choice.id} data-source={choice.id} className={styles.sourceCard} data-selected={source === choice.id}>
-      <div className={styles.sourceTop}>{choice.icon}<span>{choice.status}</span></div><h3>{choice.name}</h3><p>{choice.description}</p><button type="button" aria-pressed={source === choice.id} onClick={() => setSource(choice.id)}>{source === choice.id ? <>La tua scelta <Check size={15} /></> : <>Parti da qui <ArrowUpRight size={17} /></>}</button>
+    <div className={styles.heading}><h2 id="disc-studio-title">Un regalo che<br />si fa riascoltare<span>.</span></h2><p>Una canzone da dedicare. Un ricordo da tenere in mano. Scegli un brano che amate o immagina di scriverne uno tutto vostro: noi stampiamo e personalizziamo il disco che lo racconterà.</p></div>
+    <div className={styles.giftIdeas}>{giftIdeas.map(idea => <article key={idea.id} data-gift={idea.id} className={styles.giftCard}>
+      <div className={styles.giftTop}>{idea.icon}<span>{idea.caption}</span></div><h3>{idea.name}</h3><p>{idea.description}</p><a href="#disk-editor" onClick={() => setSource(idea.source)}>{idea.action}<ArrowUpRight size={17} /></a>
     </article>)}</div>
-    <div className={styles.personalize}>
+    <div id="disk-editor" className={styles.personalize}>
       <div className={styles.discPreview}><span className={styles.previewStar} aria-hidden="true">✳</span><RecordGraphic color={color} title={title || "La tua musica"} /><p>{dedication || "La tua dedica, sul tuo disco."}</p><span className={styles.previewTag}>Un disco. La tua storia.</span></div>
       <form className={styles.discForm} onSubmit={event => event.preventDefault()}>
-        <h3>Dagli un nome<span>.</span></h3><p>Un titolo, una dedica, un colore. Ci sono tanti modi per dire: questa è la mia canzone.</p>
+        <h3>Dagli un nome<span>.</span></h3><p>Un titolo, una dedica, un colore. Rendilo vostro: noi lo stamperemo e lo personalizzeremo per te.</p>
         <label htmlFor="custom-disc-title">Il titolo del tuo disco<input id="custom-disc-title" value={title} maxLength={38} onChange={event => setTitle(event.target.value)} placeholder="La nostra canzone" /></label>
         <label htmlFor="custom-disc-dedication">Una dedica<input id="custom-disc-dedication" value={dedication} maxLength={80} onChange={event => setDedication(event.target.value)} placeholder="Per chi, per cosa, per sempre…" /></label>
         <fieldset><legend>Il suo colore</legend><div className={styles.discColors}>{["#cabee6", "#ffab8a", "#b4df7b", "#f7bad5", "#83d7e4"].map((hex, index) => <button key={hex} type="button" style={{ "--disc-color": hex } as CSSProperties} aria-pressed={color === hex} aria-label={["Lilla", "Pesca", "Verde", "Rosa", "Azzurro"][index]} onClick={() => setColor(hex)}><span /></button>)}</div></fieldset>
-        {source === "ai" ? <div className={styles.sourceInput}><Sparkles size={19} /><div><strong>La tua musica, creata con l’IA.</strong><p>Il nostro tool è in preparazione. Presto potrai partire da una storia e trasformarla in una canzone.</p><Link href="/lavori-in-corso">Crea la tua musica <ArrowUpRight size={14} /></Link></div></div> : <div className={styles.sourceInput}><div><label htmlFor="custom-disc-url">Il link del brano {source === "spotify" ? "Spotify" : "YouTube"}<input id="custom-disc-url" key={source} type="url" placeholder={source === "spotify" ? "https://open.spotify.com/track/…" : "https://www.youtube.com/watch?v=…"} /></label><p>{source === "spotify" ? "Il collegamento automatico a Spotify è in preparazione." : "Il brano resta su YouTube e viene richiamato dall’app e-disk."}</p></div></div>}
+        <fieldset><legend>La musica sul disco</legend><div className={styles.musicSources}><button type="button" aria-pressed={source === "ai"} onClick={() => setSource("ai")}><Sparkles size={15} /> Scrivila con l’IA</button><button type="button" aria-pressed={source === "youtube"} onClick={() => setSource("youtube")}><FaYoutube size={16} /> YouTube</button><button type="button" aria-pressed={source === "spotify"} onClick={() => setSource("spotify")}><FaSpotify size={15} /> Spotify</button></div></fieldset>
+        {source === "ai" ? <div className={styles.sourceInput}><Sparkles size={19} /><div><strong>La tua storia ha già una canzone. Manca solo la musica.</strong><p>Stiamo preparando il tool IA: potrai partire dalle tue parole e creare una canzone da dedicare, anche senza esperienza musicale.</p><Link href="/lavori-in-corso">Crea la tua musica <ArrowUpRight size={14} /></Link></div></div> : <div className={styles.sourceInput}><div><label htmlFor="custom-disc-url">Il link del brano {source === "spotify" ? "Spotify" : "YouTube"}<input id="custom-disc-url" key={source} type="url" placeholder={source === "spotify" ? "https://open.spotify.com/track/…" : "https://www.youtube.com/watch?v=…"} /></label><p>{source === "spotify" ? "Il collegamento automatico a Spotify è in preparazione." : "Il brano resta su YouTube e viene richiamato dall’app e-disk."}</p></div></div>}
         <button type="button" className={styles.addDisc} disabled title="Ordini e carrello saranno collegati in seguito">Aggiungi il disco <ArrowUpRight size={19} /></button>
       </form>
     </div>
@@ -97,8 +98,12 @@ export function EDiskRecordDemo() {
     setActive(index); setPlacing(true); setPlaying(false); setEnded(false); setLift(window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 1.4);
     audio.current ??= new RecordDemoAudio();
     try {
-      await audio.current.play(index, () => { if (sequence.current === token) { setPlaying(false); setEnded(true); } });
-      if (token !== sequence.current) return;
+      const started = await audio.current.play(index, () => {
+        if (sequence.current !== token) return;
+        sequence.current++; timers.current.forEach(timer => window.clearTimeout(timer));
+        setPlaying(false); setPlacing(false); setEnded(true); setLift(0);
+      });
+      if (!started || token !== sequence.current) return;
       timers.current.push(window.setTimeout(() => { if (sequence.current === token) setLift(0); }, 150));
       timers.current.push(window.setTimeout(() => { if (sequence.current === token) { setPlacing(false); setPlaying(true); } }, 620));
     } catch {
@@ -107,7 +112,7 @@ export function EDiskRecordDemo() {
     }
   };
   return <section ref={sectionRef} id="ascolta" className={styles.demo} aria-labelledby="record-demo-title">
-    <div className={styles.demoCopy}><h2 id="record-demo-title">Scegli un disco.<br />Cambia atmosfera<span>.</span></h2><p>Tre dischi appesi, tre modi diversi di stare bene. Scegline uno: si posa sul giradischi e la musica parte. Un altro clic, un’altra atmosfera.</p><span className={styles.demoSticker} aria-hidden="true">Pick<br />& play!</span><p className={styles.demoHint}><Volume2 size={16} /> Demo sonora con loop originali.</p></div>
+    <div className={styles.demoCopy}><h2 id="record-demo-title">Scegli un disco.<br />Cambia atmosfera<span>.</span></h2><p>Infiniti dischi diversi, infiniti modi di stare bene. Le canzoni che ami, una dedica, un brano tutto tuo: la tua collezione cresce con te. Appoggia un disco su e-disk e lascia partire la musica. Un altro disco, un’altra atmosfera.</p><span className={styles.demoSticker} aria-hidden="true">Pick<br />& play!</span><p className={styles.demoHint}><Volume2 size={16} /> Demo sonora con loop originali.</p></div>
     <div className={styles.demoStage}>
       <div className={styles.recordRack}>{DEMO_RECORDS.map((record, index) => <button key={record.title} type="button" className={styles.hangingRecord} data-selected={active === index} aria-pressed={active === index && playing} aria-label={`${active === index && playing ? "Metti in pausa" : "Ascolta"} ${record.title}`} onClick={() => void choose(index)}><span className={styles.hangingDisc}><RecordGraphic color={record.color} title={record.title} /></span><span>{record.title}</span><small>{record.caption}</small></button>)}</div>
       <div className={styles.demoScene}><ProductScene product="e-disk" configuration={configuration} presentation playing={playing} recordAppearance={appearance} recordPresent={active !== null} recordLift={lift} /></div>

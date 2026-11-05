@@ -3,18 +3,19 @@
 .heading h2, .demo h2, .bundle h2 { margin: 0; font-size: clamp(42px,5.1vw,80px); font-weight: 400; line-height: 1.03; letter-spacing: -.065em; }
 .heading h2 > span, .demo h2 > span, .bundle h2 > span { color: #72c94f; }
 .heading > p { max-width: 350px; margin: 0; color: #66715d; font-size: 12px; line-height: 1.9; }
-.sources { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 22px; margin-bottom: 65px; }
-.sourceCard { display: flex; flex-direction: column; min-width: 0; padding: 25px; border: 1px solid #101914; background: #cabee6; box-shadow: 4px 4px 0 #3154f4; }
-.sourceCard[data-source="spotify"] { background: #c1ff00; box-shadow: 4px 4px 0 #114928; }
-.sourceCard[data-source="youtube"] { background: #ffada5; box-shadow: 4px 4px 0 #ff7638; }
-.sourceTop { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 30px; }
-.sourceTop > svg { flex: none; }
-.sourceTop > span { max-width: 125px; font-size: 8px; text-align: right; line-height: 1.5; }
-.sourceCard h3 { max-width: 260px; margin: 0 0 16px; font-size: 27px; font-weight: 500; line-height: 1.05; letter-spacing: -.05em; }
-.sourceCard > p { flex: 1; margin: 0 0 26px; font-size: 11px; line-height: 1.85; }
-.sourceCard > button { display: flex; align-items: center; justify-content: space-between; gap: 15px; width: 100%; min-height: 40px; padding: 7px 0 0; border: 0; border-top: 1px solid #10191455; background: transparent; color: #101914; font-size: 10px; text-align: left; }
-.sourceCard[data-selected="true"] > button { font-weight: 600; }
-.personalize { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,.85fr); gap: 8%; align-items: center; }
+.giftIdeas { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 22px; margin-bottom: 65px; }
+.giftCard { display: flex; flex-direction: column; min-width: 0; padding: 25px; border: 1px solid #101914; background: #cabee6; box-shadow: 4px 4px 0 #3154f4; }
+.giftCard[data-gift="friends"] { background: #c1ff00; box-shadow: 4px 4px 0 #114928; }
+.giftCard[data-gift="compose"] { background: #ffada5; box-shadow: 4px 4px 0 #ff7638; }
+.giftTop { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 30px; }
+.giftTop > svg { flex: none; }
+.giftTop > span { max-width: 125px; font-size: 9px; text-align: right; line-height: 1.5; }
+.giftCard h3 { max-width: 280px; margin: 0 0 16px; font-size: 27px; font-weight: 500; line-height: 1.05; letter-spacing: -.05em; }
+.giftCard > p { flex: 1; margin: 0 0 26px; font-size: 11px; line-height: 1.85; }
+.giftCard > a { display: flex; align-items: center; justify-content: space-between; gap: 15px; width: 100%; min-height: 44px; padding: 7px 0 0; border-top: 1px solid #10191455; color: #101914; font-size: 10px; text-align: left; }
+.giftCard > a svg { flex: none; transition: transform .3s; }
+.giftCard > a:hover svg { transform: translate(2px,-2px); }
+.personalize { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,.85fr); gap: 8%; align-items: center; scroll-margin-top: 158px; }
 .discPreview { position: relative; min-width: 0; padding: 35px 40px; background: #f2ecdf; text-align: center; }
 .discPreview > svg { display: block; width: min(100%,370px); margin: 5px auto 15px; filter: drop-shadow(8px 13px 0 #10191413); transform: rotate(-9deg); }
 .discPreview > p { max-width: 300px; min-height: 24px; margin: 24px auto 20px; font-size: 15px; line-height: 1.4; letter-spacing: -.025em; overflow-wrap: anywhere; }
@@ -32,6 +33,10 @@
 .discColors button { display: grid; place-items: center; width: 34px; height: 34px; padding: 5px; border: 1px solid transparent; border-radius: 50%; background: transparent; }
 .discColors button > span { width: 22px; height: 22px; border: 1px solid #10191425; border-radius: 50%; background: var(--disc-color); }
 .discColors button[aria-pressed="true"] { border-color: #637953; }
+.musicSources { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; }
+.musicSources > button { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 8px 12px; border: 1px solid #d5dfcb; border-radius: 6px; background: transparent; color: #5d6e53; font-size: 10px; transition: color .25s, background .25s, border-color .25s; }
+.musicSources > button:hover { border-color: #9caf8d; color: #101914; }
+.musicSources > button[aria-pressed="true"] { border-color: #728c62; background: #ecf3e9; color: #28452b; }
 .sourceInput { display: flex; align-items: start; gap: 12px; min-height: 100px; padding: 17px; border: 1px solid #e0e7d8; background: #f3f7ed; }
 .sourceInput > svg { flex: none; color: #77a65d; }
 .sourceInput > div { width: 100%; min-width: 0; }
@@ -91,16 +96,16 @@
 .moreDiscs h3 { margin: 0 0 9px; font-size: 24px; font-weight: 400; letter-spacing: -.05em; }
 .moreDiscs p { margin: 0; color: #707344; font-size: 10px; line-height: 1.8; }
 .moreDiscs a { display: inline-flex; align-items: center; flex: none; gap: 16px; min-height: 44px; margin-left: auto; font-size: 11px; }
-@media (max-width: 1050px) { .sourceCard { padding: 20px; } .sourceCard h3 { font-size: 23px; } .recordRack { gap: 13px; } .demo { grid-template-columns: .85fr 1.15fr; } }
+@media (max-width: 1050px) { .giftCard { padding: 20px; } .giftCard h3 { font-size: 23px; } .recordRack { gap: 13px; } .demo { grid-template-columns: .85fr 1.15fr; } }
 @media (max-width: 860px) {
   .studio, .demo, .bundle { padding-block: 65px; }
   .heading { grid-template-columns: 1fr; gap: 26px; margin-bottom: 35px; }
   .heading h2, .demo h2, .bundle h2 { font-size: clamp(42px,9vw,66px); }
   .heading > p { max-width: 470px; font-size: 12px; }
-  .sources { grid-template-columns: 1fr; gap: 22px; margin-bottom: 45px; }
-  .sourceTop { margin-bottom: 23px; }
-  .sourceCard { padding: 24px; }
-  .sourceCard h3 { max-width: none; font-size: 28px; }
+  .giftIdeas { grid-template-columns: 1fr; gap: 22px; margin-bottom: 45px; }
+  .giftTop { margin-bottom: 23px; }
+  .giftCard { padding: 24px; }
+  .giftCard h3 { max-width: none; font-size: 28px; }
   .personalize { grid-template-columns: 1fr; gap: 35px; }
   .discPreview { padding: 27px 25px; }
   .discPreview > svg { width: min(90%,300px); }

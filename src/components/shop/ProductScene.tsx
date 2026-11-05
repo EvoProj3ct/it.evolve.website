@@ -81,7 +81,7 @@ export default function ProductScene({ product, configuration, presentation = fa
     const rim = new THREE.DirectionalLight(0xffffff, 1.7);
     rim.position.set(4, 3, -5);
     scene.add(rim);
-    const finish = { roughness: product === "e-disk" ? .27 : .38, metalness: .03, clearcoat: product === "e-disk" ? .5 : .18, clearcoatRoughness: .25 };
+    const finish = { roughness: product === "e-disk" ? .27 : .43, metalness: .03, clearcoat: product === "e-disk" ? .5 : .12, clearcoatRoughness: .25 };
     const primary = new THREE.MeshPhysicalMaterial({ color: stateRef.current.configuration.primary, ...finish });
     const secondary = new THREE.MeshPhysicalMaterial({ color: stateRef.current.configuration.secondary, ...finish });
     const targetPrimary = primary.color.clone(), targetSecondary = secondary.color.clone();
@@ -122,7 +122,7 @@ export default function ProductScene({ product, configuration, presentation = fa
       if (!width || !height) return;
       renderer.setSize(width, height);
       camera.aspect = width / height;
-      camera.zoom = Math.min(1.22, camera.aspect / .95);
+      camera.zoom = Math.min(product === "e-linker" ? 1.05 : 1.22, camera.aspect / .95);
       camera.updateProjectionMatrix();
     };
     resize();
