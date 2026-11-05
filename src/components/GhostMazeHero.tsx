@@ -576,7 +576,7 @@ export function GhostMazeHero({ variant = "home" }: { variant?: "home" | "constr
     <section
       ref={sectionRef}
       className={`${styles.hero} ${construction ? styles.constructionHero : ""}`}
-      aria-label={construction ? "Lavori in corso" : "Evolve: consulenza, software e stampa 3D"}
+      aria-label={construction ? "Lavori in corso" : "Evolve: hardware, software e formazione su misura"}
     >
       <svg className={styles.scene} viewBox={`0 0 ${size.width} ${size.height}`} preserveAspectRatio="none" aria-hidden="true">
         <defs>
@@ -624,14 +624,13 @@ export function GhostMazeHero({ variant = "home" }: { variant?: "home" | "constr
         </div>
       ) : <div className={styles.copy}>
         <div className={styles.eyebrow}>EVOLVE</div>
-        {/* Provisional copy for this visual study; original slides remain in HeroSlider and the inventory. */}
-        <h1 className={styles.title}>Consulenza, software<br />e stampa 3D</h1>
+        <h1 className={styles.title}>Hardware, Software,<br />Formazione su Misura</h1>
         <p className={styles.description}>
-          Progettiamo soluzioni integrate con l&apos;IA per migliorare la tua produttività.
+          Evolve è il tuo Hub per un domani più smart.
         </p>
         <div className={styles.actions}>
-          <Link className={styles.primaryLink} href="/chi-siamo">
-            <span>Scopri come</span>
+          <Link className={styles.primaryLink} href="/shop">
+            <span>Vai allo Shop</span>
             <svg className={styles.primaryArrow} aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 13 13 3M5 3h8v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square" strokeLinejoin="miter" /></svg>
           </Link>
           <Link className={styles.secondaryLink} href="/contact">
