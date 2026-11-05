@@ -4,9 +4,10 @@ import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import type { Font } from "three/examples/jsm/loaders/FontLoader.js";
 import type { KeyringShape, ProductConfiguration } from "./products";
+import type { KeyringChainRig } from "./KeyringChainPhysics";
 
 export type RecordAppearance = { title: string; color: string };
-export type ProductModel = { group: THREE.Group; record?: THREE.Group; setRecordAppearance?: (appearance?: RecordAppearance) => void };
+export type ProductModel = { group: THREE.Group; record?: THREE.Group; setRecordAppearance?: (appearance?: RecordAppearance) => void; chain?: KeyringChainRig };
 
 function add(parent: THREE.Object3D, geometry: THREE.BufferGeometry, material: THREE.Material | THREE.Material[], x = 0, y = 0, z = 0) {
   const mesh = new THREE.Mesh(geometry, material);
@@ -135,7 +136,7 @@ function fitXY(object: THREE.Object3D, width: number, height: number, y: number,
   object.position.z = .152;
 }
 
-export function createKeyring(configuration: ProductConfiguration, font: Font | null, primary: THREE.MeshStandardMaterial, secondary: THREE.MeshStandardMaterial, onError: (message: string) => void): ProductModel {
+export function createKeyring(configuration: ProductConfiguration, font: Font | null, primary: THREE.MeshStandardMaterial, secondary: THREE.MeshStandardMaterial, onError: (message: string) => void, withChain = true): ProductModel {
   const group = new THREE.Group();
   const body = new THREE.Group();
   body.rotation.x = -Math.PI / 2;
@@ -145,27 +146,32 @@ export function createKeyring(configuration: ProductConfiguration, font: Font | 
   const { shape, holeX, holeY, topY } = keyringOutline(configuration.shape);
   const edge = new THREE.MeshStandardMaterial({ color: "#829ba3", roughness: .48, metalness: .06 });
   // Il bordo neutro riprende il piccolo marchio: la superficie rimane del colore scelto.
-  add(body, new THREE.ExtrudeGeometry(shape, { depth: .13, bevelEnabled: true, bevelSegments: 5, steps: 1, bevelSize: .02, bevelThickness: .02, curveSegments: 40 }), [primary, edge]);
-  const chainMetal = new THREE.MeshStandardMaterial({ color: "#b6bfbb", metalness: .92, roughness: .26 });
-  const ovalLink = (centerY: number, halfLength: number, halfWidth: number, vertical: boolean, wire: number) => {
-    const points = new THREE.EllipseCurve(0, 0, halfWidth, halfLength, 0, Math.PI * 2, false, 0).getPoints(64).slice(0, -1);
-    const path = new THREE.CatmullRomCurve3(points.map(point => new THREE.Vector3(holeX + (vertical ? 0 : point.x), centerY + point.y, .065 + (vertical ? point.x : 0))), true);
-    return add(body, new THREE.TubeGeometry(path, 96, wire, 10, true), chainMetal);
-  };
-  // Il raccordo attraversa il foro e scavalca il bordo, sopra e sotto la base.
-  // Le maglie successive si alternano di 90° e si sovrappongono nello spazio vuoto.
-  const connectorHalfLength = (topY - holeY) / 2 + .11;
-  const connectorCenter = (topY + holeY) / 2;
-  ovalLink(connectorCenter, connectorHalfLength, .25, true, .025);
-  const firstLinkY = connectorCenter + connectorHalfLength + .12;
-  for (let index = 0; index < 6; index++) ovalLink(firstLinkY + index * .26, .185, .11, index % 2 === 1, .022);
-  const ringY = firstLinkY + 5 * .26 + .45;
-  // Due spire ravvicinate, unite alle estremità: il classico anello apribile.
-  const splitRingPoints = Array.from({ length: 193 }, (_, index) => {
-    const angle = index / 192 * Math.PI * 4;
-    return new THREE.Vector3(holeX + Math.cos(angle) * .36, ringY + Math.sin(angle) * .36, .04 + index / 192 * .055);
-  });
-  add(body, new THREE.TubeGeometry(new THREE.CatmullRomCurve3(splitRingPoints), 192, .023, 10, false), chainMetal);
+  const base = add(body, new THREE.ExtrudeGeometry(shape, { depth: .13, bevelEnabled: true, bevelSegments: 5, steps: 1, bevelSize: .02, bevelThickness: .02, curveSegments: 40 }), [primary, edge]);
+  let chain: KeyringChainRig | undefined;
+  if (withChain) {
+    const chainMetal = new THREE.MeshStandardMaterial({ color: "#b6bfbb", metalness: .92, roughness: .26 });
+    const ovalGeometry = (halfLength: number, halfWidth: number) => {
+      const points = new THREE.EllipseCurve(0, 0, halfWidth, halfLength, 0, Math.PI * 2, false, 0).getPoints(64).slice(0, -1);
+      return new THREE.CatmullRomCurve3(points.map(point => new THREE.Vector3(point.x, point.y, 0)), true);
+    };
+    // Il raccordo rimane fissato attraverso il foro; le sei maglie e l'anello sono mobili.
+    const connectorHalfLength = (topY - holeY) / 2 + .11;
+    const connectorCenter = (topY + holeY) / 2;
+    const connector = add(body, new THREE.TubeGeometry(ovalGeometry(connectorHalfLength, .25), 96, .025, 10, true), chainMetal, holeX, connectorCenter, .065);
+    connector.rotation.y = Math.PI / 2;
+    const firstLinkY = connectorCenter + connectorHalfLength + .12;
+    const links = Array.from({ length: 6 }, (_, index) => {
+      const mesh = add(body, new THREE.TubeGeometry(ovalGeometry(.185, .11), 64, .022, 10, true), chainMetal, holeX, firstLinkY + index * .26, .065);
+      mesh.rotation.y = index % 2 === 1 ? Math.PI / 2 : 0;
+      return mesh;
+    });
+    const splitRingPoints = Array.from({ length: 193 }, (_, index) => {
+      const angle = index / 192 * Math.PI * 4;
+      return new THREE.Vector3(Math.cos(angle) * .36, Math.sin(angle) * .36, -.025 + index / 192 * .055);
+    });
+    const ring = add(body, new THREE.TubeGeometry(new THREE.CatmullRomCurve3(splitRingPoints), 192, .023, 10, false), chainMetal, holeX, firstLinkY + 5 * .26 + .45, .065);
+    chain = { body, outline: shape, anchor: new THREE.Vector3(holeX, connectorCenter + connectorHalfLength - .01, .065), links, ring };
+  }
   const maxWidth = configuration.shape === "triangle" ? 1.7 : configuration.shape === "rectangle" ? 2.2 : 2.1;
   const centerY = configuration.shape === "triangle" ? -.45 : 0;
   if (configuration.text.trim() && font) {
@@ -221,10 +227,10 @@ export function createKeyring(configuration: ProductConfiguration, font: Font | 
     texture.colorSpace = THREE.SRGBColorSpace;
     logoMaterial.map = texture;
   }
-  // Centra l'intero oggetto, compresa la catena, anche durante la rotazione libera.
-  body.position.sub(new THREE.Box3().setFromObject(body).getCenter(new THREE.Vector3()));
+  // La centratura segue il corpo, senza inseguire l'oscillazione della catena.
+  body.position.sub(new THREE.Box3().setFromObject(base).getCenter(new THREE.Vector3()));
   group.scale.setScalar(1.12);
-  return { group };
+  return { group, chain };
 }
 
 export function disposeModel(root: THREE.Object3D, sharedMaterials: THREE.Material[] = []) {

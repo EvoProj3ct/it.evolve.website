@@ -7,6 +7,7 @@ import { FontLoader, type Font } from "three/examples/jsm/loaders/FontLoader.js"
 import { createKeyring, createTurntable, disposeModel, type ProductModel, type RecordAppearance } from "./productModels";
 import type { ProductConfiguration, ProductId } from "./products";
 import { ProductIllustration } from "./ProductIllustration";
+import { KeyringChainPhysics } from "./KeyringChainPhysics";
 import styles from "./Shop.module.css";
 
 let fontPromise: Promise<Font> | null = null;
@@ -59,6 +60,7 @@ export default function ProductScene({ product, configuration, presentation = fa
     const initialOrientation = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -.2);
     const targetOrientation = initialOrientation.clone();
     const cameraOrientation = camera.quaternion.clone();
+    const viewUp = new THREE.Vector3(0, 1, 0).applyQuaternion(cameraOrientation);
     const inverseCameraOrientation = cameraOrientation.clone().invert();
     const rotationStep = new THREE.Quaternion();
     const localDelta = new THREE.Quaternion();
@@ -87,6 +89,7 @@ export default function ProductScene({ product, configuration, presentation = fa
     const secondary = new THREE.MeshPhysicalMaterial({ color: stateRef.current.configuration.secondary, ...finish });
     const targetPrimary = primary.color.clone(), targetSecondary = secondary.color.clone();
     let model: ProductModel | null = null;
+    let chainPhysics: KeyringChainPhysics | null = null;
     let font: Font | null = null;
     let lastConfiguration: ProductConfiguration | null = null;
     const update = (config: ProductConfiguration, force = false) => {
@@ -97,11 +100,15 @@ export default function ProductScene({ product, configuration, presentation = fa
       if (!model || (product === "e-linker" && (changed || force))) {
         stateRef.current.onError?.("");
         const currentOrientation = model?.group.quaternion.clone() ?? initialOrientation.clone();
+        const chainState = lastConfiguration?.shape === config.shape ? chainPhysics?.snapshot() : undefined;
         if (model) { scene.remove(model.group); disposeModel(model.group, [primary, secondary]); }
-        model = product === "e-disk" ? createTurntable(primary, secondary) : createKeyring(config, font, primary, secondary, message => stateRef.current.onError?.(message));
+        model = product === "e-disk" ? createTurntable(primary, secondary) : createKeyring(config, font, primary, secondary, message => stateRef.current.onError?.(message), !presentation);
         model.group.quaternion.copy(currentOrientation);
+        if (freeRotation) model.group.position.copy(viewUp).multiplyScalar(.35);
         if (stateRef.current.recordAppearance) model.setRecordAppearance?.(stateRef.current.recordAppearance);
         scene.add(model.group);
+        chainPhysics = model.chain ? new KeyringChainPhysics(model.chain, cameraOrientation) : null;
+        if (chainState) chainPhysics?.restore(chainState);
       }
       lastConfiguration = config;
     };
@@ -123,7 +130,7 @@ export default function ProductScene({ product, configuration, presentation = fa
       if (!width || !height) return;
       renderer.setSize(width, height);
       camera.aspect = width / height;
-      camera.zoom = Math.min(product === "e-linker" ? 1.05 : 1.22, camera.aspect / .95);
+      camera.zoom = Math.min(freeRotation ? .82 : product === "e-linker" ? 1.05 : 1.22, camera.aspect / .95);
       camera.updateProjectionMatrix();
     };
     resize();
@@ -182,7 +189,7 @@ export default function ProductScene({ product, configuration, presentation = fa
     controllerRef.current = {
       update,
       record: appearance => { model?.setRecordAppearance?.(appearance); if (model?.record) model.record.position.y = .61 + stateRef.current.recordLift; },
-      reset: () => { endDrag(); targetYaw = -.2; targetOrientation.copy(initialOrientation); },
+      reset: () => { endDrag(); targetYaw = -.2; targetOrientation.copy(initialOrientation); chainPhysics?.reset(); },
       rotate: (yaw, pitch = 0, roll = 0) => {
         manualUntil = performance.now() + 3000;
         if (!freeRotation) { targetYaw += yaw; return; }
@@ -218,6 +225,7 @@ export default function ProductScene({ product, configuration, presentation = fa
           model.record.position.y += (.61 + stateRef.current.recordLift - model.record.position.y) * rotationBlend;
           if (animate) model.record.rotation.y -= dt * .8;
         }
+        chainPhysics?.step(dt, motion.matches);
       }
       renderer.render(scene, camera);
     };
@@ -225,6 +233,7 @@ export default function ProductScene({ product, configuration, presentation = fa
     setReady(true);
     return () => {
       disposed = true;
+      chainPhysics = null;
       controllerRef.current = null;
       window.cancelAnimationFrame(frame);
       endDrag();
@@ -257,7 +266,7 @@ export default function ProductScene({ product, configuration, presentation = fa
   };
   return <div className={styles.sceneWrap} data-ready={ready && !unavailable}>
     <div ref={hostRef} className={styles.scene} data-rotation={product === "e-linker" && !presentation ? "free" : "horizontal"} role={presentation ? "img" : "group"} tabIndex={presentation || unavailable ? undefined : 0} aria-label={presentation ? `Presentazione animata di ${product}` : product === "e-linker" ? "Anteprima e-linker. Trascina in ogni direzione o usa le quattro frecce per ruotare. Q ed E inclinano il modello; Home ripristina la vista." : "Anteprima e-disk. Trascina in orizzontale o usa le frecce sinistra e destra per ruotare; Home ripristina la vista."} onKeyDown={keyboard} />
-    {(!ready || unavailable) && <div className={styles.sceneFallback}><ProductIllustration product={product} configuration={configuration} /></div>}
+    {(!ready || unavailable) && <div className={styles.sceneFallback}><ProductIllustration product={product} configuration={configuration} showChain={!presentation} /></div>}
     {unavailable && <span className={styles.webglNotice}>Vista illustrata · 3D non disponibile su questo dispositivo</span>}
   </div>;
 }

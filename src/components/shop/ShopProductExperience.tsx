@@ -9,6 +9,7 @@ import { ProductColorPicker } from "./ProductColorPicker";
 import { CartoonNotes } from "./CartoonNotes";
 import { EDiskBundle, EDiskDiscStudio, EDiskGiftIdeas, EDiskRecordDemo, type DiscSource } from "./EDiskRecords";
 import { RecordDemoAudio } from "./RecordDemoAudio";
+import { RelatedProducts } from "./RelatedProducts";
 import { colorName, defaultConfiguration, KEYRING_SHAPES, PRODUCTS, productColors, type ProductConfiguration, type ProductId } from "./products";
 import styles from "./Shop.module.css";
 
@@ -43,7 +44,6 @@ function configurationSummary(product: ProductId, configuration: ProductConfigur
 export function ShopProductExperience({ product }: { product: ProductId }) {
   const info = PRODUCTS[product];
   const isDisk = product === "e-disk";
-  const otherProduct: ProductId = isDisk ? "e-linker" : "e-disk";
   const [configuration, setConfiguration] = useState<ProductConfiguration>(() => defaultConfiguration(product));
   const [diskOffer, setDiskOffer] = useState<"device" | "bundle">("device");
   const [discSource, setDiscSource] = useState<DiscSource>("ai");
@@ -276,7 +276,7 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
 
       <section className={styles.faq} aria-labelledby="faq-title"><div><h2 id="faq-title">Bella domanda<span>.</span></h2></div><div>{info.faq.map(item => <details key={item.question}><summary>{item.question}<Plus size={20} /></summary><p>{item.answer}</p></details>)}</div></section>
 
-      <Link href={`/shop/${otherProduct}`} className={styles.otherProduct}><div><span>La famiglia Evolve continua</span><h2>Piacere,<br />{otherProduct}<span>.</span></h2><p>{PRODUCTS[otherProduct].category} <ArrowUpRight size={20} /></p></div><ProductIllustration product={otherProduct} configuration={defaultConfiguration(otherProduct)} /></Link>
+      <RelatedProducts current={product} />
     </main>
   );
 }
