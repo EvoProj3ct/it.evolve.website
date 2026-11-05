@@ -41,8 +41,8 @@ export default function ProductScene({ product, configuration, presentation = fa
     let disposed = false;
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.75));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.25;
+    renderer.toneMapping = THREE.NeutralToneMapping;
+    renderer.toneMappingExposure = 1;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     renderer.domElement.setAttribute("aria-hidden", "true");
@@ -55,32 +55,40 @@ export default function ProductScene({ product, configuration, presentation = fa
     const room = new RoomEnvironment();
     const environment = pmrem.fromScene(room, .04);
     scene.environment = environment.texture;
+    scene.environmentIntensity = .65;
     disposeModel(room);
     pmrem.dispose();
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x526e4e, 2.8));
-    const key = new THREE.DirectionalLight(0xffffff, 4);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xb8bdc1, 1.5));
+    const key = new THREE.DirectionalLight(0xffffff, 2.8);
     key.position.set(-4, 9, 4);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
     Object.assign(key.shadow.camera, { left: -6, right: 6, top: 6, bottom: -6 });
     key.shadow.normalBias = .035;
+    key.shadow.bias = -.0003;
+    key.shadow.radius = 3;
     scene.add(key);
-    const rim = new THREE.DirectionalLight(0xeaffd4, 2.5);
+    const rim = new THREE.DirectionalLight(0xffffff, 1.7);
     rim.position.set(4, 3, -5);
     scene.add(rim);
-    const primary = new THREE.MeshStandardMaterial({ color: stateRef.current.configuration.primary, roughness: .43, metalness: .04 });
-    const secondary = new THREE.MeshStandardMaterial({ color: stateRef.current.configuration.secondary, roughness: .43, metalness: .04 });
+    const finish = { roughness: product === "e-disk" ? .27 : .38, metalness: .03, clearcoat: product === "e-disk" ? .5 : .18, clearcoatRoughness: .25 };
+    const primary = new THREE.MeshPhysicalMaterial({ color: stateRef.current.configuration.primary, ...finish });
+    const secondary = new THREE.MeshPhysicalMaterial({ color: stateRef.current.configuration.secondary, ...finish });
+    const targetPrimary = primary.color.clone(), targetSecondary = secondary.color.clone();
     let model: ProductModel | null = null;
     let font: Font | null = null;
     let lastConfiguration: ProductConfiguration | null = null;
     const update = (config: ProductConfiguration, force = false) => {
       if (disposed) return;
-      primary.color.set(config.primary);
-      secondary.color.set(config.secondary);
+      targetPrimary.set(config.primary);
+      targetSecondary.set(config.secondary);
       const changed = !lastConfiguration || config.shape !== lastConfiguration.shape || config.text !== lastConfiguration.text || config.logo !== lastConfiguration.logo;
       if (!model || (product === "e-linker" && (changed || force))) {
+        stateRef.current.onError?.("");
+        const currentYaw = model?.group.rotation.y ?? -.2;
         if (model) { scene.remove(model.group); disposeModel(model.group, [primary, secondary]); }
         model = product === "e-disk" ? createTurntable(primary, secondary) : createKeyring(config, font, primary, secondary, message => stateRef.current.onError?.(message));
+        model.group.rotation.y = currentYaw;
         scene.add(model.group);
       }
       lastConfiguration = config;
@@ -92,7 +100,7 @@ export default function ProductScene({ product, configuration, presentation = fa
       update(stateRef.current.configuration, true);
     }).catch(() => { if (!disposed) { setUnavailable(true); stateRef.current.onError?.("Il carattere 3D non è disponibile. La sagoma mostra comunque testo e colori scelti."); } });
 
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(22, 22), new THREE.ShadowMaterial({ color: "#072018", opacity: presentation ? .28 : .17 }));
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(22, 22), new THREE.ShadowMaterial({ color: "#11171a", opacity: product === "e-linker" ? .09 : .16 }));
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = product === "e-disk" ? -.6 : -.37;
     floor.receiveShadow = true;
@@ -151,11 +159,15 @@ export default function ProductScene({ product, configuration, presentation = fa
       if (!visible || document.hidden || now - previous < 32) return;
       const dt = previous ? Math.min((now - previous) / 1000, .05) : .03;
       previous = now;
+      const blend = motion.matches ? 1 : 1 - Math.exp(-dt * 12);
+      primary.color.lerp(targetPrimary, blend);
+      secondary.color.lerp(targetSecondary, blend);
       const animate = stateRef.current.playing && !motion.matches;
       if (animate) elapsed += dt;
       if (model) {
-        const yaw = presentation ? -.2 + Math.sin(elapsed * .4) * .42 : targetYaw;
+        const yaw = presentation ? product === "e-disk" ? -.2 : -.2 + Math.sin(elapsed * .25) * .12 : targetYaw;
         model.group.rotation.y += (yaw - model.group.rotation.y) * (motion.matches ? 1 : Math.min(1, dt * 12));
+        if (product === "e-linker" && presentation) model.group.position.y = .32 + Math.sin(elapsed * .7) * .09;
         if (model.record && animate) model.record.rotation.y -= dt * .8;
       }
       renderer.render(scene, camera);

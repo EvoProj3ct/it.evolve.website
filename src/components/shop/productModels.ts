@@ -16,20 +16,20 @@ function add(parent: THREE.Object3D, geometry: THREE.BufferGeometry, material: T
   return mesh;
 }
 
-function labelTexture(text: string, background: string, color: string) {
+function labelTexture(text: string, background: string, color: string, square = false) {
   const canvas = document.createElement("canvas");
   canvas.width = 512;
-  canvas.height = 256;
+  canvas.height = square ? 512 : 256;
   const context = canvas.getContext("2d");
   if (context) {
     context.fillStyle = background;
-    context.fillRect(0, 0, 512, 256);
+    context.fillRect(0, 0, 512, canvas.height);
     context.fillStyle = color;
     context.textAlign = "center";
     context.font = "bold 70px Arial, sans-serif";
-    context.fillText(text, 256, 135);
+    context.fillText(text, 256, square ? 245 : 135);
     context.font = "20px monospace";
-    context.fillText("EVOLVE / OBJECTS", 256, 185);
+    context.fillText("EVOLVE / OBJECTS", 256, square ? 315 : 185);
   }
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -39,33 +39,39 @@ function labelTexture(text: string, background: string, color: string) {
 // Modello di presentazione derivato dalle proporzioni del giradischi dell'app.
 export function createTurntable(primary: THREE.MeshStandardMaterial, secondary: THREE.MeshStandardMaterial): ProductModel {
   const group = new THREE.Group();
-  const dark = new THREE.MeshStandardMaterial({ color: "#152019", roughness: .7 });
-  const silver = new THREE.MeshStandardMaterial({ color: "#dbe4df", metalness: .86, roughness: .24 });
+  const dark = new THREE.MeshStandardMaterial({ color: "#111417", roughness: .4, metalness: .16 });
+  const hardware = new THREE.MeshPhysicalMaterial({ color: "#16191d", roughness: .3, metalness: .4, clearcoat: .25 });
   add(group, new RoundedBoxGeometry(6.4, .62, 4.75, 4, .18), primary);
   add(group, new RoundedBoxGeometry(6.12, .14, 4.47, 4, .13), secondary, 0, .35);
   for (const x of [-2.45, 2.45]) for (const z of [-1.65, 1.65]) add(group, new THREE.CylinderGeometry(.23, .26, .28, 24), dark, x, -.43, z);
-  add(group, new THREE.CylinderGeometry(1.84, 1.84, .15, 80), silver, -.65, .49);
+  add(group, new THREE.CylinderGeometry(1.84, 1.84, .15, 96), hardware, -.65, .49);
   const record = new THREE.Group();
   record.position.set(-.65, .61, 0);
   group.add(record);
-  const vinyl = new THREE.MeshStandardMaterial({ color: "#19251c", roughness: .32, metalness: .22 });
-  add(record, new THREE.CylinderGeometry(1.94, 1.94, .09, 96), vinyl);
-  const grooves = new THREE.MeshStandardMaterial({ color: "#536248", roughness: .42, metalness: .45 });
-  for (let radius = .65; radius < 1.9; radius += .11) add(record, new THREE.TorusGeometry(radius, .006, 4, 96), grooves, 0, .05).rotation.x = Math.PI / 2;
-  const label = add(record, new THREE.CircleGeometry(.57, 48), new THREE.MeshStandardMaterial({ map: labelTexture("e-disk", "#c1ff00", "#101914"), roughness: .7 }), 0, .055);
+  const vinyl = new THREE.MeshPhysicalMaterial({ color: "#090b0e", roughness: .24, metalness: .12, clearcoat: .65, clearcoatRoughness: .23 });
+  add(record, new THREE.CylinderGeometry(1.94, 1.94, .09, 128), vinyl).castShadow = false;
+  const grooves = new THREE.MeshStandardMaterial({ color: "#25282d", roughness: .3, metalness: .28 });
+  for (let radius = .65; radius < 1.9; radius += .09) {
+    const groove = add(record, new THREE.TorusGeometry(radius, .003, 4, 128), grooves, 0, .05);
+    groove.rotation.x = Math.PI / 2;
+    groove.castShadow = false;
+    groove.receiveShadow = false;
+  }
+  const label = add(record, new THREE.CircleGeometry(.57, 64), new THREE.MeshBasicMaterial({ map: labelTexture("e-disk", "#eae9da", "#101914", true) }), 0, .055);
+  label.castShadow = false;
   label.rotation.x = -Math.PI / 2;
-  add(group, new THREE.CylinderGeometry(.045, .045, .14, 16), silver, -.65, .75);
+  add(group, new THREE.CylinderGeometry(.045, .045, .14, 24), hardware, -.65, .75);
   add(group, new THREE.CylinderGeometry(.29, .31, .16, 32), dark, 2.1, .51, -1.4);
-  add(group, new THREE.CylinderGeometry(.17, .17, .3, 24), silver, 2.1, .71, -1.4);
+  add(group, new THREE.CylinderGeometry(.17, .17, .3, 32), hardware, 2.1, .71, -1.4);
   const arm = new THREE.Group();
   arm.position.set(2.1, .88, -1.4);
   group.add(arm);
   const curve = new THREE.CatmullRomCurve3([new THREE.Vector3(), new THREE.Vector3(.15, 0, .6), new THREE.Vector3(.1, -.02, 1.25), new THREE.Vector3(-.9, -.08, 2.15)]);
-  add(arm, new THREE.TubeGeometry(curve, 40, .05, 8, false), silver);
-  const head = add(arm, new RoundedBoxGeometry(.27, .15, .42, 2, .025), secondary, -.9, -.08, 2.15);
+  add(arm, new THREE.TubeGeometry(curve, 64, .05, 12, false), hardware);
+  const head = add(arm, new RoundedBoxGeometry(.27, .15, .42, 3, .025), dark, -.9, -.08, 2.15);
   head.rotation.y = -.65;
-  add(group, new THREE.CylinderGeometry(.2, .2, .2, 32), secondary, 2.5, .55, 1.55);
-  add(group, new THREE.CylinderGeometry(.12, .12, .04, 24), silver, 2.5, .67, 1.55);
+  add(group, new THREE.CylinderGeometry(.2, .2, .2, 40), hardware, 2.5, .55, 1.55);
+  add(group, new THREE.CylinderGeometry(.12, .12, .04, 32), dark, 2.5, .67, 1.55);
   add(group, new THREE.SphereGeometry(.05, 12, 8), new THREE.MeshBasicMaterial({ color: "#c1ff00" }), 1.95, .48, 1.55);
   const brand = add(group, new THREE.PlaneGeometry(.82, .38), new THREE.MeshStandardMaterial({ map: labelTexture("evolve", "#101914", "#f5f1e8"), roughness: .8 }), -2.3, .04, 2.381);
   brand.rotation.x = 0;
@@ -153,6 +159,8 @@ export function createKeyring(configuration: ProductConfiguration, font: Font | 
       onError("Non riesco a leggere i tracciati del logo. Prova un SVG con forme piene e testo convertito in tracciati, oppure un PNG.");
     }
   } else if (logo?.kind === "image") {
+    const logoMaterial = new THREE.MeshBasicMaterial({ transparent: true, side: THREE.DoubleSide });
+    const logoMesh = add(body, new THREE.PlaneGeometry(1, 1), logoMaterial, 0, centerY + (configuration.text.trim() ? .25 : 0), .275);
     const texture = new THREE.TextureLoader().load(logo.data, loaded => {
       if (group.userData.disposed) { loaded.dispose(); return; }
       const image = loaded.image as HTMLImageElement;
@@ -161,7 +169,7 @@ export function createKeyring(configuration: ProductConfiguration, font: Font | 
       logoMesh.scale.set(height * ratio, height, 1);
     }, undefined, () => { if (!group.userData.disposed) onError("L’immagine non è leggibile. Prova un altro file PNG o JPG."); });
     texture.colorSpace = THREE.SRGBColorSpace;
-    const logoMesh = add(body, new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: texture, transparent: true, side: THREE.DoubleSide }), 0, centerY + (configuration.text.trim() ? .25 : 0), .275);
+    logoMaterial.map = texture;
   }
   group.scale.setScalar(1.3);
   return { group };

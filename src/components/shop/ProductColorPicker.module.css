@@ -1,0 +1,40 @@
+.picker { width: 100%; }
+.channels { border-top: 1px solid #dae1d6; }
+.channel { display: flex; align-items: center; gap: 13px; width: 100%; min-height: 66px; padding: 10px 0; border: 0; border-bottom: 1px solid #dae1d6; background: transparent; color: #101914; text-align: left; }
+.channelIndex { color: #899283; font-family: monospace; font-size: 9px; }
+.channelLabel { font-size: 12px; font-weight: 500; letter-spacing: -.02em; }
+.colorName { margin-left: auto; color: #63705e; font-size: 10px; }
+.colorChip { position: relative; flex: none; width: 27px; height: 27px; border: 1px solid #10191418; border-radius: 50%; background: var(--chip-color); box-shadow: inset 0 1px 1px #ffffff50, 0 2px 5px #10191408; transition: transform .2s; }
+.channel > svg { flex: none; color: #8a9483; transition: transform .2s; }
+.channel:hover .colorChip, .channel[aria-expanded="true"] .colorChip { transform: scale(1.09); }
+.channel[aria-expanded="true"] > svg { transform: rotate(180deg); }
+.actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 44px; color: #86907e; font-size: 9px; }
+.actions > div { display: flex; align-items: center; gap: 3px; }
+.actions button { display: grid; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: #5c7154; transition: background .2s; }
+.actions button:hover { background: #eaf0e5; }
+.popover { position: fixed; z-index: 100; width: min(292px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); padding: 14px; overflow-y: auto; border: 1px solid #d9e3d0; border-radius: 16px; background: #fcfdfbf5; color: #101914; box-shadow: 0 8px 20px #14231b08, 0 24px 70px #14231b1c; backdrop-filter: blur(24px); font-family: var(--fonts-body), Arial, sans-serif; box-sizing: border-box; animation: paletteIn .18s ease-out; }
+.popover * { box-sizing: border-box; }
+.popover button { cursor: pointer; font: inherit; }
+.popover button:focus-visible { outline: 2px solid #578b60; outline-offset: -1px; }
+.popoverHeader { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 1px 3px 12px; }
+.popoverHeader > span { font-size: 12px; font-weight: 500; }
+.popoverHeader small { margin-left: 10px; color: #939b8b; font-size: 9px; font-weight: 400; }
+.popoverHeader button { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: #eef2e9; color: #66725d; }
+.palette { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 3px; }
+.swatch { position: relative; display: grid; place-items: center; width: 100%; height: 40px; padding: 6px; border: 0; border-radius: 9px; background: transparent; }
+.swatch > i { display: block; width: 24px; height: 24px; border: 1px solid #10191414; border-radius: 50%; background: var(--chip-color); box-shadow: inset 0 1px 1px #ffffff40; transition: transform .18s; }
+.swatch:hover { background: #f0f4eb; }
+.swatch:hover > i { transform: scale(1.12); }
+.swatch[aria-checked="true"] { background: #eaf0e3; }
+.swatch[aria-checked="true"]::after { position: absolute; bottom: 2px; left: calc(50% - 3px); width: 6px; height: 2px; border-radius: 2px; background: #243b24; content: ""; }
+.popoverCaption { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 35px; margin-top: 10px; padding: 10px 3px 0; border-top: 1px solid #e2e9dc; font-size: 10px; }
+.popoverCaption > span:last-child { color: #8b9682; font-family: monospace; font-size: 9px; }
+@keyframes paletteIn { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 400px) {
+  .channel { gap: 10px; }
+  .colorName { font-size: 9px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .colorChip, .channel > svg, .actions button, .swatch > i { transition: none; }
+  .popover { animation: none; }
+}

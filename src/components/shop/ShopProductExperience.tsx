@@ -3,8 +3,10 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
-import { ArrowDown, ArrowLeftRight, ArrowUpRight, BookOpen, Check, Disc3, Download, MoveHorizontal, Nfc, Pause, Play, Plus, RotateCcw, Shuffle, Smartphone, Upload, X } from "lucide-react";
+import { ArrowDown, ArrowUpRight, BookOpen, Check, Disc3, Download, MoveHorizontal, Nfc, Pause, Play, Plus, RotateCcw, Smartphone, Upload, X } from "lucide-react";
 import { ProductIllustration } from "./ProductIllustration";
+import { ProductColorPicker } from "./ProductColorPicker";
+import { CartoonNotes } from "./CartoonNotes";
 import { colorName, defaultConfiguration, KEYRING_SHAPES, PRODUCTS, SHOP_COLORS, type ProductConfiguration, type ProductId } from "./products";
 import styles from "./Shop.module.css";
 
@@ -17,7 +19,7 @@ const PRESETS = [
 ];
 
 function configurationSummary(product: ProductId, configuration: ProductConfiguration) {
-  const lines = [PRODUCTS[product].name, `${product === "e-disk" ? "Scocca" : "Base"}: ${colorName(configuration.primary)} (${configuration.primary})`, `${product === "e-disk" ? "Piano e dettagli" : "Scritta e logo SVG"}: ${colorName(configuration.secondary)} (${configuration.secondary})`];
+  const lines = [PRODUCTS[product].name, `${product === "e-disk" ? "Scocca" : "Base"}: ${colorName(configuration.primary)} (${configuration.primary})`, `${product === "e-disk" ? "Piano" : "Scritta e logo SVG"}: ${colorName(configuration.secondary)} (${configuration.secondary})`];
   if (product === "e-linker") lines.push(`Forma: ${KEYRING_SHAPES.find(shape => shape.id === configuration.shape)?.name}`, `Testo: ${configuration.text || "Nessun testo"}`, `Logo: ${configuration.logo?.name ?? "Nessun logo"}`);
   return lines.join("\n");
 }
@@ -29,7 +31,6 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
   const [configuration, setConfiguration] = useState<ProductConfiguration>(() => defaultConfiguration(product));
   const previewConfiguration = useDeferredValue(configuration);
   const heroConfiguration = useMemo(() => defaultConfiguration(product), [product]);
-  const [targetColor, setTargetColor] = useState<"primary" | "secondary">("primary");
   const [heroPlaying, setHeroPlaying] = useState(true);
   const [recordPlaying, setRecordPlaying] = useState(true);
   const [viewReset, setViewReset] = useState(0);
@@ -125,8 +126,9 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
           <div className={styles.heroVisual}>
             <div className={styles.visualOrbit} aria-hidden="true" />
             <span className={styles.visualCross} aria-hidden="true">✳</span>
-            <span className={styles.sticker} aria-hidden="true">{isDisk ? <>NFC<br />inside!</> : <>Made<br />by you.</>}</span>
+            <span className={styles.sticker} aria-hidden="true">{isDisk ? <>NFC<br />inside!</> : <>✳ <span>Disegnato da te</span></>}</span>
             {info.video ? <video ref={videoRef} src={info.video} className={styles.heroVideo} autoPlay muted loop playsInline aria-label={`Presentazione ${product}`} /> : <ProductScene product={product} configuration={heroConfiguration} presentation playing={heroPlaying} />}
+            {isDisk && !info.video && <CartoonNotes playing={heroPlaying} />}
             <div className={styles.filmBar}>
               <span><i /> {info.video ? "Il film" : "Studio di prodotto · 3D"} <b>/ {info.number}</b></span>
               <button type="button" onClick={() => setHeroPlaying(value => !value)} aria-label={heroPlaying ? "Metti in pausa la presentazione" : "Riprendi la presentazione"}>{heroPlaying ? <Pause size={15} /> : <Play size={15} />} {heroPlaying ? "Pausa" : "Play"}</button>
@@ -136,7 +138,7 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
         <a href="#scopri" className={styles.scrollCue}>Bello da vedere. Ancora meglio da usare. <ArrowDown size={15} /></a>
       </section>
 
-      <div className={styles.ticker} aria-hidden="true"><div>{[0, 1, 2, 3].map(index => <span key={index}>{isDisk ? "OGGETTI FISICI, IDEE DIGITALI" : "IL TUO NOME. IL TUO LOGO. I TUOI COLORI."}<b>✳</b> THINK TO EVOLVE <b>✳</b> {isDisk ? "METTI UN DISCO" : "PORTALO OVUNQUE"}<b>✳</b></span>)}</div></div>
+      {isDisk && <div className={styles.tickerBridge} aria-hidden="true"><div className={styles.ticker}><div>{[0, 1, 2, 3].map(index => <span key={index}>OGGETTI FISICI, IDEE DIGITALI<b>✳</b> THINK TO EVOLVE <b>✳</b> METTI UN DISCO<b>✳</b></span>)}</div></div></div>}
 
       <section id="scopri" className={styles.story} aria-labelledby="story-title">
         <div className={styles.sectionLabel}><span>01 / Il progetto</span><span>{isDisk ? "Una nuova abitudine" : "La tua identità, in tasca"}</span></div>
@@ -167,11 +169,8 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
               </div>
             </>}
             <fieldset className={styles.controlGroup}><legend><span>{isDisk ? "01" : "03"}</span> Trova i tuoi colori</legend>
-              <div className={styles.colorTargets}>{(["primary", "secondary"] as const).map((target, index) => <button key={target} type="button" aria-pressed={targetColor === target} onClick={() => setTargetColor(target)}><i style={swatchStyle(configuration[target])} /><span><small>{index === 0 ? isDisk ? "Scocca" : "Base" : isDisk ? "Piano e dettagli" : "Scritta e logo SVG"}</small><b>{colorName(configuration[target])}</b></span>{targetColor === target && <span className={styles.targetDot} />}</button>)}</div>
-              <div className={styles.swatchHeading}><span>{colorName(configuration[targetColor])}</span><button type="button" onClick={() => setConfiguration(current => ({ ...current, primary: current.secondary, secondary: current.primary }))}><ArrowLeftRight size={13} /> Scambia</button></div>
-              <div className={styles.swatches} role="group" aria-label={`Colore ${targetColor === "primary" ? isDisk ? "scocca" : "base" : "dettagli"}`}>{SHOP_COLORS.map(color => <button type="button" key={color.hex} className={styles.swatch} style={swatchStyle(color.hex)} aria-pressed={configuration[targetColor] === color.hex} aria-label={`${color.name}, ${color.hex}`} title={color.name} onClick={() => setConfiguration(current => ({ ...current, [targetColor]: color.hex }))}><span>{configuration[targetColor] === color.hex && <Check size={16} strokeWidth={3} />}</span></button>)}</div>
-              <div className={styles.paletteFooter}><span>30 tonalità. Il mix lo fai tu.</span><button type="button" onClick={shuffleColors}><Shuffle size={14} /> Sorprendimi</button></div>
-              <div className={styles.presets}><span>Oppure parti da qui</span><div>{PRESETS.map(preset => <button type="button" key={preset.name} onClick={() => setConfiguration(current => ({ ...current, primary: preset.primary, secondary: preset.secondary }))}><i style={swatchStyle(preset.primary)} /><i style={swatchStyle(preset.secondary)} />{preset.name}</button>)}</div></div>
+              <ProductColorPicker product={product} value={configuration} onChange={(channel, hex) => setConfiguration(current => ({ ...current, [channel]: hex }))} onSwap={() => setConfiguration(current => ({ ...current, primary: current.secondary, secondary: current.primary }))} onShuffle={shuffleColors} />
+              <div className={styles.presets}><span>Abbinamenti</span><div>{PRESETS.map(preset => <button type="button" key={preset.name} aria-pressed={configuration.primary === preset.primary && configuration.secondary === preset.secondary} onClick={() => setConfiguration(current => ({ ...current, primary: preset.primary, secondary: preset.secondary }))}><i style={swatchStyle(preset.primary)} /><i style={swatchStyle(preset.secondary)} />{preset.name}</button>)}</div></div>
             </fieldset>
             {sceneError && <p className={styles.error} role="status">{sceneError}</p>}
             <div className={styles.configurationSummary} aria-live="polite" aria-atomic="true"><span>IL TUO {product.toUpperCase()}</span><p>{colorName(configuration.primary)} <b>+</b> {colorName(configuration.secondary)}{!isDisk && <> / {KEYRING_SHAPES.find(shape => shape.id === configuration.shape)?.name}{configuration.text && <> / “{configuration.text}”</>}</>}</p></div>
