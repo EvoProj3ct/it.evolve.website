@@ -68,7 +68,10 @@ export function createLedModel(config: LedConfiguration, font: Font): LedModel {
     if (logoVisible && config.logo) {
       const mark = new THREE.Group(); composition.add(mark);
       const parsed = new SVGLoader().parse(config.logo.data);
-      const outlines = parsed.paths.filter(path => path.userData.style?.fill !== "none").flatMap(path => SVGLoader.createShapes(path));
+      const outlines = parsed.paths.filter(path => {
+        const style = path.userData.style as { fill?: string } | undefined;
+        return style?.fill !== "none";
+      }).flatMap(path => SVGLoader.createShapes(path));
       const bounds = new THREE.Box2().setFromPoints(outlines.flatMap(shape => shape.getPoints(10)));
       const size = bounds.getSize(new THREE.Vector2()), center = bounds.getCenter(new THREE.Vector2());
       if (!Number.isFinite(size.x) || size.x < .001 || size.y < .001) throw new Error("Il logo non contiene forme piene. Converti linee e testi in tracciati.");
