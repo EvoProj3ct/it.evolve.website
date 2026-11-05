@@ -27,7 +27,7 @@ export function ProductColorPicker({ product, value, onChange, onSwap, onShuffle
   const initialValue = useRef(value);
   initialValue.current = value;
   const panelId = useId();
-  const labels = product === "e-disk" ? { primary: "Scocca", secondary: "Piano" } : { primary: "Base", secondary: "Rilievo" };
+  const labels = product === "e-disk" ? { primary: "Scocca", secondary: "Piano" } : product === "e-led" ? { primary: "Scocca", secondary: "Luce" } : { primary: "Base", secondary: "Rilievo" };
 
   const close = (restoreFocus = false) => {
     if (restoreFocus && active) triggers.current[active]?.focus({ preventScroll: true });
@@ -102,14 +102,14 @@ export function ProductColorPicker({ product, value, onChange, onSwap, onShuffle
     panelRef.current?.querySelector<HTMLButtonElement>(`[data-color="${color.hex}"]`)?.focus({ preventScroll: true });
   };
 
-  return <div className={styles.picker} ref={rootRef}>
+  return <div className={styles.picker} ref={rootRef} data-product={product}>
     <div className={styles.channels}>
       {(["primary", "secondary"] as const).map((channel, index) => <button key={channel} ref={element => { triggers.current[channel] = element; }} type="button" className={styles.channel} aria-expanded={active === channel} aria-controls={active === channel ? panelId : undefined} aria-haspopup="dialog" onClick={() => {
         setPosition(current => ({ ...current, ready: false })); setHovered(null); setActive(current => current === channel ? null : channel);
       }}><span className={styles.channelIndex}>0{index + 1}</span><span className={styles.channelLabel}>{labels[channel]}</span><span className={styles.colorName}>{colorName(value[channel])}</span><i className={styles.colorChip} style={colorStyle(value[channel])} /><ChevronDown size={13} /></button>)}
     </div>
-    <div className={styles.actions}><span>{product === "e-disk" ? "Dettagli in nero satinato" : "Due colori, una firma"}</span><div><button type="button" onClick={() => { close(); onSwap(); }} aria-label="Scambia i due colori" title="Scambia i colori"><ArrowLeftRight size={15} /></button><button type="button" onClick={() => { close(); onShuffle(); }} aria-label="Scegli un abbinamento casuale" title="Sorprendimi"><Shuffle size={15} /></button></div></div>
-    {active && createPortal(<div id={panelId} ref={panelRef} className={styles.popover} role="dialog" aria-label={`Scegli il colore: ${labels[active].toLowerCase()}`} style={{ left: position.left, top: position.top, visibility: position.ready ? "visible" : "hidden" }}>
+    <div className={styles.actions}><span>{product === "e-disk" ? "Dettagli in nero satinato" : product === "e-led" ? "Materia e luce, indipendenti" : "Due colori, una firma"}</span><div><button type="button" onClick={() => { close(); onSwap(); }} aria-label="Scambia i due colori" title="Scambia i colori"><ArrowLeftRight size={15} /></button><button type="button" onClick={() => { close(); onShuffle(); }} aria-label="Scegli un abbinamento casuale" title="Sorprendimi"><Shuffle size={15} /></button></div></div>
+    {active && createPortal(<div id={panelId} ref={panelRef} className={styles.popover} data-product={product} role="dialog" aria-label={`Scegli il colore: ${labels[active].toLowerCase()}`} style={{ left: position.left, top: position.top, visibility: position.ready ? "visible" : "hidden" }}>
       <div className={styles.popoverHeader}><span>{labels[active]}<small>{colors.length} tonalità</small></span><button type="button" onClick={() => close(true)} aria-label="Chiudi la palette"><X size={15} /></button></div>
       <div className={styles.palette} role="radiogroup" aria-label={`Colore ${labels[active].toLowerCase()}`} onPointerLeave={() => setHovered(null)}>{colors.map((color, index) => <button key={color.hex} type="button" className={styles.swatch} role="radio" aria-checked={value[active] === color.hex} tabIndex={value[active] === color.hex ? 0 : -1} data-color={color.hex} aria-label={color.name} title={color.name} style={colorStyle(color.hex)} onPointerEnter={() => setHovered(color.hex)} onFocus={() => setHovered(color.hex)} onKeyDown={event => navigate(event, index)} onClick={() => { onChange(active, color.hex); close(true); }}><i /></button>)}</div>
       <div className={styles.popoverCaption}><span>{colorName(hovered ?? value[active])}</span><span>{hovered ?? value[active]}</span></div>

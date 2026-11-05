@@ -5,7 +5,7 @@ import styles from "@/components/shop/Shop.module.css";
 
 export const metadata: Metadata = {
   title: { template: "%s · Evolve Shop", default: "Evolve Shop" },
-  description: "Oggetti fisici, idee digitali. Scopri e-disk ed e-linker e personalizzali con i tuoi colori.",
+  description: "Oggetti fisici, idee digitali. Scopri e-disk, e-linker ed e-led e personalizzali con i tuoi colori.",
 };
 
 export default function ShopLayout({ children }: { children: React.ReactNode }) {

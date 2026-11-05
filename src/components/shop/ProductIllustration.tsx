@@ -8,7 +8,7 @@ function KeyringOutline({ shape, fill, opacity = 1, stroke = "none" }: { shape: 
   return <rect x={shape === "square" ? 95 : 80} y={shape === "square" ? 154 : 186} width={shape === "square" ? 270 : 300} height={shape === "square" ? 246 : 210} rx="32" fill={fill} opacity={opacity} stroke={stroke} strokeWidth="1.2" />;
 }
 
-export function ProductIllustration({ product, configuration, showChain = true }: { product: ProductId; configuration: ProductConfiguration; showChain?: boolean }) {
+export function ProductIllustration({ product, configuration, showChain = true }: { product: Exclude<ProductId, "e-led">; configuration: ProductConfiguration; showChain?: boolean }) {
   const id = useId().replace(/[^a-zA-Z0-9_-]/g, "");
   const topY = configuration.shape === "circle" ? 152 : configuration.shape === "triangle" ? 159.5 : configuration.shape === "square" ? 154 : 186;
   const holeY = configuration.shape === "triangle" ? 207 : topY + 25;

@@ -1,4 +1,4 @@
-export type ProductId = "e-disk" | "e-linker";
+export type ProductId = "e-disk" | "e-linker" | "e-led";
 export type KeyringShape = "rectangle" | "square" | "circle" | "triangle";
 export type LogoAsset = { name: string; kind: "svg" | "image"; data: string };
 export type ProductConfiguration = {
@@ -63,8 +63,23 @@ export const LINKER_COLORS = [
   { name: "Viola Evolve", hex: "#8567C1" },
 ] as const;
 
+export const LED_COLORS = [
+  { name: "Nero notte", hex: "#101614" },
+  { name: "Grafite", hex: "#49504E" },
+  { name: "Bianco ghiaccio", hex: "#E9F0ED" },
+  { name: "Verde Evolve", hex: "#72FF63" },
+  { name: "Cyan", hex: "#45EAFF" },
+  { name: "Blu laser", hex: "#5475FF" },
+  { name: "Ultravioletto", hex: "#AE6BFF" },
+  { name: "Magenta", hex: "#FF52C6" },
+  { name: "Rosso neon", hex: "#FF535E" },
+  { name: "Ambra", hex: "#FFB857" },
+  { name: "Bianco caldo", hex: "#FFF0CD" },
+  { name: "Bianco luce", hex: "#F3FCFF" },
+] as const;
+
 export function productColors(product: ProductId) {
-  return product === "e-linker" ? LINKER_COLORS : SHOP_COLORS;
+  return product === "e-linker" ? LINKER_COLORS : product === "e-led" ? LED_COLORS : SHOP_COLORS;
 }
 
 export const KEYRING_SHAPES: { id: KeyringShape; name: string; symbol: string }[] = [
@@ -105,31 +120,53 @@ export const PRODUCTS = {
   "e-linker": {
     name: "e-linker",
     number: "02",
-    category: "Il tuo portachiavi in PLA",
+    category: "Il tuo portachiavi NFC personalizzato",
     tagline: "Piccolo oggetto.\nGrande carattere.",
-    description: "Il tuo nome, il tuo logo, i tuoi colori. Un portachiavi stampato in 3D che parla di te, prima ancora delle chiavi.",
-    punchline: "Lascia il segno.\nPortalo ovunque.",
+    description: "Il tuo logo fuori. Il tuo mondo dentro. Un portachiavi NFC stampato in 3D: avvicinalo allo smartphone per condividere la tua attività, un prodotto o un ricordo speciale.",
+    punchline: "Il tuo mondo.\nA portata di un gesto.",
     defaultPrimary: "#E9F0ED",
     defaultSecondary: "#263C42",
     video: null as string | null,
     steps: [
-      { title: "Parti dalla forma.", description: "Rettangolo, quadrato, cerchio o triangolo. Scegli la base che ti somiglia." },
-      { title: "Lascia il tuo segno.", description: "Scrivi un nome o carica un logo. Guarda la scritta prendere forma in rilievo nell’anteprima 3D." },
-      { title: "Trova il tuo mix.", description: "Combina il colore della base con quello della scritta. Poi condividi con noi la tua idea." },
+      { title: "Fatti conoscere.", description: "Il tuo sito, i tuoi social, il menu o la pagina della tua attività. Basta avvicinare uno smartphone compatibile: il tuo prossimo contatto parte da qui." },
+      { title: "Dai spazio a un prodotto.", description: "Una scheda, un video, una novità da mostrare. Trasforma il portachiavi del tuo brand in un accesso diretto a ciò che vuoi far conoscere." },
+      { title: "Regala un ricordo.", description: "Un album di foto, una dedica, un video per un amico. Un oggetto da portare ogni giorno, con dentro un momento da ritrovare." },
     ],
     faq: [
-      { question: "Che cosa posso personalizzare?", answer: "La forma della base, il colore del portachiavi, il colore della scritta, un testo e un logo. Il configuratore mostra una prima interpretazione della tua idea." },
+      { question: "Che cosa contiene e-linker?", answer: "Un tag NFC all’interno del portachiavi stampato in 3D. Avvicinandolo a uno smartphone compatibile puoi aprire il collegamento scelto: la tua attività, un prodotto oppure un contenuto personale." },
+      { question: "Come posso usarlo per la mia attività?", answer: "Puoi collegarlo al sito, ai social, al menu, al catalogo o alla pagina di un prodotto. All’esterno ci sono il tuo logo e i tuoi colori; all’interno, un accesso diretto a ciò che vuoi far scoprire." },
+      { question: "Posso regalarlo con un ricordo personale?", answer: "Sì: il collegamento può portare a un album, a un video o a una dedica online. I contenuti rimangono nella pagina collegata; il tag custodisce il collegamento, non i file. Per i ricordi privati scegli una destinazione con le impostazioni di accesso adatte." },
+      { question: "Che cosa posso personalizzare?", answer: "La forma della base, i colori, la scritta e il logo, oltre alla destinazione NFC da concordare con Evolve. Il configuratore mostra l’aspetto del portachiavi; indica il collegamento desiderato nella richiesta." },
       { question: "Quale formato uso per il logo?", answer: "Un SVG con tracciati pieni permette di visualizzare il logo in rilievo. PNG e JPG vengono mostrati come immagine sulla superficie: non vengono trasformati automaticamente in un modello stampabile. Per un SVG, converti prima eventuali testi in tracciati." },
       { question: "Il modello è pronto per la stampa?", answer: "L’anteprima serve a scegliere l’aspetto del portachiavi. Spessori, dimensioni, leggibilità del testo e lavorabilità del logo vengono verificati insieme prima della produzione." },
       { question: "Come richiedo il mio e-linker?", answer: "Configuralo e usa “Parliamone”: si aprirà una mail con il riepilogo delle tue scelte. Se hai caricato un logo, allegalo alla mail. Prezzo e disponibilità vengono concordati con Evolve." },
     ],
   },
+  "e-led": {
+    name: "e-led",
+    number: "03",
+    category: "La tua identità, accesa",
+    tagline: "Fatti vedere.\nSotto un’altra luce.",
+    description: "Il tuo nome diventa luce. Una grande scritta stampata in 3D, con una luce LED intensa e a colori, per dare carattere al tuo spazio e visibilità alla tua attività.",
+    punchline: "Un segno che\nlascia il segno.",
+    defaultPrimary: "#101614",
+    defaultSecondary: "#72FF63",
+    video: null as string | null,
+    steps: [],
+    faq: [
+      { question: "Posso usare il nome o il logo della mia attività?", answer: "Sì. Puoi partire da una scritta, dal tuo logo vettoriale oppure combinarli. Il configuratore mostra il progetto illuminato; prima della realizzazione definiamo insieme proporzioni, tracciati e dettagli stampabili." },
+      { question: "La luce può cambiare colore?", answer: "Il concept prevede LED a colori ed effetti luminosi. Nell’anteprima puoi esplorare luce fissa, respiro, pulsazione e un flusso continuo di colori. Effetti e comandi del prodotto definitivo saranno confermati con il progetto." },
+      { question: "Quanto può essere grande?", answer: "Le misure nel configuratore servono a immaginare il progetto nel tuo spazio. Dimensioni effettive, eventuali moduli, alimentazione e installazione vengono definiti con Evolve prima della produzione." },
+      { question: "Posso usarla in vetrina o all’esterno?", answer: "Raccontaci dove vuoi installarla. Per vetrine, pareti e ambienti esterni valutiamo leggibilità, fissaggio, alimentazione e protezione necessaria. L’anteprima non dichiara un grado di protezione o un impiego esterno già certificato." },
+      { question: "Il prezzo viene calcolato qui?", answer: "Per ora esplori il concept e salvi la tua configurazione. Prezzo, potenza, materiali e disponibilità vengono definiti sul progetto; carrello e acquisto saranno collegati in seguito." },
+    ],
+  },
 } as const;
 
 export function defaultConfiguration(product: ProductId): ProductConfiguration {
-  return { primary: PRODUCTS[product].defaultPrimary, secondary: PRODUCTS[product].defaultSecondary, shape: "rectangle", text: product === "e-linker" ? "e-linker." : "CIAO.", logo: null };
+  return { primary: PRODUCTS[product].defaultPrimary, secondary: PRODUCTS[product].defaultSecondary, shape: "rectangle", text: product === "e-linker" ? "e-linker." : product === "e-led" ? "EVOLVE" : "CIAO.", logo: null };
 }
 
 export function colorName(hex: string) {
-  return [...SHOP_COLORS, ...LINKER_COLORS].find(color => color.hex === hex)?.name ?? hex;
+  return [...SHOP_COLORS, ...LINKER_COLORS, ...LED_COLORS].find(color => color.hex === hex)?.name ?? hex;
 }

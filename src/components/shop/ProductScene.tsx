@@ -17,7 +17,7 @@ function loadFont() {
 }
 
 type Props = {
-  product: ProductId;
+  product: Exclude<ProductId, "e-led">;
   configuration: ProductConfiguration;
   presentation?: boolean;
   playing?: boolean;

@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
-import { ArrowUpRight, BookOpen, Check, Download, MoveHorizontal, Pause, Play, Plus, RotateCcw, ShoppingCart, Smartphone, Upload, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowUpRight, BookOpen, Check, Download, Heart, MoveHorizontal, Package, Pause, Play, Plus, RotateCcw, ShoppingCart, Smartphone, Store, Upload, Volume2, VolumeX, X } from "lucide-react";
 import { ProductIllustration } from "./ProductIllustration";
 import { ProductColorPicker } from "./ProductColorPicker";
 import { CartoonNotes } from "./CartoonNotes";
@@ -41,7 +41,7 @@ function configurationSummary(product: ProductId, configuration: ProductConfigur
   return lines.join("\n");
 }
 
-export function ShopProductExperience({ product }: { product: ProductId }) {
+export function ShopProductExperience({ product }: { product: Exclude<ProductId, "e-led"> }) {
   const info = PRODUCTS[product];
   const isDisk = product === "e-disk";
   const [configuration, setConfiguration] = useState<ProductConfiguration>(() => defaultConfiguration(product));
@@ -230,8 +230,8 @@ export function ShopProductExperience({ product }: { product: ProductId }) {
       {isDisk && <EDiskGiftIdeas onChoose={setDiscSource} />}
 
       {!isDisk && <section id="scopri" className={styles.story} aria-labelledby="story-title">
-        <div className={styles.storyHeading}><h2 id="story-title">{info.punchline}<span>.</span></h2><p>Un nome che ti rappresenta. Un logo che riconosci al volo. Un colore che si fa notare. e-linker parte dalle forme più semplici e le trasforma in qualcosa che è soltanto tuo.</p></div>
-        <div className={styles.steps}>{info.steps.map((step, index) => <article key={step.title} className={styles.step}><span className={styles.stepNumber}>0{index + 1}</span><div className={styles.stepGraphic} aria-hidden="true"><span className={styles.shapeGraphic}>{index === 0 ? "△ ○" : index === 1 ? "Aa" : "✳"}</span></div><h3>{step.title}</h3><p>{step.description}</p></article>)}</div>
+        <div className={styles.storyHeading}><h2 id="story-title">{info.punchline}<span>.</span></h2><p>Un biglietto da visita che rimane, un prodotto da far scoprire, un ricordo da regalare. Il tag NFC dentro e-linker apre il collegamento che scegli: un piccolo gesto, molto più di un portachiavi.</p></div>
+        <div className={styles.steps}>{info.steps.map((step, index) => <article key={step.title} className={styles.step}><span className={styles.stepNumber}>0{index + 1}</span><div className={styles.stepGraphic} aria-hidden="true">{index === 0 ? <Store /> : index === 1 ? <Package /> : <Heart />}</div><h3>{step.title}</h3><p>{step.description}</p></article>)}</div>
       </section>}
 
       {colorStudies}

@@ -3,23 +3,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { LayoutGroup, motion, useReducedMotion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, ShoppingCart, UserRound } from "lucide-react";
 import { PRODUCTS, type ProductId } from "./products";
+import { NavInk } from "./NavInk";
 import styles from "./Shop.module.css";
-
-function NavShadow({ id, reduced }: { id: string; reduced: boolean | null }) {
-  return <>
-    <motion.span layoutId={`${id}-upper`} className={`${styles.navShadow} ${styles.navShadowUpper}`} initial={false} transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 430, damping: 30 }} aria-hidden="true" />
-    <motion.span layoutId={`${id}-middle`} className={`${styles.navShadow} ${styles.navShadowMiddle}`} initial={false} transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 240, damping: 25 }} aria-hidden="true" />
-    <motion.span layoutId={`${id}-lower`} className={`${styles.navShadow} ${styles.navShadowLower}`} initial={false} transition={reduced ? { duration: 0 } : { type: "spring", stiffness: 145, damping: 21 }} aria-hidden="true" />
-  </>;
-}
 
 export function ShopNavigation() {
   const pathname = usePathname();
-  const reduced = useReducedMotion();
+  const navRef = useRef<HTMLElement>(null);
   const [hovered, setHovered] = useState<ProductId | null>(null);
   const current = (Object.keys(PRODUCTS) as ProductId[]).find(id => pathname.startsWith(`/shop/${id}`));
   const highlighted = hovered ?? current;
@@ -29,12 +21,12 @@ export function ShopNavigation() {
         <Image src="/logoEvolve.png" alt="Evolve" width={61} height={49} priority />
         <span className={styles.shopWord}>shop</span>
       </Link>
-      <LayoutGroup id="shop-products"><nav className={styles.productLinks} aria-label="Prodotti Evolve" onPointerLeave={() => setHovered(null)}>
-        {(Object.keys(PRODUCTS) as ProductId[]).map(id => <Link key={id} href={`/shop/${id}`} aria-current={current === id ? "page" : undefined} onPointerEnter={event => { if (event.pointerType === "mouse") setHovered(id); }} onFocus={() => setHovered(id)} onBlur={() => setHovered(null)}>
-          {highlighted === id && <NavShadow id="product-shadow" reduced={reduced} />}
-          <span className={styles.navLabel}>{PRODUCTS[id].name}</span>
+      <nav ref={navRef} className={styles.productLinks} aria-label="Prodotti Evolve" onPointerLeave={() => setHovered(null)}>
+        {(Object.keys(PRODUCTS) as ProductId[]).map(id => <Link key={id} data-nav-key={id} href={`/shop/${id}`} aria-current={current === id ? "page" : undefined} onPointerEnter={event => { if (event.pointerType === "mouse") setHovered(id); }} onFocus={() => setHovered(id)} onBlur={() => setHovered(null)}>
+          <span data-nav-label className={styles.navLabel}>{PRODUCTS[id].name}</span>
         </Link>)}
-      </nav></LayoutGroup>
+        <NavInk active={highlighted} navRef={navRef} />
+      </nav>
       <div className={styles.headerActions}>
         <button type="button" className={styles.headerTool} disabled aria-label="Profilo, prossimamente" title="Profilo, prossimamente"><UserRound size={18} /></button>
         <button type="button" className={styles.headerTool} disabled aria-label="Carrello, prossimamente" title="Carrello, prossimamente"><ShoppingCart size={18} /></button>
@@ -46,7 +38,7 @@ export function ShopNavigation() {
 
 export function ProductNavigation({ product }: { product: ProductId }) {
   const pathname = usePathname();
-  const reduced = useReducedMotion();
+  const navRef = useRef<HTMLElement>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const [section, setSection] = useState("scopri");
   const root = `/shop/${product}`;
@@ -65,18 +57,18 @@ export function ProductNavigation({ product }: { product: ProductId }) {
     ...(product === "e-disk" ? [{ id: "app", label: "App", href: `${root}/app` }] : []),
   ];
   return (
-    <div className={styles.productHeader}>
+    <div className={styles.productHeader} data-product={product}>
       <Link href={root} className={styles.productIdentity} onClick={() => setSection("scopri")}>
         <Image src={`/shop/brand/${product}.svg`} alt="" width={56} height={42} className={styles.productMark} />
         <span>{product}<span className={styles.identityDot}>.</span></span>
       </Link>
-      <LayoutGroup id={`shop-${product}-sections`}><nav aria-label={`Esplora ${product}`} className={styles.sectionLinks} onPointerLeave={() => setHovered(null)}>
-        {tabs.map(tab => <Link key={tab.id} href={tab.href} aria-current={selected === tab.id ? "page" : undefined} onClick={() => setSection(tab.id)} onPointerEnter={event => { if (event.pointerType === "mouse") setHovered(tab.id); }} onFocus={() => setHovered(tab.id)} onBlur={() => setHovered(null)}>
-          {highlighted === tab.id && <NavShadow id="section-shadow" reduced={reduced} />}
-          <span className={styles.navLabel}>{tab.label}{tab.id === "app" && <ArrowUpRight size={12} />}</span>
+      <nav ref={navRef} aria-label={`Esplora ${product}`} className={styles.sectionLinks} onPointerLeave={() => setHovered(null)}>
+        {tabs.map(tab => <Link key={tab.id} data-nav-key={tab.id} href={tab.href} aria-current={selected === tab.id ? "page" : undefined} onClick={() => setSection(tab.id)} onPointerEnter={event => { if (event.pointerType === "mouse") setHovered(tab.id); }} onFocus={() => setHovered(tab.id)} onBlur={() => setHovered(null)}>
+          <span data-nav-label className={styles.navLabel}>{tab.label}{tab.id === "app" && <ArrowUpRight size={12} />}</span>
         </Link>)}
-        <Link className={styles.navCta} href={`${root}${product === "e-disk" ? "#incidi" : "#configura"}`} onClick={() => setSection(product === "e-disk" ? "incidi" : "configura")}>{product === "e-disk" ? "Crea la tua musica" : "Personalizza"} <ArrowUpRight size={14} /></Link>
-      </nav></LayoutGroup>
+        <Link className={styles.navCta} href={`${root}${product === "e-disk" ? "#incidi" : "#configura"}`} onClick={() => setSection(product === "e-disk" ? "incidi" : "configura")}>{product === "e-disk" ? "Crea la tua musica" : product === "e-led" ? "Accendi la tua idea" : "Personalizza"} <ArrowUpRight size={14} /></Link>
+        <NavInk active={highlighted} navRef={navRef} />
+      </nav>
     </div>
   );
 }

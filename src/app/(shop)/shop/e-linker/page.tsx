@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { ShopProductExperience } from "@/components/shop/ShopProductExperience";
 
-export const metadata: Metadata = { title: "e-linker — Piccolo oggetto. Grande carattere.", description: "Il tuo portachiavi in PLA, con forme, colori, testo e logo personalizzabili. Configura il tuo e-linker." };
+export const metadata: Metadata = { title: "e-linker — Il tuo mondo, a portata di un gesto.", description: "Il portachiavi NFC personalizzato con il tuo logo: condividi la tua attività, presenta un prodotto o regala un ricordo digitale." };
 
 export default function ELinkerProductPage() {
   return <ShopProductExperience key="e-linker" product="e-linker" />;

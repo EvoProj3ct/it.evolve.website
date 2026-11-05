@@ -25,12 +25,9 @@
 .logoLink { display: inline-flex; align-items: center; gap: 19px; justify-self: start; }
 .logoLink img { width: 57px; height: auto; }
 .shopWord { font-size: 11px; letter-spacing: .1em; color: #5d6b60; }
-.productLinks { display: flex; align-items: center; gap: 4px; }
+.productLinks { position: relative; display: flex; align-items: center; gap: 4px; min-width: 0; }
 .productLinks a { position: relative; display: inline-flex; align-items: center; justify-content: center; min-height: 39px; padding: 0 21px; color: #34452f; font-size: 14px; font-weight: 500; isolation: isolate; -webkit-tap-highlight-color: transparent; }
-.navShadow { position: absolute; z-index: -1; pointer-events: none; }
-.navShadowUpper { top: 13px; right: 13px; left: 11px; height: 7px; background: #72c94f28; filter: blur(3px); clip-path: polygon(0 35%, 93% 0, 100% 80%, 7% 100%); }
-.navShadowMiddle { top: 48%; right: 4px; left: 4px; height: 12px; background: #47733b24; filter: blur(5px); clip-path: polygon(4% 0, 100% 18%, 92% 100%, 0 70%); }
-.navShadowLower { right: 10px; bottom: 4px; left: 18px; height: 4px; background: #253d251e; filter: blur(2px); }
+.navInk { position: absolute; top: 0; left: 0; z-index: 3; overflow: visible; color: #65bb48; pointer-events: none; }
 .navLabel { position: relative; display: inline-flex; align-items: center; gap: 4px; transition: color .3s, transform .35s cubic-bezier(.22,1,.36,1); }
 .productLinks a:hover .navLabel, .sectionLinks a:hover .navLabel { color: #114928; transform: translateY(-1px); }
 .headerActions { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
@@ -47,12 +44,18 @@
 .productMark { display: block; flex: none; width: 56px; height: 42px; object-fit: contain; transition: transform .4s cubic-bezier(.22,1,.36,1); }
 .productIdentity:hover .productMark, .productIdentity:focus-visible .productMark { transform: translateY(-1px) rotate(-3deg); }
 .identityDot { color: #5ab735; }
-.sectionLinks { display: flex; align-items: center; gap: 3px; }
+.sectionLinks { position: relative; display: flex; align-items: center; gap: 3px; }
 .sectionLinks a { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 36px; padding: 0 14px; color: #53624c; font-size: 12px; white-space: nowrap; isolation: isolate; -webkit-tap-highlight-color: transparent; }
 .sectionLinks .navCta { gap: 20px; min-height: 37px; margin-left: 20px; padding: 0 18px; border: 0; border-radius: 24px; background: var(--shop-ink); color: var(--shop-paper); font-weight: 500; transition: background .3s, transform .3s; }
 .sectionLinks .navCta svg { color: var(--shop-green); transition: transform .3s cubic-bezier(.22,1,.36,1); }
 .sectionLinks .navCta:hover { background: #28452b; }
 .sectionLinks .navCta:hover svg { transform: translate(2px,-2px); }
+.productHeader[data-product="e-led"] { border-color: #5a896233; background: #0b1613c4; color: #e2f2e7; }
+.productHeader[data-product="e-led"] .sectionLinks a { color: #94b4a1; }
+.productHeader[data-product="e-led"] .sectionLinks a:hover .navLabel { color: #caffb4; }
+.productHeader[data-product="e-led"] .navInk { color: #89e66a; }
+.productHeader[data-product="e-led"] .navCta { background: #b5ffa4; color: #102316; }
+.productHeader[data-product="e-led"] .navCta svg { color: #284b2a; }
 .productPage { min-width: 0; }
 .productPage section[id], .docs section[id] { scroll-margin-top: 158px; }
 .hero { position: relative; padding: calc(34px + var(--product-nav-height)) var(--shop-gutter) 25px; background: #0b3826; color: var(--shop-paper); }
@@ -256,6 +259,10 @@
 .relatedTrack a > svg { margin-left: 14px; color: #74876a; }
 .relatedTrack a:hover { border-color: #c5d5bc; background: #f5f8f2; }
 .relatedTrack a:hover img { transform: translateY(-2px) rotate(-3deg); }
+.relatedDark { border-color: #2a4132; background: #0b1310; color: #cde5d4; }
+.relatedDark .relatedTrack a { border-color: #304a38; background: #101d15; color: #c6dfce; }
+.relatedDark .relatedTrack a:hover { border-color: #6a986f; background: #1b3021; }
+.relatedDark .relatedTrack a > svg { color: #8cb691; }
 .docs { padding: calc(65px + var(--product-nav-height)) var(--shop-gutter) 100px; }
 .docs h1 { max-width: 900px; margin-bottom: 28px; }
 .docsLead { max-width: 560px; margin: 0 0 55px; color: #65705e; font-size: 14px; line-height: 1.9; }
@@ -440,16 +447,16 @@
   .productPage[data-product="e-linker"] .resourceLinks > a { padding: 23px; }
 }
 @media (max-width: 600px) {
+  .shopWord { display: none; }
+  .productLinks a { padding-inline: 8px; }
   .heroActions { flex-direction: column; align-items: flex-start; gap: 19px; }
   .cartoonNotes { --note-rise-scale: .85; }
-  .shopWord { display: none; }
   .logoLink img { width: 43px; }
-  .productLinks a { padding-inline: 13px; }
 }
 @media (max-width: 360px) {
   .globalHeader, .productHeader { padding-inline: 16px; }
   .globalHeader { gap: 6px; }
-  .productLinks a { padding-inline: 10px; font-size: 11px; }
+  .productLinks a { padding-inline: 6px; font-size: 11px; }
   .headerTool { width: 30px; }
   .productHeader { gap: 18px; }
   .sectionLinks a { padding-inline: 8px; }

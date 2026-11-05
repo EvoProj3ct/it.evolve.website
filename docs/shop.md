@@ -5,7 +5,7 @@
 - [Microduck](https://pollen-robotics.com/microduck/): navigazione globale per prodotto, menu locale, apertura visiva, film, simulatore, scelta del colore, galleria, risorse e invito finale. Il ritmo alterna presentazione, interazione e approfondimento, anziché iniziare da una griglia di articoli.
 - [Reachy Mini](https://pollen-robotics.com/reachy-mini/): ogni oggetto ha un proprio ecosistema di primi passi, documentazione e app. La pagina racconta le funzioni attraverso dimostrazioni, montaggio, accessori e casi d’uso.
 
-Lo shop riprende questi principi e l’energia dei colori anni Novanta. Testi, modelli e illustrazioni sono Evolve; non sono stati copiati media o marchi Pollen.
+Lo shop riprende questi principi, con una direzione distinta per oggetto: colori pop per e-disk, bianco e finiture sobrie per e-linker, nero e luce neon per e-led. Testi, modelli e illustrazioni sono Evolve; non sono stati copiati media o marchi Pollen.
 
 ## Struttura
 
@@ -16,8 +16,10 @@ La route `/shop` apre `/shop/e-disk`. Il gruppo App Router `(shop)` è separato 
 | `/shop/e-disk` | Presentazione e configuratore bicolore |
 | `/shop/e-disk/documentazione` | App, collezione, NFC, collegamento e audio |
 | `/shop/e-disk/app` | Stessa `EDiskExperience` già disponibile nel sito |
-| `/shop/e-linker` | Presentazione, quattro forme, testo, logo e colori |
-| `/shop/e-linker/documentazione` | Guida alla personalizzazione |
+| `/shop/e-linker` | Portachiavi NFC, casi d’uso, quattro forme, testo, logo e colori |
+| `/shop/e-linker/documentazione` | Collegamenti NFC e guida alla personalizzazione |
+| `/shop/e-led` | Scritta/logo luminoso, render neon e configuratore |
+| `/shop/e-led/documentazione` | Testi, SVG, effetti e preparazione del progetto |
 
 `/utils/e-disk` rimane disponibile. La nuova collocazione dell’app riusa il componente e la stessa memoria del browser. Cambiano soltanto il collegamento di ritorno e la spaziatura nella cornice shop; controller, comandi, UUID e conferme NFC non cambiano.
 
@@ -30,11 +32,11 @@ La route `/shop` apre `/shop/e-disk`. Il gruppo App Router `(shop)` è separato 
 - Viola Evolve `#8567C1`, lilla `#CABEE6`, corallo `#FF6666` → continuità con il sito.
 - Estensione confinata allo shop: lime `#C1FF00`, viola elettrico `#8651FF`, rosa `#FF4FB7`, arancio `#FF7638` → energia pop, titoli, sticker e studi di colore.
 
-Le palette sono dimostrative, non un inventario di filamenti disponibili: 30 colori per e-disk e 16 tonalità più sobrie per e-linker.
+Le palette sono dimostrative, non un inventario di filamenti disponibili: 30 colori per e-disk, 16 tonalità più sobrie per e-linker e 12 colori fra materiali e luce per e-led.
 
 ## Configuratori
 
-`products.ts` raccoglie prodotti, palette, forme, testi, FAQ e configurazione iniziale. Le due pagine riusano `ShopProductExperience`, mentre `ProductScene` carica Three.js soltanto sul client.
+`products.ts` raccoglie prodotti, palette, forme, testi, FAQ e configurazione iniziale. e-disk ed e-linker riusano `ShopProductExperience` e `ProductScene`. e-led usa `ELedExperience`, `LedScene` e `ledModel` per avere una composizione e un’illuminazione proprie. Three.js viene caricato soltanto sul client.
 
 - **e-disk:** scocca e piano indipendenti; 30 colori per ciascuno, mix, scambio, scelta casuale, rotazione del modello e pausa dell’anteprima. La copertina e la configurazione iniziale usano Sunset (arancio e rosa). Nel configuratore il giradischi ruota lentamente, si ferma durante il trascinamento e riprende dopo tre secondi; nella copertina ruota soltanto il disco. Braccio, testina, piatto e comandi hanno una finitura nera fissa. Il modello dimostrativo riprende le proporzioni del giradischi già presente nell’app.
 - **e-linker:** rettangolo, quadrato, cerchio e triangolo; base estrusa con foro e anello; testo in Helvetica Regular fino a 18 caratteri, ridimensionato alla superficie disponibile, con rilievo basso e spaziatura controllata; base e scritta/logo SVG con colori separati. Il bordo è ardesia chiaro, come nel marchio illustrato. Il trascinamento usa una trackball tridimensionale, senza limiti di inclinazione. Le quattro frecce e Q/E ruotano il modello da tastiera, Home ripristina la vista. L’orientamento viene conservato cambiando forma, testo o logo.
@@ -63,7 +65,7 @@ Per inserire il film definitivo, impostare `video` sul prodotto in `products.ts`
 - Apertura e-disk e galleria verde/lilla/corallo conservate come richiesto; titolo “Meno scroll. Più rock’n’roll!”, introduzione “Il piacere di scegliere un disco, con tutta la libertà del digitale.” e sticker “La tua musica!”. Raccordo del banner inclinato con lo sfondo verde per eliminare la fascia bianca precedente.
 - Nell’apertura e-disk il giradischi resta fermo: ruota soltanto il disco, con dieci note, piccoli fumetti e accenti cartoon sfalsati, più frequenti e variati, con salita lenta e dissolvenza. Pausa e animazioni ridotte fermano anche le note.
 - e-linker ha una direzione autonoma: fondo bianco, Helvetica, orbite sottili, oggetto sospeso, finiture iniziali ghiaccio/ardesia e illustrazioni con profondità e ombre morbide. Base e scritta riprendono il marchio approvato: proporzioni più compatte, foro nell’angolo del rettangolo, firma “e-linker.” centrata e discreta, rilievo sottile, piccoli accenti verdi. La vista più frontale e l’ombra più leggera riducono l’effetto di lastra. Nessuna fascia rétro nella sua pagina.
-- Menu senza icone generiche dei prodotti o fondi tondi: tre frammenti d’ombra condivisi, con tempi elastici differenti, si separano e si ricompongono nel passaggio tra le voci. La preferenza per le animazioni ridotte viene rispettata. Profilo e carrello rimangono predisposti e disabilitati; il link “Il mondo Evolve” è alla loro destra, con sottolineatura verde al passaggio e al focus.
+- Menu senza icone generiche dei prodotti o fondi tondi: `NavInk` disegna un ovale verde irregolare intorno alla voce. Cambiando voce, il tratto si distende in una linea sinuosa e si richiude sulla nuova parola. Il movimento parte dal tracciato corrente anche durante passaggi rapidi; riadatta le misure a font e viewport. La preferenza per animazioni ridotte mostra direttamente il nuovo ovale. Profilo e carrello rimangono predisposti e disabilitati; il link “Il mondo Evolve” è alla loro destra, con sottolineatura verde al passaggio e al focus.
 - Nella barra del singolo prodotto, a sinistra del nome, compare un marchio SVG su fondo trasparente: il giradischi Sunset ripreso dalla galleria per e-disk e un portachiavi illustrato ghiaccio/ardesia con accenti verdi per e-linker. Gli asset riutilizzabili sono in `public/shop/brand/`; dimensioni ridotte su mobile e lieve movimento al passaggio/focus.
 - Sovratitoli e numerazioni con slash eliminati dalle pagine prodotto e dalle guide. CTA aggiornate a “Personalizza” e “Scegli i tuoi colori”.
 - Palette in un pannello flottante, aperto dalle due righe di colore: campioni a dimensione fissa, selezione senza spunta, gestione di tastiera, Escape, clic esterno e riposizionamento nel viewport. La griglia non occupa spazio nel pannello chiuso.
@@ -85,3 +87,17 @@ Per inserire il film definitivo, impostare `video` sul prodotto in `products.ts`
 - Cambiando colore la simulazione continua; cambiando testo/logo conserva lo stato, mentre forma e ripristino della vista inizializzano nuovamente la catena. La preferenza per animazioni ridotte usa una posa assestata senza oscillazioni. Il ciclo resta sospeso fuori vista e con scheda nascosta; non vengono aggiunti timer o dipendenze esterne.
 - Le grandi presentazioni incrociate a fondo pagina sono state sostituite da `RelatedProducts`: fascia compatta “Esplora gli altri prodotti”, con marchi SVG, nomi e collegamenti alle rispettive pagine. La lista scorre orizzontalmente e mostra soltanto i prodotti diversi da quello aperto; con un solo elemento non compaiono controlli inutili. Il footer condiviso resta separato e invariato.
 - Nuovi componenti e stili sono confinati allo shop. Home del sito, footer condiviso e protocollo dell’app e-disk restano invariati. Non sono stati avviati test, build, typecheck, server, anteprime o riproduzioni audio durante il lavoro.
+
+## e-led: identità luminosa
+
+- Pagina autonoma su fondo nero, con accenti verdi Evolve, tipografia Helvetica, render luminoso, esempi per attività/logo/arredamento, tre atmosfere selezionabili, configuratore, guida e FAQ. Il marchio SVG è in `public/shop/brand/e-led.svg`; navigazione e caroselli ricavano il terzo prodotto dal catalogo condiviso. Il sottomenu e i prodotti correlati adottano la variante scura, mentre il footer del sito rimane quello condiviso.
+- Il modello contiene scocche estruse, diffusori, tracciati LED, una traversa e distanziali. I caratteri usano la stessa Helvetica locale di e-linker. Gli SVG vengono normalizzati prima dell’estrusione, per conservare spessore del filo e leggibilità indipendentemente dalle unità del file.
+- Il bloom usa i pass di Three.js già installati. I materiali luminosi hanno fasi diverse lungo il segno: Color flow cambia continuamente colore, Fissa mantiene la tinta scelta, Respiro modula lentamente l’intensità e Pulse pulsa dolcemente. Scocca, luce, intensità, velocità, pausa e accensione hanno controlli separati. Gli effetti del render non comandano hardware.
+- Testo fino a 24 caratteri; logo SVG autonomo fino a 2 MB, con testi/linee convertiti in forme piene. Modalità scritta, logo o composizione affiancata. Non viene dichiarata una conversione automatica di raster in tracciati LED. File elaborati localmente; limite di complessità anche per i percorsi vettoriali.
+- Le larghezze di 60, 100, 140 e 180 cm sono riferimenti di progetto, non varianti già pronte a catalogo. La misura modifica moderatamente la scala del render nel riquadro; il progetto viene comunque inquadrato per restare leggibile, senza simulare una parete in scala reale. Potenza, materiali, alimentazione, fissaggio ed eventuale utilizzo esterno vengono concordati con Evolve; nessuna specifica elettrica o certificazione viene inventata.
+- Il JSON scaricato contiene scritta, logo, colori, effetto e dimensione indicativa. Il pulsante di carrello resta una predisposizione disabilitata, secondo la richiesta di lavorare sul concept. Nessun prezzo, backend ecommerce o app di controllo aggiunto.
+- Render limitato a circa 30 FPS con pixel ratio fino a 1,5; sospeso fuori vista e con scheda nascosta. Risorse, controlli e render target vengono smaltiti all’uscita. Con animazioni ridotte gli effetti e il movimento rimangono fermi. Tastiera, vista di riserva e pausa sono disponibili anche in questa pagina.
+
+## e-linker: il valore dell’NFC
+
+Descrizione iniziale, tre casi d’uso, FAQ, metadati e guida evidenziano ora il tag NFC interno: condividere attività/sito/social/menu, presentare un prodotto o regalare un ricordo digitale. Viene distinta la destinazione del link dai file ospitati online. La destinazione si indica nella richiesta a Evolve; non è stato aggiunto un flusso di scrittura NFC. Il protocollo e l’app del giradischi e-disk restano invariati.

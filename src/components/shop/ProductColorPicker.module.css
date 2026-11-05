@@ -30,6 +30,19 @@
 .popoverCaption { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 35px; margin-top: 10px; padding: 10px 3px 0; border-top: 1px solid #e2e9dc; font-size: 10px; }
 .popoverCaption > span:last-child { color: #8b9682; font-family: monospace; font-size: 9px; }
 @keyframes paletteIn { from { opacity: 0; } to { opacity: 1; } }
+.picker[data-product="e-led"] .channels, .picker[data-product="e-led"] .channel { border-color: #2f4638; }
+.picker[data-product="e-led"] .channel { color: #c6e0ce; }
+.picker[data-product="e-led"] .channelIndex, .picker[data-product="e-led"] .colorName { color: #7e9d87; }
+.picker[data-product="e-led"] .colorChip { border-color: #c3e7ca35; }
+.picker[data-product="e-led"] .actions { color: #718e7a; }
+.picker[data-product="e-led"] .actions button { color: #9bc6a5; }
+.picker[data-product="e-led"] .actions button:hover { background: #223c2a; }
+.popover[data-product="e-led"] { border-color: #3b5b44; background: #101c16f5; color: #d2ebd9; box-shadow: 0 15px 60px #0007; }
+.popover[data-product="e-led"] .popoverHeader small, .popover[data-product="e-led"] .popoverCaption > span:last-child { color: #7c9d86; }
+.popover[data-product="e-led"] .popoverHeader button { background: #213b29; color: #b3d6bb; }
+.popover[data-product="e-led"] .swatch:hover, .popover[data-product="e-led"] .swatch[aria-checked="true"] { background: #294b31; }
+.popover[data-product="e-led"] .swatch[aria-checked="true"]::after { background: #caffb4; }
+.popover[data-product="e-led"] .popoverCaption { border-color: #33503b; }
 @media (max-width: 400px) {
   .channel { gap: 10px; }
   .colorName { font-size: 9px; }
