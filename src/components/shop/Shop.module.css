@@ -44,7 +44,7 @@
 .productMark { display: block; flex: none; width: 56px; height: 42px; object-fit: contain; transition: transform .4s cubic-bezier(.22,1,.36,1); }
 .productIdentity:hover .productMark, .productIdentity:focus-visible .productMark { transform: translateY(-1px) rotate(-3deg); }
 .identityDot { color: #5ab735; }
-.sectionLinks { position: relative; display: flex; align-items: center; gap: 3px; }
+.sectionLinks { position: relative; display: flex; align-items: center; gap: 3px; padding-block: 9px; }
 .sectionLinks a { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 36px; padding: 0 14px; color: #53624c; font-size: 12px; white-space: nowrap; isolation: isolate; -webkit-tap-highlight-color: transparent; }
 .sectionLinks .navCta { gap: 20px; min-height: 37px; margin-left: 20px; padding: 0 18px; border: 0; border-radius: 24px; background: var(--shop-ink); color: var(--shop-paper); font-weight: 500; transition: background .3s, transform .3s; }
 .sectionLinks .navCta svg { color: var(--shop-green); transition: transform .3s cubic-bezier(.22,1,.36,1); }

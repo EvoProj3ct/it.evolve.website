@@ -6,13 +6,16 @@ import styles from "./Shop.module.css";
 
 type Mark = { key: string; x: number; y: number; width: number; height: number };
 type Point = { x: number; y: number };
-const mix = (a: Point[], b: Point[], amount: number) => a.map((p, i) => ({ x: p.x + (b[i].x - p.x) * amount, y: p.y + (b[i].y - p.y) * amount }));
+const POINTS = 33;
+const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
 function oval(mark: Mark): Point[] {
-  return Array.from({ length: 17 }, (_, i) => {
-    const angle = -.4 + i / 16 * (Math.PI * 2 + .3);
-    const x = Math.cos(angle) * (mark.width / 2 + 9);
-    const y = Math.sin(angle) * (mark.height / 2 + 6);
-    return { x: mark.x + x + Math.sin(angle * 3) * 1.1, y: mark.y + y - x * .055 + Math.cos(angle * 2) * .7 };
+  return Array.from({ length: POINTS }, (_, i) => {
+    const turn = i / (POINTS - 1) * 1.42;
+    const angle = -.65 + turn * Math.PI * 2;
+    const retrace = clamp((turn - 1) / .42);
+    const x = Math.cos(angle) * (mark.width / 2 + 9 + retrace * 1.7);
+    const y = Math.sin(angle) * (mark.height / 2 + 5.3 - retrace * .8);
+    return { x: mark.x + x + Math.sin(angle * 3 + .7) * 1.05 + retrace * 1.2, y: mark.y + y - x * .055 + Math.cos(angle * 2 - .8) * .95 - retrace * 1.4 };
   });
 }
 function path(points: Point[]) {
@@ -30,9 +33,13 @@ export function NavInk({ active, navRef }: { active: string | null | undefined; 
   const [mark, setMark] = useState<Mark | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const previous = useRef<Mark | null>(null);
+  const liveMark = useRef<Mark | null>(null);
+  const livePoints = useRef<Point[]>([]);
+  const velocity = useRef<Point>({ x: 0, y: 0 });
   const d = useMotionValue("");
   const length = useMotionValue(1);
   const opacity = useMotionValue(0);
+  const progress = useMotionValue(0);
   useLayoutEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
@@ -54,25 +61,62 @@ export function NavInk({ active, navRef }: { active: string | null | undefined; 
     return () => { disposed = true; observer.disconnect(); window.removeEventListener("resize", measure); };
   }, [active, navRef]);
   useEffect(() => {
-    if (!mark) { const fade = animate(opacity, 0, { duration: .15 }); return () => fade.stop(); }
-    const next = oval(mark), from = previous.current;
+    if (!mark) { velocity.current = { x: 0, y: 0 }; const fade = animate(opacity, 0, { duration: .15 }); return () => fade.stop(); }
+    const next = oval(mark), from = liveMark.current ?? previous.current;
+    const same = previous.current?.key === mark.key;
     previous.current = mark;
-    if (reduced) { d.set(path(next)); length.set(1); opacity.set(1); return; }
+    if (reduced) {
+      livePoints.current = next; liveMark.current = mark; velocity.current = { x: 0, y: 0 };
+      d.set(path(next)); length.set(1); opacity.set(1); return;
+    }
     if (!from || !d.get()) {
+      livePoints.current = next; liveMark.current = mark;
       d.set(path(next)); opacity.set(1);
-      const draw = animate(length, [.05, 1], { duration: .4, ease: [.22, 1, .36, 1] });
+      const draw = animate(length, [.02, 1], { duration: .5, ease: [.16, 1, .3, 1] });
       return () => draw.stop();
     }
+    const start = livePoints.current.length === POINTS ? livePoints.current : oval(from);
+    const initialLength = length.get();
     const dx = mark.x - from.x, dy = mark.y - from.y, distance = Math.max(1, Math.hypot(dx, dy));
-    const snake = Array.from({ length: 17 }, (_, i) => {
-      const t = i / 16, wave = Math.sin(t * Math.PI * 2) * Math.sin(t * Math.PI) * 8;
-      return { x: from.x + dx * t - dy / distance * wave, y: from.y + dy * t + dx / distance * wave };
-    });
-    const same = from.key === mark.key;
-    const travel = animate(d, same ? [d.get(), path(next)] : [d.get(), path(mix(oval(from), snake, .6)), path(snake), path(mix(snake, next, .6)), path(next)], { duration: same ? .22 : .62, times: same ? [0, 1] : [0, .2, .48, .75, 1], ease: [.45, 0, .2, 1] });
-    const flow = animate(length, same ? [length.get(), 1] : [length.get(), .75, .48, .8, 1], { duration: same ? .22 : .62, times: same ? [0, 1] : [0, .2, .48, .75, 1], ease: "easeInOut" });
+    const actualDistance = Math.hypot(dx, dy);
+    const direction = actualDistance > .001 ? { x: dx / actualDistance, y: dy / actualDistance } : { x: 1, y: 0 };
+    const launchVelocity = same ? 0 : clamp((velocity.current.x * dx + velocity.current.y * dy) / (distance * distance), -1.5, 4);
+    progress.jump(0);
+    const draw = (value: number) => {
+      const phase = clamp(value);
+      const melt = same ? 0 : Math.sin(phase * Math.PI) ** 1.65;
+      const hop = same ? 0 : Math.sin(phase * Math.PI) * Math.min(8, distance * .045);
+      const center = { x: from.x + dx * value, y: from.y + dy * value - hop };
+      const impact = same ? 0 : clamp((value - 1) * 1.8, 0, .19);
+      const points = start.map((point, i) => {
+        const t = i / (POINTS - 1);
+        const loopX = (point.x - from.x) * (1 - phase) + (next[i].x - mark.x) * phase;
+        const loopY = (point.y - from.y) * (1 - phase) + (next[i].y - mark.y) * phase;
+        const along = (t - .5) * Math.min(105, distance * .7);
+        const wave = Math.sin(t * Math.PI * 2 - phase * 2.3) * Math.sin(t * Math.PI) * 9;
+        const snakeX = direction.x * along - direction.y * wave;
+        const snakeY = direction.y * along + direction.x * wave;
+        const x = loopX * (1 - melt) + snakeX * melt;
+        const y = loopY * (1 - melt) + snakeY * melt;
+        const parallel = x * direction.x + y * direction.y;
+        const perpendicular = -x * direction.y + y * direction.x;
+        return {
+          x: center.x + direction.x * parallel * (1 + impact) - direction.y * perpendicular * (1 - impact * .7),
+          y: center.y + direction.y * parallel * (1 + impact) + direction.x * perpendicular * (1 - impact * .7),
+        };
+      });
+      livePoints.current = points;
+      liveMark.current = { ...mark, x: center.x, y: center.y, width: from.width + (mark.width - from.width) * phase, height: from.height + (mark.height - from.height) * phase };
+      velocity.current = { x: dx * progress.getVelocity(), y: dy * progress.getVelocity() };
+      d.set(path(points));
+      length.set(initialLength + (1 - initialLength) * phase - melt * .32);
+    };
+    draw(0);
+    const unsubscribe = progress.on("change", draw);
+    // Una sola molla attraversa l'intero gesto: nessuna sosta fra scioglimento e arrivo.
+    const travel = animate(progress, 1, same ? { duration: .24, ease: [.22, 1, .36, 1] } : { type: "spring", stiffness: 300, damping: 18, mass: .8, velocity: launchVelocity, restDelta: .001, restSpeed: .015 });
     const show = animate(opacity, 1, { duration: .12 });
-    return () => { travel.stop(); flow.stop(); show.stop(); };
-  }, [mark, reduced, d, length, opacity]);
-  return <svg className={styles.navInk} width={size.width} height={size.height} aria-hidden="true" focusable="false"><motion.path d={d} pathLength={length} opacity={opacity} fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round" /></svg>;
+    return () => { travel.stop(); unsubscribe(); show.stop(); };
+  }, [mark, reduced, d, length, opacity, progress]);
+  return <svg className={styles.navInk} width={size.width} height={size.height} aria-hidden="true" focusable="false"><motion.path d={d} pathLength={length} opacity={opacity} fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" /></svg>;
 }
