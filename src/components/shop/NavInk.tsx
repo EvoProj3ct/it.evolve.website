@@ -80,11 +80,11 @@ export function NavInk({ active, navRef }: { active: string | null | undefined; 
     const dx = mark.x - from.x, dy = mark.y - from.y, distance = Math.max(1, Math.hypot(dx, dy));
     const actualDistance = Math.hypot(dx, dy);
     const direction = actualDistance > .001 ? { x: dx / actualDistance, y: dy / actualDistance } : { x: 1, y: 0 };
-    const launchVelocity = same ? 0 : clamp((velocity.current.x * dx + velocity.current.y * dy) / (distance * distance), -1.5, 4);
+    const launchVelocity = same ? 0 : clamp((velocity.current.x * dx + velocity.current.y * dy) / (distance * distance), -.65, 1.5);
     progress.jump(0);
     const draw = (value: number) => {
       const phase = clamp(value);
-      const melt = same ? 0 : Math.sin(phase * Math.PI) ** 1.65;
+      const melt = same ? 0 : Math.sin(phase * Math.PI) ** 1.1;
       const hop = same ? 0 : Math.sin(phase * Math.PI) * Math.min(8, distance * .045);
       const center = { x: from.x + dx * value, y: from.y + dy * value - hop };
       const impact = same ? 0 : clamp((value - 1) * 1.8, 0, .19);
@@ -113,8 +113,8 @@ export function NavInk({ active, navRef }: { active: string | null | undefined; 
     };
     draw(0);
     const unsubscribe = progress.on("change", draw);
-    // Una sola molla attraversa l'intero gesto: nessuna sosta fra scioglimento e arrivo.
-    const travel = animate(progress, 1, same ? { duration: .24, ease: [.22, 1, .36, 1] } : { type: "spring", stiffness: 300, damping: 18, mass: .8, velocity: launchVelocity, restDelta: .001, restSpeed: .015 });
+    // Tragitto più disteso, con lo stesso rapporto di smorzamento del rimbalzo finale.
+    const travel = animate(progress, 1, same ? { duration: .24, ease: [.22, 1, .36, 1] } : { type: "spring", stiffness: 36, damping: 7, mass: 1, velocity: launchVelocity, restDelta: .001, restSpeed: .015 });
     const show = animate(opacity, 1, { duration: .12 });
     return () => { travel.stop(); unsubscribe(); show.stop(); };
   }, [mark, reduced, d, length, opacity, progress]);
