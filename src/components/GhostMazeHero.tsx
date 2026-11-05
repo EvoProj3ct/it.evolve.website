@@ -623,8 +623,10 @@ export function GhostMazeHero({ variant = "home" }: { variant?: "home" | "constr
           <h1>Lavori in corso<span className={styles.workDots} aria-hidden="true"><span /><span /><span /></span></h1>
         </div>
       ) : <div className={styles.copy}>
-        <div className={styles.eyebrow}>EVOLVE</div>
-        <h1 className={styles.title}>Hardware, Software,<br />Formazione su Misura</h1>
+        <h1 className={styles.title}>
+          Hardware, Software,<br />
+          Formazione <span className={styles.titleAccent}>su Misura<span className={styles.period}>.</span></span>
+        </h1>
         <p className={styles.description}>
           Evolve è il tuo Hub per un domani più smart.
         </p>

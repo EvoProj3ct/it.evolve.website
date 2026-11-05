@@ -2,25 +2,23 @@
 .stage { position: relative; height: clamp(380px, 35vw, 480px); touch-action: pan-y; user-select: none; -webkit-user-select: none; isolation: isolate; cursor: grab; }
 .stage[data-dragging="true"], .stage[data-dragging="true"] button { cursor: grabbing; }
 .rails { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
-.mainRail { stroke: #72c94f; stroke-width: 1; opacity: .55; }
+.mainRail { stroke: #72c94f; stroke-width: 1; opacity: .55; transition: opacity .18s, stroke-width .18s; }
+.stage[data-dragging="true"] .mainRail { stroke-width: 1.5; opacity: .9; }
 .secondaryRail { stroke: #2c7a62; stroke-width: .8; stroke-dasharray: 2 9; opacity: .24; }
 .crosshairs { stroke: #2c7a62; stroke-width: 1; opacity: .45; }
 .railMarker { fill: #72c94f; }
 .portraitPosition { position: absolute; width: clamp(160px, 19vw, 242px); will-change: transform; }
-.portrait { display: block; width: 100%; padding: 7px 7px 0; border: 1px solid #e1e7df; border-radius: 4px; background: #fff; color: #101914; font: inherit; text-align: left; cursor: grab; box-shadow: 0 5px 12px rgb(16 25 20 / 4%), 0 24px 42px -16px rgb(16 25 20 / 19%); transition: box-shadow .3s, border-color .3s; -webkit-tap-highlight-color: transparent; }
+.portrait { display: block; width: 100%; padding: 7px 7px 0; border: 1px solid #e1e7df; border-radius: 4px; background: #fff; color: #101914; font: inherit; text-align: left; cursor: grab; box-shadow: 0 5px 12px rgb(16 25 20 / 4%), 0 24px 42px -16px rgb(16 25 20 / 19%); transition: transform .16s ease-out, box-shadow .18s, border-color .18s, background .18s; -webkit-tap-highlight-color: transparent; }
 .portrait:hover { border-color: #b6d8aa; box-shadow: 0 9px 18px rgb(16 25 20 / 5%), 0 28px 55px -14px rgb(44 122 98 / 24%); }
+.stage:not([data-dragging="true"]) .portrait:active { transform: scale(.96); border-color: #72c94f; background: #edf5e9; box-shadow: 0 0 0 3px rgb(114 201 79 / 18%), 0 8px 18px rgb(16 25 20 / 14%); }
 .portrait:focus-visible { outline: 2px solid #2c7a62; outline-offset: 6px; }
 .photo { position: relative; display: block; aspect-ratio: 1.12; overflow: hidden; background: #cde8d1; pointer-events: none; }
 .photo img { object-fit: cover; filter: grayscale(1); transition: filter .45s; }
 .portrait:hover img, .portrait:focus-visible img { filter: grayscale(0); }
+.portrait:active img { filter: grayscale(0); }
 .caption { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 66px; padding: 10px 10px; font-size: 14px; line-height: 1.2; letter-spacing: -.025em; pointer-events: none; }
 .caption svg { flex: none; width: 17px; height: 17px; color: #2c7a62; transition: transform .3s; }
 .portrait:hover .caption svg { transform: translate(2px, -2px); }
-.controls { display: flex; align-items: center; justify-content: flex-end; min-height: 68px; padding: 10px 0 20px; }
-.arrows { display: flex; gap: 7px; }
-.arrows button { display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 1px solid #dce4d8; border-radius: 50%; background: transparent; color: #2c7a62; font-size: 17px; cursor: pointer; transition: background .2s, border-color .2s; }
-.arrows button:hover { border-color: #72c94f; background: #edf5e9; }
-.arrows button:focus-visible { outline: 2px solid #2c7a62; outline-offset: 4px; }
 
 .profileDialog { position: fixed; inset: 0; width: 100%; max-width: none; height: 100%; max-height: none; margin: 0; padding: 0; overflow: auto; overscroll-behavior: contain; border: 0; background: transparent; color: #101914; font-family: var(--fonts-body), Arial, sans-serif; }
 .profileDialog::backdrop { background: transparent; }
@@ -54,8 +52,6 @@
   .photo { aspect-ratio: .98; }
   .caption { min-height: 52px; padding: 7px 5px; font-size: 10px; }
   .caption svg { width: 12px; height: 12px; }
-  .controls { min-height: 64px; padding: 8px 12px 20px; }
-  .arrows button { width: 36px; height: 36px; }
   .profileViewport { padding: 24px; }
   .profileSheet { grid-template-columns: minmax(0, 1fr); max-width: 430px; }
   .profileSlot { aspect-ratio: 1.15; max-height: 43svh; }
@@ -69,5 +65,6 @@
   .photo img { filter: grayscale(.25); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .portrait, .photo img, .caption svg, .arrows button, .profileClose { transition: none; }
+  .portrait, .photo img, .caption svg, .mainRail, .profileClose { transition: none; }
+  .stage:not([data-dragging="true"]) .portrait:active { transform: none; }
 }

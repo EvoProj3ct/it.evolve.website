@@ -1,0 +1,9 @@
+// WEBSITE ONLY: src/app/api/internal/auth-mail/route.ts
+// Private caller-triggered delivery. Do not invoke from a browser or allow it through a generic proxy.
+import { storefrontAuth } from "@/server/storefront-auth";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+export async function POST(request: Request) {
+  return storefrontAuth.handleMailDelivery(request);
+}

@@ -191,7 +191,7 @@ export function OrbitTeam() {
   }, []);
 
   useAnimationFrame((_time, delta) => {
-    if (reduceMotion || !visibleRef.current || dragRef.current?.moved || selectedRef.current !== null) return;
+    if (reduceMotion || !visibleRef.current || dragRef.current !== null || selectedRef.current !== null) return;
     const dt = Math.min(delta, 32);
     const cruising = directionRef.current * CRUISING_SPEED;
     const momentum = velocityRef.current - cruising;
@@ -287,12 +287,6 @@ export function OrbitTeam() {
           {[0, 1, 2].map(index => <OrbitMarker key={index} phase={phase} offset={(index + .5) * STEP} />)}
         </svg>
         {team.map((person, index) => <OrbitPortrait key={person.id} index={index} phase={phase} selected={selected === index} register={button => { buttonsRef.current[index] = button; }} onOpen={() => openProfile(index)} />)}
-      </div>
-      <div className={styles.controls}>
-        <div className={styles.arrows}>
-          <button type="button" onClick={() => rotate(-1)} aria-label="Ruota i ritratti a sinistra">←</button>
-          <button type="button" onClick={() => rotate(1)} aria-label="Ruota i ritratti a destra">→</button>
-        </div>
       </div>
       {selected !== null && <ProfileDialog index={selected} getOrigin={() => originFor(selected)} onClosed={closeProfile} />}
     </div>

@@ -65,7 +65,7 @@ function Vinyl({ color, small = false }: { color: string; small?: boolean }) {
   return <span className={`${styles.vinyl} ${small ? styles.vinylSmall : ""}`} style={{ "--record-color": color } as CSSProperties} aria-hidden="true"><span /><i /></span>;
 }
 
-export default function EDiskExperience() {
+export default function EDiskExperience({ backHref = "/utils", backLabel = "Risorse" }: { backHref?: string; backLabel?: string } = {}) {
   const [state, setState] = useState<EDiskState>(INITIAL_EDISK);
   const controller = useRef<EDiskController | null>(null);
   const playerHost = useRef<HTMLDivElement>(null);
@@ -162,7 +162,7 @@ export default function EDiskExperience() {
     <main className={styles.page}>
       <div className={styles.inner}>
         <header className={styles.header}>
-          <div><Link href="/utils" className={styles.breadcrumb}>Risorse <span aria-hidden="true">/</span></Link><h1>e-disk<span>.</span></h1><p>Il vinile incontra il digitale.</p></div>
+          <div><Link href={backHref} className={styles.breadcrumb}>{backLabel} <span aria-hidden="true">/</span></Link><h1>e-disk<span>.</span></h1><p>Il vinile incontra il digitale.</p></div>
           <div className={styles.headerActions} role="group" aria-label="Collegamenti e Test">
             <button className={`${styles.connect} ${state.connected ? styles.connected : ""}`} onClick={() => open({ kind: "connection" })} aria-haspopup="dialog" aria-label={`Apri tutti i collegamenti${state.connected ? ", giradischi connesso" : ""}`}>
               {state.connecting ? <LoaderCircle className={styles.spinner} size={17} /> : state.connected ? <Check size={17} /> : <Bluetooth size={17} />}

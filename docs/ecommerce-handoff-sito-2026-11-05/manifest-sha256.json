@@ -1,0 +1,938 @@
+{
+  "formatVersion": 1,
+  "algorithm": "sha256",
+  "selfExcluded": true,
+  "fileCount": 155,
+  "files": [
+    {
+      "path": "docs/ecommerce-account-negozio.md",
+      "bytes": 17601,
+      "sha256": "f9ddcb813762510de654bb26f8d1fad31005a53bcad66c18e42b90899f628551",
+      "source": "docs/ecommerce-account-negozio.md"
+    },
+    {
+      "path": "docs/ecommerce-api-v1.md",
+      "bytes": 36223,
+      "sha256": "a858d7d8d198afb9129d5213aa588e79396aa38fda1a8493560d52f9bb6bb0a7",
+      "source": "docs/ecommerce-api-v1.md"
+    },
+    {
+      "path": "docs/ecommerce-carrello-riepilogo.md",
+      "bytes": 19446,
+      "sha256": "674e42c0fbfad515b577b360ec24a6356fcacb7a4c6c8d1c7e3c58a471d5ce1b",
+      "source": "docs/ecommerce-carrello-riepilogo.md"
+    },
+    {
+      "path": "docs/ecommerce-catalogo-vetrina.md",
+      "bytes": 11092,
+      "sha256": "fe996ac78e14ded36c2424e6afcf5842c3994cdf82cf1630f2061f49d860b79c",
+      "source": "docs/ecommerce-catalogo-vetrina.md"
+    },
+    {
+      "path": "docs/ecommerce-collegamento-clienti.md",
+      "bytes": 17062,
+      "sha256": "6cbf0e47a83ac96c1c2c34152a16bc418d1581be68962bc5d72e457851089a67",
+      "source": "docs/ecommerce-collegamento-clienti.md"
+    },
+    {
+      "path": "docs/ecommerce-consegne-eventi.md",
+      "bytes": 12326,
+      "sha256": "ce152dfe57c175217efd436e38834b367bfda8477cb3e9badd3286108e2f2859",
+      "source": "docs/ecommerce-consegne-eventi.md"
+    },
+    {
+      "path": "docs/ecommerce-fase-1.md",
+      "bytes": 48442,
+      "sha256": "54f92533a5b4f22e56c8382bbb1889522c7fdcf5bc2b7c5df934ae87015aebd0",
+      "source": "docs/ecommerce-fase-1.md"
+    },
+    {
+      "path": "docs/ecommerce-gestione-ordine.md",
+      "bytes": 15743,
+      "sha256": "12e8c202332dd8de5eaada1f4c0d278178e01748f3635dc167492af9cd5100dd",
+      "source": "docs/ecommerce-gestione-ordine.md"
+    },
+    {
+      "path": "docs/ecommerce-handoff-agente-sito.md",
+      "bytes": 95500,
+      "sha256": "df40f3478b64156c798343dad28f7cafb7bdbd40ab36bca6fd33cc4b11e8ed97",
+      "source": "docs/ecommerce-handoff-agente-sito.md"
+    },
+    {
+      "path": "docs/ecommerce-modelli-transazioni.md",
+      "bytes": 19042,
+      "sha256": "77809b2f48b7a41c65f2ef8657c9608524c8bd3e21fd8fac98278c824784d346",
+      "source": "docs/ecommerce-modelli-transazioni.md"
+    },
+    {
+      "path": "docs/ecommerce-ordini-ricavi.md",
+      "bytes": 16223,
+      "sha256": "09b621e209c71f088c539bbdc7b6a1357a6ab8e2a6a371af337e1ef682ae5afb",
+      "source": "docs/ecommerce-ordini-ricavi.md"
+    },
+    {
+      "path": "docs/ecommerce-pagamenti-consegne-vetrina.md",
+      "bytes": 24455,
+      "sha256": "f2fdf497188c9a02901aca42028c6c2c91557ec4a94f783a12366bf88af87b48",
+      "source": "docs/ecommerce-pagamenti-consegne-vetrina.md"
+    },
+    {
+      "path": "docs/ecommerce-pagamenti-stripe.md",
+      "bytes": 23060,
+      "sha256": "72e1720f5d97966dc0dfc7236c517343235a9e51eacf9f1af57c2918017b29a5",
+      "source": "docs/ecommerce-pagamenti-stripe.md"
+    },
+    {
+      "path": "docs/ecommerce-piano-attivita.md",
+      "bytes": 44856,
+      "sha256": "0475132968cab4b7979dd15acd650698696f9e43beba50a12a4125b615d524fc",
+      "source": "docs/ecommerce-piano-attivita.md"
+    },
+    {
+      "path": "docs/ecommerce-tracking-api.md",
+      "bytes": 12621,
+      "sha256": "f60d7b4066ff2c168a8be45a77935a96d8533894609f8beff74568601607f0f5",
+      "source": "docs/ecommerce-tracking-api.md"
+    },
+    {
+      "path": "docs/ecommerce-workspace-atlas.md",
+      "bytes": 11033,
+      "sha256": "bcf3610849d5f95c2dd845e0ab5fdf271c7ba0159bea0121063e6ac8b7afecf7",
+      "source": "docs/ecommerce-workspace-atlas.md"
+    },
+    {
+      "path": "LEGGIMI.md",
+      "bytes": 3563,
+      "sha256": "c8923248055a9be2fe6a6ea6c810fa7b08038387a9d4f85b1f5296e7e553a72c",
+      "source": "artifacts/ecommerce-handoff-sito-2026-11-05/LEGGIMI.md"
+    },
+    {
+      "path": "packages/ecommerce-server/.env.example",
+      "bytes": 2383,
+      "sha256": "335132b6e6896299b85891e78335669ccad0d8937b0a4b32a16b5a5711935efe",
+      "source": "packages/ecommerce-server/.env.example"
+    },
+    {
+      "path": "packages/ecommerce-server/examples/next-app/catalog/[id]/route.ts",
+      "bytes": 453,
+      "sha256": "1b239991961939bcafa0d09e54ecdc8681fffd61e3d13f08969c611141efc643",
+      "source": "packages/ecommerce-server/examples/next-app/catalog/[id]/route.ts"
+    },
+    {
+      "path": "packages/ecommerce-server/examples/next-app/catalog/route.ts",
+      "bytes": 355,
+      "sha256": "038c364c3524aa96edae55566e5aab62d0f4dafe842444d5438521a10e42b580",
+      "source": "packages/ecommerce-server/examples/next-app/catalog/route.ts"
+    },
+    {
+      "path": "packages/ecommerce-server/examples/next-app/product-pages/[slug]/route.ts",
+      "bytes": 469,
+      "sha256": "73e004a38c35bacbc34a28eeeb2e36ecb2c6e087e8a2fb99fc796e89cf540c75",
+      "source": "packages/ecommerce-server/examples/next-app/product-pages/[slug]/route.ts"
+    },
+    {
+      "path": "packages/ecommerce-server/examples/next-auth/app/account/[action]/auth-form.tsx.example",
+      "bytes": 8060,
+      "sha256": "b6a69eb95fb20c7ae45405421813dcb69a5ff1ffd28610c94dda091f28dd1c76",
+      "source": "packages/ecommerce-server/examples/next-auth/app/account/[action]/auth-form.tsx.example"
+    },
+    {
+      "path": "packages/ecommerce-server/examples/next-auth/app/account/[action]/page.tsx.example",
+      "bytes": 1159,
+      "sha256": "aaf75f28173ca671be3e7bffe352abafaa19d64cda3461b597d20e89ca646a65",
+      "source": "packages/ecommerce-server/examples/next-auth/app/account/[action]/page.tsx.example"
+    },
+    {
+      "path": "packages/ecommerce-server/examples/next-auth/app/api/ecommerce/v1/auth/[action]/route.ts.example",
+      "bytes": 554,
+      "sha256": "5610706287b9a2e61e3c29af8879a96e52d0dc6ae80bc7e6f2e1ea659e3db94f",
+      "source": "packages/ecommerce-server/examples/next-auth/app/api/ecommerce/v1/auth/[action]/route.ts.example"
+    },
+    {
+      "path": "packages/ecommerce-server/examples/next-auth/app/api/ecommerce/v1/me/route.ts.example",
+      "bytes": 375,
+      "sha256": "e72d5a10e109dc58927f44b965c613b3e5d497fec0820d179a285e9e7c511cb1",
+      "source": "packages/ecommerce-server/examples/next-auth/app/api/ecommerce/v1/me/route.ts.example"
+    },
+    {
+      "path": "packages/ecommerce-server/examples/next-auth/app/api/internal/auth-mail/route.ts.example",
+      "bytes": 426,
+      "sha256": "2f96f9bda7fe1a4db020e9cde53944b74c2c5c0a058d7d087d94124afa4d0315",
+      "source": "packages/ecommerce-server/examples/next-auth/app/api/internal/auth-mail/route.ts.example"
+    },
+    {
+      "path": "packages/ecommerce-server/examples/next-auth/server/storefront-auth.ts.example",
+      "bytes": 284,
+      "sha256": "315080d341638269c63a1b108426df1a6b38837e4ea8cf80726d9644fc4514ab",
+      "source": "packages/ecommerce-server/examples/next-auth/server/storefront-auth.ts.example"
+    },
+    {
+      "path": "packages/ecommerce-server/examples/next-customers/app/api/ecommerce/v1/me/customer-link/route.ts.example",
+      "bytes": 430,
+      "sha256": "c3b600e33bd955a9e76e1ca51a60e362253c842667f156e078a81a06035c5f4c",
+      "source": "packages/ecommerce-server/examples/next-customers/app/api/ecommerce/v1/me/customer-link/route.ts.example"
+    },
+    {
+      "path": "packages/ecommerce-server/examples/next-customers/app/api/internal/customer-identities/route.ts.example",
+      "bytes": 440,
+      "sha256": "e20d57882d4d2f77d39a6478a58b7ac3ebd4d204545af2b97e8d08451a9190a3",
+      "source": "packages/ecommerce-server/examples/next-customers/app/api/internal/customer-identities/route.ts.example"
+    },
+    {
+      "path": "packages/ecommerce-server/examples/next-customers/components/customer-link-status.tsx.example",
+      "bytes": 2268,
+      "sha256": "9f088f75b677bd99701bd9138a4f305b98789aac19884d6d62609e170fd5a4ed",
+      "source": "packages/ecommerce-server/examples/next-customers/components/customer-link-status.tsx.example"
+    },
+    {
+      "path": "packages/ecommerce-server/examples/next-customers/server/storefront-customers.ts.example",
+      "bytes": 340,
+      "sha256": "1dfa39c2d0d96ff015323670315823012cc708d02200607efb3d5a921d0875a5",
+      "source": "packages/ecommerce-server/examples/next-customers/server/storefront-customers.ts.example"
+    },
+    {
+      "path": "packages/ecommerce-server/package.json",
+      "bytes": 1674,
+      "sha256": "9e7753668669ffdd8483562f8b36dfb0c823eedd69da4ac07cab7e01c929b3c8",
+      "source": "packages/ecommerce-server/package.json"
+    },
+    {
+      "path": "packages/ecommerce-server/README.md",
+      "bytes": 12094,
+      "sha256": "2a97690e3dcebfbea4c350ec4839c95aa97f98d4bd9195e9ac1669eb702287ba",
+      "source": "packages/ecommerce-server/README.md"
+    },
+    {
+      "path": "packages/ecommerce-server/src/assertions.d.ts",
+      "bytes": 482,
+      "sha256": "513c697762f6171b205b1a4546b2a4faf9e39abf45e8a9fd2137f8f50812cbde",
+      "source": "packages/ecommerce-server/src/assertions.d.ts"
+    },
+    {
+      "path": "packages/ecommerce-server/src/assertions.js",
+      "bytes": 3841,
+      "sha256": "72e332efdfc2babff6e6dfb391a7f42963428e69060c81a47d5f7ac7ab07478b",
+      "source": "packages/ecommerce-server/src/assertions.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/auth.d.ts",
+      "bytes": 1234,
+      "sha256": "0dade8c1a80c14daf6be6c6175c27d0ccc69220e5f44a14a1fc0740b3c9d21f5",
+      "source": "packages/ecommerce-server/src/auth.d.ts"
+    },
+    {
+      "path": "packages/ecommerce-server/src/auth.js",
+      "bytes": 12659,
+      "sha256": "95882258eb660111a0823da05c5e3670ca23fa434ad62e914e6b5c007fd1a26d",
+      "source": "packages/ecommerce-server/src/auth.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/auth/mail.js",
+      "bytes": 10545,
+      "sha256": "7b8ab1dabea5d578ae5990efac1993de7c19ac5bb3f175aab2f8be4a5c64d115",
+      "source": "packages/ecommerce-server/src/auth/mail.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/auth/projections.js",
+      "bytes": 2224,
+      "sha256": "fbe71abfff8b62126676365a1e1753d200b14c3a30831643a95565b7f65e12a2",
+      "source": "packages/ecommerce-server/src/auth/projections.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/auth/runtime.js",
+      "bytes": 10512,
+      "sha256": "02418dc6a8d865de3e160147c25767699dfc29ff860a5c445e14ec9a1b079050",
+      "source": "packages/ecommerce-server/src/auth/runtime.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/auth/security.js",
+      "bytes": 12871,
+      "sha256": "d9c96e380fbed7739bcb1a67a0849d83c2397bb42b8adb61cc8aeabe9840de36",
+      "source": "packages/ecommerce-server/src/auth/security.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/auth/service.js",
+      "bytes": 19579,
+      "sha256": "0228849bd8899e8e67337a5d33793bcac43e5bff1f779ac1c7405116f08aa7d7",
+      "source": "packages/ecommerce-server/src/auth/service.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/browser-denied.js",
+      "bytes": 104,
+      "sha256": "6620545c4f9341e641e8f16c341aa6c874ec6d7a0c0d9f9f065c9597eb6f17d8",
+      "source": "packages/ecommerce-server/src/browser-denied.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/catalog-client.js",
+      "bytes": 5191,
+      "sha256": "c81ae01300181b7702c3b27f11a7a861190deed08d4fc788daef51972f92e6ac",
+      "source": "packages/ecommerce-server/src/catalog-client.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/catalog-contract.js",
+      "bytes": 7536,
+      "sha256": "b35a864825960139e2c02865f00a96cc3140f37bfc5647884a71d394988e7f5d",
+      "source": "packages/ecommerce-server/src/catalog-contract.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/catalog.d.ts",
+      "bytes": 1999,
+      "sha256": "afef8a918b6b84b13bdcab484ae9b6749fe021b4ee94b43ee91c1ccb38240ac5",
+      "source": "packages/ecommerce-server/src/catalog.d.ts"
+    },
+    {
+      "path": "packages/ecommerce-server/src/catalog.js",
+      "bytes": 2180,
+      "sha256": "6a17e9690876165453e96d81cd3c75e1a9e42a18059752338f953eddfa185bf5",
+      "source": "packages/ecommerce-server/src/catalog.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/client-entry.js",
+      "bytes": 220,
+      "sha256": "5680227ee234f5695b1f57832e6bbc3faf1a50ab6f0e39e2572344312180b038",
+      "source": "packages/ecommerce-server/src/client-entry.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/client.d.ts",
+      "bytes": 141,
+      "sha256": "1c068b708de9d2270ad9694f8a8b8752602cb9d52690182be23d1f0e5a9a911d",
+      "source": "packages/ecommerce-server/src/client.d.ts"
+    },
+    {
+      "path": "packages/ecommerce-server/src/client.js",
+      "bytes": 5398,
+      "sha256": "6c2dd13768929aa2f10cc533940c92f74c3d4231637c849f7848a9537fba19a0",
+      "source": "packages/ecommerce-server/src/client.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/collections.js",
+      "bytes": 2607,
+      "sha256": "3df15a07046f97d737893fe8ca4e70cb0879be03c1874f57f308dc43d6ddb514",
+      "source": "packages/ecommerce-server/src/collections.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/config.js",
+      "bytes": 3172,
+      "sha256": "bb00fb0d5d2c3cd21844b637bbc1b4a502f7888efb8530ab7205ea7e1f58a5a9",
+      "source": "packages/ecommerce-server/src/config.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/customer-client.js",
+      "bytes": 5222,
+      "sha256": "aebdc51ada50db140b301c69ce1d3c66c847c5b1d25d246c795a6c9bc1144eef",
+      "source": "packages/ecommerce-server/src/customer-client.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/customers.d.ts",
+      "bytes": 613,
+      "sha256": "c149ae5c668bfaba599628797f507667c4320f9e1caed0b09af4dacf8810659d",
+      "source": "packages/ecommerce-server/src/customers.d.ts"
+    },
+    {
+      "path": "packages/ecommerce-server/src/customers.js",
+      "bytes": 3384,
+      "sha256": "ce3afeca976580d1bc7d81db339ba43cfbd0d49a3a837c60470e58328277c241",
+      "source": "packages/ecommerce-server/src/customers.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/data-shapes.js",
+      "bytes": 7285,
+      "sha256": "f1117363ad06c3fbe08b9021345e5ff08c8506da0edc20d5c18e659608c9d442",
+      "source": "packages/ecommerce-server/src/data-shapes.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/errors.js",
+      "bytes": 525,
+      "sha256": "d6260ee8cee2e160d7d33a2f268db49f63328c5177688c9d43fffffc068f12ef",
+      "source": "packages/ecommerce-server/src/errors.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/http.js",
+      "bytes": 1513,
+      "sha256": "79de1ecf6d8e4689f51cce5330823c60d05d1aa818da03331bf74651ae855832",
+      "source": "packages/ecommerce-server/src/http.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/identity.d.ts",
+      "bytes": 384,
+      "sha256": "a9a59418e90974f5b69d2d3d9f44e705f89dfa87d63e9d282a234e1f9a778250",
+      "source": "packages/ecommerce-server/src/identity.d.ts"
+    },
+    {
+      "path": "packages/ecommerce-server/src/identity.js",
+      "bytes": 499,
+      "sha256": "3534d4c0851a4fd5d46d2e1b980d7d82934443ba95d56bf926c27da2b90fd9ca",
+      "source": "packages/ecommerce-server/src/identity.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/index.d.ts",
+      "bytes": 3285,
+      "sha256": "e1903f4427392df7b701fbe5d943881def8b8144e62f30eb095dde3b06a15f6a",
+      "source": "packages/ecommerce-server/src/index.d.ts"
+    },
+    {
+      "path": "packages/ecommerce-server/src/index.js",
+      "bytes": 205,
+      "sha256": "6040659e2692771aaa559d99f61d0d5f0042319fd4fd604a2c5bee2903930c60",
+      "source": "packages/ecommerce-server/src/index.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/persistence.d.ts",
+      "bytes": 7500,
+      "sha256": "567705fc2f8218e0b3d36717224922de3538c9a28f130efad032cf78049f0283",
+      "source": "packages/ecommerce-server/src/persistence.d.ts"
+    },
+    {
+      "path": "packages/ecommerce-server/src/persistence.js",
+      "bytes": 1100,
+      "sha256": "540ec1f17e5df5acfcf97f492aab6a0bd92c0f7b0e38a956f800f8f9784ec8b0",
+      "source": "packages/ecommerce-server/src/persistence.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/schema-kit.js",
+      "bytes": 5474,
+      "sha256": "c131e3567541143397a59399cb70a463dca70935636da5f183cc60a5f9f80d63",
+      "source": "packages/ecommerce-server/src/schema-kit.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/storage.js",
+      "bytes": 15730,
+      "sha256": "a32e6138db6d4083652b4b1d26f06ea88c1ca9e091d60f093eae74b954d48fbf",
+      "source": "packages/ecommerce-server/src/storage.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/storefront-models.js",
+      "bytes": 15448,
+      "sha256": "ae55757fa43ad9e1d15616d4e8abab61e0bf61f0611594646bce0fd09e6da12a",
+      "source": "packages/ecommerce-server/src/storefront-models.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/tracking-client.js",
+      "bytes": 7163,
+      "sha256": "db807976d2a2118cd0ca5a56c31cc59cc129c001b1301460ab320c3f24a81376",
+      "source": "packages/ecommerce-server/src/tracking-client.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/tracking-contract.js",
+      "bytes": 7345,
+      "sha256": "897e5f37f072eb27a7ac079907ac8de837637b4463930e6d936c2cf074ff5e61",
+      "source": "packages/ecommerce-server/src/tracking-contract.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/tracking.d.ts",
+      "bytes": 3014,
+      "sha256": "1758167ba4758116f9cd3a37b176d779f021888f8c85db4bd7d8d0daae081d87",
+      "source": "packages/ecommerce-server/src/tracking.d.ts"
+    },
+    {
+      "path": "packages/ecommerce-server/src/tracking.js",
+      "bytes": 279,
+      "sha256": "e8b3109430f301114027409bb3ca9f89c5ff237845e7c05f80e2ae9503f6f679",
+      "source": "packages/ecommerce-server/src/tracking.js"
+    },
+    {
+      "path": "packages/ecommerce-server/src/workload.js",
+      "bytes": 2622,
+      "sha256": "d44dd1c25910f308abbddc411cad039d78e216e09821fc42d04f06f1a9147452",
+      "source": "packages/ecommerce-server/src/workload.js"
+    },
+    {
+      "path": "reference/atlas/.env.example",
+      "bytes": 3503,
+      "sha256": "100a6731f74054dfeb0f80345ffabce47ba9dc076e041f70a800df0de2167bab",
+      "source": ".env.example"
+    },
+    {
+      "path": "reference/atlas/package.json",
+      "bytes": 1775,
+      "sha256": "76d94ef624bd46fef188b3d6329ceaafd57c3b23c42d872c0c66b46ff13a9ed5",
+      "source": "package.json"
+    },
+    {
+      "path": "reference/atlas/scripts/ecommerce/mongo-privileges.mjs",
+      "bytes": 6226,
+      "sha256": "5b5a49efbc65cb6f2e18a832931302bd8d60a1036f7a5f19ed4b8a9b6ba51f7e",
+      "source": "scripts/ecommerce/mongo-privileges.mjs"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/cart/items/route.ts",
+      "bytes": 298,
+      "sha256": "4349a195dbb51331eefd51846856f10e1162ef9b9ee0a6d8cb5cad8bb8f50d7c",
+      "source": "src/app/api/ecommerce/internal/cart/items/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/cart/route.ts",
+      "bytes": 298,
+      "sha256": "341fbbb590fc86b47c465a1c777ab46459b46d1a15a3c61deb44f2e0b42bbf0b",
+      "source": "src/app/api/ecommerce/internal/cart/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/catalog/[id]/route.ts",
+      "bytes": 346,
+      "sha256": "e7c254c80fcfdc581f83a9c98b8311ee22c82205aecb2bdb00967070d29528df",
+      "source": "src/app/api/ecommerce/internal/catalog/[id]/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/catalog/route.ts",
+      "bytes": 263,
+      "sha256": "b94006f746712535d5701a9399c0d8e14a008a7a78000b29d9cca96de6af905a",
+      "source": "src/app/api/ecommerce/internal/catalog/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/checkout-options/route.ts",
+      "bytes": 270,
+      "sha256": "1662faaa3b5c8b87b1419d339de0277f7fb696036d805ecbae2ceb7a86857357",
+      "source": "src/app/api/ecommerce/internal/checkout-options/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/customer-identities/reconcile/route.ts",
+      "bytes": 305,
+      "sha256": "e3a3b9965d7efb32192b1973f762f92b1d60461de7ff550269473ac1fbc706a6",
+      "source": "src/app/api/ecommerce/internal/customer-identities/reconcile/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/customer-link/route.ts",
+      "bytes": 299,
+      "sha256": "04afa2d33e9353c335f0d86aec9a24bec992c2a522aac93802d443986f6291e0",
+      "source": "src/app/api/ecommerce/internal/customer-link/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/health/route.ts",
+      "bytes": 632,
+      "sha256": "3e62cde389fb75ddd44debce77f13a8ee9369ab0a5e429087246120acf8799d3",
+      "source": "src/app/api/ecommerce/internal/health/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/orders/[id]/deliveries/[deliveryId]/route.ts",
+      "bytes": 424,
+      "sha256": "1ca93406bfca49a1a843ed6c84bcdb6da81f9a215a1b1f28ef04f124b6958de7",
+      "source": "src/app/api/ecommerce/internal/orders/[id]/deliveries/[deliveryId]/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/orders/[id]/payment-session/route.ts",
+      "bytes": 374,
+      "sha256": "e9879baf054815c4f3211114cd058ca02fc4d82cd6badc13089e70a53f495605",
+      "source": "src/app/api/ecommerce/internal/orders/[id]/payment-session/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/orders/[id]/payment-status/route.ts",
+      "bytes": 375,
+      "sha256": "6af997b95b0892191fa113018a501cd36ded147fe7e02f59fa7ddec22dbdb514",
+      "source": "src/app/api/ecommerce/internal/orders/[id]/payment-status/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/orders/[id]/route.ts",
+      "bytes": 366,
+      "sha256": "066893f551b04445c56397c296fdde5f252acfcd91203e96d74c782f5e62fd3c",
+      "source": "src/app/api/ecommerce/internal/orders/[id]/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/orders/[id]/timeline/route.ts",
+      "bytes": 390,
+      "sha256": "97727dff7f9c8f6e48d3297bc512a1f3da463e9f5b2f64fe04a4b82ce84ca108",
+      "source": "src/app/api/ecommerce/internal/orders/[id]/timeline/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/orders/[id]/tracking/route.ts",
+      "bytes": 390,
+      "sha256": "42e2addf7dd1c0d57a59c9f0e74e809fde39cf80094a32ff2312f1fef3c79d00",
+      "source": "src/app/api/ecommerce/internal/orders/[id]/tracking/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/orders/place/route.ts",
+      "bytes": 293,
+      "sha256": "9a1b4e82d5aee433284db2e9e45fe6e8da1f29edd1700dc72e370e87ec5a18eb",
+      "source": "src/app/api/ecommerce/internal/orders/place/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/orders/route.ts",
+      "bytes": 292,
+      "sha256": "ca44d8e51f3d07698de6f9cc83ecf0e4cd06a1aaf21f18ac8f095f85ba2a8b48",
+      "source": "src/app/api/ecommerce/internal/orders/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/payment-jobs/route.ts",
+      "bytes": 268,
+      "sha256": "2998656478b6e08809eb873206b6f5d316eb46387d7a71f7aa7f6fb855a964ac",
+      "source": "src/app/api/ecommerce/internal/payment-jobs/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/product-pages/[slug]/route.ts",
+      "bytes": 347,
+      "sha256": "079b3ba77fb0af2f8c13ea12bf9b99037094e8a68a22cb275362717220b3db2f",
+      "source": "src/app/api/ecommerce/internal/product-pages/[slug]/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/quotes/[id]/route.ts",
+      "bytes": 379,
+      "sha256": "5757552c1bd61c5f01b79e648bea2b10e8fb167155452b6cc6b9003fbf362aae",
+      "source": "src/app/api/ecommerce/internal/quotes/[id]/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/app/api/ecommerce/internal/quotes/route.ts",
+      "bytes": 299,
+      "sha256": "b967bd6e4c37105d480455a6e35395e45ea0fa87a14a4cc04535bce5de1c5f27",
+      "source": "src/app/api/ecommerce/internal/quotes/route.ts"
+    },
+    {
+      "path": "reference/atlas/src/middleware.ts",
+      "bytes": 4197,
+      "sha256": "630de3ceb9d16fe9cccc75de41633f9bcab73ae3309f33f703c018387479d629",
+      "source": "src/middleware.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/accounts/staff-handler.ts",
+      "bytes": 8888,
+      "sha256": "e0945c34ec20578954e06881fccc95062ef47fc6a2662f7b72f6d96e01baafbc",
+      "source": "src/server-utils/ecommerce/accounts/staff-handler.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/accounts/types.ts",
+      "bytes": 407,
+      "sha256": "3bedd2574b756ec3c24cebc3ed987db493d3c2e460f9bfbe0024a3ce664fa53c",
+      "source": "src/server-utils/ecommerce/accounts/types.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/catalog/checkout-guard.ts",
+      "bytes": 3343,
+      "sha256": "dbcf7aca4b3de5686d4b8f648b685fc360eec5293c83b24edad8cc5516ba68dc",
+      "source": "src/server-utils/ecommerce/catalog/checkout-guard.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/catalog/internal-handler.ts",
+      "bytes": 1622,
+      "sha256": "7b0c2e8bef832508e316f9237593e8c0e616985a63dd1be28eeebb9e0183dd7f",
+      "source": "src/server-utils/ecommerce/catalog/internal-handler.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/catalog/service.ts",
+      "bytes": 24667,
+      "sha256": "532ba930a4c3fb722130075ef80af55b977404cb9a383e6c50bc54757a445bb4",
+      "source": "src/server-utils/ecommerce/catalog/service.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/catalog/staff-handler.ts",
+      "bytes": 4399,
+      "sha256": "813f82695cf108cdb4ab8b0f4f2f59ce85d040a6e7fdef9fec4a3267861d3896",
+      "source": "src/server-utils/ecommerce/catalog/staff-handler.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/catalog/types.ts",
+      "bytes": 1451,
+      "sha256": "0e451e6b19badb6b555247a8f415a613189d6cc18d6a204f80569ff1ed4fd45e",
+      "source": "src/server-utils/ecommerce/catalog/types.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/catalog/validation.ts",
+      "bytes": 8719,
+      "sha256": "21a1ad3c1e2698d06f2306032ef89691405c252a560b643ed7db0f6125eb4b51",
+      "source": "src/server-utils/ecommerce/catalog/validation.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/checkout/auth.ts",
+      "bytes": 4010,
+      "sha256": "4754648f917fd6773675f0cfaecb45db600ac72311deb114108346ea0f60287f",
+      "source": "src/server-utils/ecommerce/checkout/auth.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/checkout/internal-handler.ts",
+      "bytes": 3380,
+      "sha256": "68c9b96566fc0608b04d28a3d8b3a28fb4670db18ad51179b943b8e7a0620e74",
+      "source": "src/server-utils/ecommerce/checkout/internal-handler.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/checkout/policy.ts",
+      "bytes": 5605,
+      "sha256": "cfa022c0d7d0db54c5e3ffbabce9b074d541cf90c7ab0b7c7bb41818f9dc8c6e",
+      "source": "src/server-utils/ecommerce/checkout/policy.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/checkout/service.ts",
+      "bytes": 23815,
+      "sha256": "60991fe131ca5103545c8c05d31dfd267917ec25a4faafd2a44875f7908e6ec4",
+      "source": "src/server-utils/ecommerce/checkout/service.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/checkout/staff-handler.ts",
+      "bytes": 2394,
+      "sha256": "53ccd11da039070396bb62f64d744c243283ba6a0fe788a72e651a4a1285d314",
+      "source": "src/server-utils/ecommerce/checkout/staff-handler.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/checkout/types.ts",
+      "bytes": 2626,
+      "sha256": "38044acd3d5bde953f926b2e8dc634f42c6ffad7761be3c4bfb8e121dfca6d20",
+      "source": "src/server-utils/ecommerce/checkout/types.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/checkout/validation.ts",
+      "bytes": 10187,
+      "sha256": "90ea9b463c373f1c6435eeda4ab2cbcbed250478e653890a16afde4109ec495c",
+      "source": "src/server-utils/ecommerce/checkout/validation.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/customers/identity.ts",
+      "bytes": 2633,
+      "sha256": "d6f53f2c2a001465ccb333e0569fba57e21dbe50d304c4c0e2ee630d85a5c3e6",
+      "source": "src/server-utils/ecommerce/customers/identity.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/customers/internal-handler.ts",
+      "bytes": 2872,
+      "sha256": "89e730a58ff5c4e870987958e04335fd70fe4e563d91ca046f3d31205348640a",
+      "source": "src/server-utils/ecommerce/customers/internal-handler.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/customers/service.ts",
+      "bytes": 19469,
+      "sha256": "5c45acdec5588b6d9c22663e56057c8ccca44ac324cead35b88382033af65c58",
+      "source": "src/server-utils/ecommerce/customers/service.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/customers/staff-handler.ts",
+      "bytes": 4461,
+      "sha256": "d366768deff529718ba9e93517330d20b1ef9f0365023175468a9feab0bf252c",
+      "source": "src/server-utils/ecommerce/customers/staff-handler.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/customers/types.ts",
+      "bytes": 728,
+      "sha256": "b3e279becdb15aeaa0422d1e84eb4dd42935c9e7df5d584456bc78638ecb7941",
+      "source": "src/server-utils/ecommerce/customers/types.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/fulfillments/access.ts",
+      "bytes": 1016,
+      "sha256": "982b536d8204d5339a432594325341158cd9c8c3eb71a6a3e651d8cbf88da5c6",
+      "source": "src/server-utils/ecommerce/fulfillments/access.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/fulfillments/guard.ts",
+      "bytes": 1819,
+      "sha256": "2ae4eabcd67c47051b68521f44f9dd322df210f8f5534a818117d4fb5bbf6130",
+      "source": "src/server-utils/ecommerce/fulfillments/guard.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/fulfillments/handler.ts",
+      "bytes": 5883,
+      "sha256": "3f27108d2f6cd5942ca4ad2559489b35d81c0e3261199b5bef199b0ae6c5829b",
+      "source": "src/server-utils/ecommerce/fulfillments/handler.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/fulfillments/publication.ts",
+      "bytes": 21960,
+      "sha256": "0bf320a01439375855bebdcceeb22f79a6d88a1b789ae90d870ea2b1fa3db580",
+      "source": "src/server-utils/ecommerce/fulfillments/publication.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/fulfillments/service.ts",
+      "bytes": 27582,
+      "sha256": "dc507f17d491ba054018a4821f6e0263950fa3199520be09cbb8b702ce4c61ac",
+      "source": "src/server-utils/ecommerce/fulfillments/service.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/fulfillments/state.ts",
+      "bytes": 6924,
+      "sha256": "9c0775e552ff88fd76165451e85a4d7548e043874c1837cf0b181e20b12ce6c8",
+      "source": "src/server-utils/ecommerce/fulfillments/state.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/fulfillments/types.ts",
+      "bytes": 2991,
+      "sha256": "0e516847c4134599dbd9e22d77438387c578a29b82ca7051c457927f357ae3dd",
+      "source": "src/server-utils/ecommerce/fulfillments/types.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/fulfillments/validation.ts",
+      "bytes": 6811,
+      "sha256": "47bcdf1d68b7921d2bf8e556ed57ffc01dbff27fe3424abee86b67932e56606b",
+      "source": "src/server-utils/ecommerce/fulfillments/validation.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/fulfillments/workflow.ts",
+      "bytes": 10413,
+      "sha256": "573e45d5b49f859ea34c74a48a122d3ece481a5e7fc12ded0eece5382bb921a9",
+      "source": "src/server-utils/ecommerce/fulfillments/workflow.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/internal-service.ts",
+      "bytes": 578,
+      "sha256": "0a275827458957278f55a984adb8a7f6adbe1fb4303030c7164d15881b2c6d1c",
+      "source": "src/server-utils/ecommerce/internal-service.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/orders/internal-handler.ts",
+      "bytes": 1992,
+      "sha256": "1fa58f261bdf571d70aa16750424baebad7e3bacb6c46b5b89ca4f4a0e489545",
+      "source": "src/server-utils/ecommerce/orders/internal-handler.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/orders/service.ts",
+      "bytes": 18495,
+      "sha256": "270e8c4bf9c2424ce73a4fe6070dd9b9c85c115b3039d0b51a6cf34d49c432b5",
+      "source": "src/server-utils/ecommerce/orders/service.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/orders/staff-handler.ts",
+      "bytes": 1531,
+      "sha256": "4e7bf7e9beb3e368a3e988baca8e95e503eb80f5fdd07a50275f8e9d2cff0cab",
+      "source": "src/server-utils/ecommerce/orders/staff-handler.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/orders/types.ts",
+      "bytes": 1398,
+      "sha256": "8aa14b23b93c8df15ad0c280fa347cba748929a0fdf7f77d1b720f0535a817cb",
+      "source": "src/server-utils/ecommerce/orders/types.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/payments/config.ts",
+      "bytes": 3312,
+      "sha256": "7d69bbed82e4941d7ddab40a1da8bed3300a48939e21680f5d705e3a647b7bec",
+      "source": "src/server-utils/ecommerce/payments/config.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/payments/core-ledger.ts",
+      "bytes": 5447,
+      "sha256": "0178b770ec1611cf8a45bcfb4d711cb9a30838ad123ff4baafdc835254ded99b",
+      "source": "src/server-utils/ecommerce/payments/core-ledger.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/payments/internal-handler.ts",
+      "bytes": 1924,
+      "sha256": "f579c3e199869dc067d898118b99129e9f9748f8b5aa51587c2e8e6f9508a22b",
+      "source": "src/server-utils/ecommerce/payments/internal-handler.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/payments/jobs.ts",
+      "bytes": 8633,
+      "sha256": "3109bf82cb954167fd9d5229401feb8e92e344a2b3d0e647786da3f9e5d85ac0",
+      "source": "src/server-utils/ecommerce/payments/jobs.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/payments/reconcile.ts",
+      "bytes": 21775,
+      "sha256": "7af349e5893784c9201305045ecc000a3918af02f088efff4898543e47b725ba",
+      "source": "src/server-utils/ecommerce/payments/reconcile.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/payments/refunds.ts",
+      "bytes": 14662,
+      "sha256": "b4cf6cabfa832e8e8f43d32cd8906614a2ac8d728292587a8368cfbf54e6352b",
+      "source": "src/server-utils/ecommerce/payments/refunds.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/payments/repository.ts",
+      "bytes": 3803,
+      "sha256": "cf014580d380c22fdda6121e689859a6b7a5a0d78fc2f7cb1affaf61796afd3b",
+      "source": "src/server-utils/ecommerce/payments/repository.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/payments/service.ts",
+      "bytes": 7948,
+      "sha256": "fccf2b9b38f93df59cea31437a948400152c812239c8c2cc9323ca9cef69496f",
+      "source": "src/server-utils/ecommerce/payments/service.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/payments/staff-handler.ts",
+      "bytes": 6687,
+      "sha256": "5a3cdabdd780fe27f2045905e69c35d1b7d4250a2ab2b505710b53d60b06d11a",
+      "source": "src/server-utils/ecommerce/payments/staff-handler.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/payments/staff-service.ts",
+      "bytes": 6757,
+      "sha256": "4e66662f270d5af56e151eb035d5307063f95a954308296fad449b4381f3ad28",
+      "source": "src/server-utils/ecommerce/payments/staff-service.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/payments/stripe.ts",
+      "bytes": 8903,
+      "sha256": "32e4cad2e7e9d265a19bf09e715bc19cf3ea771c7ece5c1d5b642de4a344ea0f",
+      "source": "src/server-utils/ecommerce/payments/stripe.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/payments/types.ts",
+      "bytes": 1337,
+      "sha256": "b37ffcceb6dc479bd27783886e1a86ee9f026515b0aa5979bbf59252f96184b6",
+      "source": "src/server-utils/ecommerce/payments/types.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/payments/webhook.ts",
+      "bytes": 5189,
+      "sha256": "2fc4cf9af38e1cdeab788788dad326a2fae2852245778b3fcd900d7684b50d9f",
+      "source": "src/server-utils/ecommerce/payments/webhook.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/persistence/atlas-storage.ts",
+      "bytes": 7822,
+      "sha256": "833dcdce3fdf39a34eac77e725eb8332883c309349e00fb2382d932bb941c1ce",
+      "source": "src/server-utils/ecommerce/persistence/atlas-storage.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/persistence/core-adapters.ts",
+      "bytes": 6546,
+      "sha256": "89a35004ddb2c2111d303c026d66f876a062ec8855c74532b1785b045dada662",
+      "source": "src/server-utils/ecommerce/persistence/core-adapters.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/persistence/core-indexes.mjs",
+      "bytes": 1268,
+      "sha256": "99c1cf0e1d7e0cc76a949b880b883796fc35ce8f7539c3143e32377abe53a1bc",
+      "source": "src/server-utils/ecommerce/persistence/core-indexes.mjs"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/persistence/customer-registry.ts",
+      "bytes": 6843,
+      "sha256": "023a87541384ee4d5a7460714e61fe120eff2fbce7ced36e64d8b765c8e4b14f",
+      "source": "src/server-utils/ecommerce/persistence/customer-registry.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/persistence/initialize-storage.ts",
+      "bytes": 4433,
+      "sha256": "b63f10ed34c681f8c7358665ea2f3d174ffb259e39dd3c2d97b5acc73959401f",
+      "source": "src/server-utils/ecommerce/persistence/initialize-storage.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/persistence/internal-models.mjs",
+      "bytes": 31439,
+      "sha256": "cf56fab2fc204abbe400ceece530b704b635874eefc8bc78a9893d4c1e548f73",
+      "source": "src/server-utils/ecommerce/persistence/internal-models.mjs"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/staff-auth.ts",
+      "bytes": 3034,
+      "sha256": "ab21b687ae4ea2451bb56dc4bf76b0c9ee0b1d83cf0c86f74101fec98cc3ee2a",
+      "source": "src/server-utils/ecommerce/staff-auth.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/staff-request.ts",
+      "bytes": 2285,
+      "sha256": "dd89543e3cd5ec813f9726df84b3887632a99fef22653243f8dec77ebe8e4f12",
+      "source": "src/server-utils/ecommerce/staff-request.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/tracking/internal-handler.ts",
+      "bytes": 2288,
+      "sha256": "de72203110d89d55d40f48eb64a4b412dbfadc006b516634c8ca5e2519ddcd0c",
+      "source": "src/server-utils/ecommerce/tracking/internal-handler.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/tracking/reader.ts",
+      "bytes": 7961,
+      "sha256": "5e23ac5fcdfd1cb100939e36d0b66deab60252fbb4b14855442dfbbdba6e69d0",
+      "source": "src/server-utils/ecommerce/tracking/reader.ts"
+    },
+    {
+      "path": "reference/atlas/src/server-utils/ecommerce/workspace.ts",
+      "bytes": 3151,
+      "sha256": "370823c45dd6c882dee86932e44efb712ba3865b4bb2abb22be844ee9d6dec62",
+      "source": "src/server-utils/ecommerce/workspace.ts"
+    },
+    {
+      "path": "snapshot.json",
+      "bytes": 1406,
+      "sha256": "d7c2e5e20d56d01dc8a50710cdef878828bea5b116539aef22b7f151fa5c23a6",
+      "source": null
+    }
+  ]
+}

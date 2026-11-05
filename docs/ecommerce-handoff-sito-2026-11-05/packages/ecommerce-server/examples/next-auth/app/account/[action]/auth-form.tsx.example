@@ -1,0 +1,263 @@
+"use client";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+export const AUTH_PAGES = {
+  register: "Registrati",
+  login: "Accedi",
+  "verify-email": "Verifica email",
+  "forgot-password": "Recupera password",
+  "reset-password": "Scegli una nuova password",
+  "resend-verification": "Richiedi una nuova verifica",
+  "change-password": "Cambia password",
+  "change-email": "Cambia email",
+  "confirm-email": "Conferma nuova email",
+  logout: "Esci",
+  "logout-all": "Esci da tutte le sessioni",
+} as const;
+type Action = keyof typeof AUTH_PAGES;
+export function AuthForm({
+  action,
+  termsVersion,
+  privacyVersion,
+}: {
+  action: Action;
+  termsVersion: string;
+  privacyVersion: string;
+}) {
+  const [token, setToken] = useState(""),
+    captured = useRef(false);
+  const [busy, setBusy] = useState(false),
+    [message, setMessage] = useState(""),
+    [error, setError] = useState("");
+  const needsToken = [
+    "verify-email",
+    "reset-password",
+    "confirm-email",
+  ].includes(action);
+  useEffect(() => {
+    if (captured.current) return;
+    captured.current = true;
+    const fragment = new URLSearchParams(window.location.hash.slice(1));
+    const received = fragment.getAll("token");
+    // Remove from address bar/history before any fetch; never store in local/sessionStorage.
+    window.history.replaceState(null, "", window.location.pathname);
+    if (
+      needsToken &&
+      received.length === 1 &&
+      /^[A-Za-z0-9_-]{43}$/.test(received[0])
+    )
+      setToken(received[0]);
+  }, [needsToken]);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+    const form = event.currentTarget,
+      data = new FormData(form),
+      body: Record<string, unknown> = {};
+    if (
+      [
+        "register",
+        "login",
+        "forgot-password",
+        "resend-verification",
+        "change-email",
+      ].includes(action)
+    )
+      body.email = data.get("email");
+    if (["register", "login", "verify-email"].includes(action))
+      body.password = data.get("password");
+    if (
+      [
+        "change-password",
+        "change-email",
+        "confirm-email",
+        "logout-all",
+      ].includes(action)
+    )
+      body.currentPassword = data.get("currentPassword");
+    if (["change-password", "reset-password"].includes(action))
+      body.newPassword = data.get("newPassword");
+    if (needsToken) body.token = token;
+    if (action === "register") {
+      if (data.get("accepted") !== "on") return;
+      Object.assign(body, {
+        name: data.get("name"),
+        kind: data.get("kind"),
+        termsVersion,
+        privacyVersion,
+      });
+    }
+    setBusy(true);
+    setError("");
+    setMessage("");
+    try {
+      const csrfResponse = await fetch("/api/ecommerce/v1/auth/csrf", {
+        credentials: "same-origin",
+        cache: "no-store",
+        redirect: "error",
+      });
+      const csrf = await csrfResponse.json();
+      if (!csrfResponse.ok || typeof csrf.csrfToken !== "string")
+        throw new Error("Ricarica la pagina prima di riprovare.");
+      const response = await fetch(`/api/ecommerce/v1/auth/${action}`, {
+        method: "POST",
+        credentials: "same-origin",
+        cache: "no-store",
+        redirect: "error",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Storefront-CSRF": csrf.csrfToken,
+        },
+        body: JSON.stringify(body),
+      });
+      const result = await response.json();
+      if (!response.ok)
+        throw new Error(
+          result?.error?.message || "Operazione non disponibile.",
+        );
+      setMessage(
+        result.message ||
+          (action === "login"
+            ? "Accesso effettuato."
+            : "Operazione completata."),
+      );
+      if (needsToken) setToken("");
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "Operazione non disponibile.",
+      );
+    } finally {
+      form
+        .querySelectorAll<HTMLInputElement>('input[type="password"]')
+        .forEach((input) => {
+          input.value = "";
+        });
+      setBusy(false);
+    }
+  }
+  return (
+    <section>
+      <h1>{AUTH_PAGES[action]}</h1>
+      {error && <p role="alert">{error}</p>}
+      {message && <p role="status">{message}</p>}
+      {needsToken && !token && !message ? (
+        <p>
+          Apri il link ricevuto via email. Se hai già ricaricato questa pagina,
+          richiedi un nuovo link.
+        </p>
+      ) : (
+        <form onSubmit={submit}>
+          {[
+            "register",
+            "login",
+            "forgot-password",
+            "resend-verification",
+            "change-email",
+          ].includes(action) && (
+            <label>
+              Email{" "}
+              <input
+                name="email"
+                type="email"
+                autoComplete={action === "change-email" ? "email" : "username"}
+                required
+                maxLength={254}
+              />
+            </label>
+          )}
+          {action === "register" && (
+            <>
+              <label>
+                Nome{" "}
+                <input
+                  name="name"
+                  autoComplete="name"
+                  required
+                  maxLength={200}
+                />
+              </label>
+              <label>
+                Tipo{" "}
+                <select name="kind">
+                  <option value="individual">Privato</option>
+                  <option value="company">Azienda</option>
+                </select>
+              </label>
+              <p>
+                Inserire qui i collegamenti alle condizioni e all’informativa
+                privacy effettive del sito.
+              </p>
+              <label>
+                <input name="accepted" type="checkbox" required /> Ho letto le
+                condizioni e l’informativa privacy indicate.
+              </label>
+            </>
+          )}
+          {["register", "login", "verify-email"].includes(action) && (
+            <label>
+              {action === "verify-email"
+                ? "Password scelta alla registrazione"
+                : "Password"}
+              <input
+                name="password"
+                type="password"
+                autoComplete={
+                  action === "register" ? "new-password" : "current-password"
+                }
+                required
+                minLength={action === "register" ? 15 : undefined}
+                maxLength={256}
+              />
+            </label>
+          )}
+          {[
+            "change-password",
+            "change-email",
+            "confirm-email",
+            "logout-all",
+          ].includes(action) && (
+            <label>
+              Password corrente{" "}
+              <input
+                name="currentPassword"
+                type="password"
+                autoComplete="current-password"
+                required
+                maxLength={256}
+              />
+            </label>
+          )}
+          {["change-password", "reset-password"].includes(action) && (
+            <label>
+              Nuova password (15–128 caratteri){" "}
+              <input
+                name="newPassword"
+                type="password"
+                autoComplete="new-password"
+                minLength={15}
+                maxLength={256}
+                required
+              />
+            </label>
+          )}
+          <button type="submit" disabled={busy}>
+            {busy ? "Attendi…" : AUTH_PAGES[action]}
+          </button>
+        </form>
+      )}
+      <nav>
+        <a href="/account/login">Accedi</a> ·{" "}
+        <a href="/account/register">Registrati</a> ·{" "}
+        <a href="/account/forgot-password">Recupera password</a>
+      </nav>
+      <p>
+        Il controllo delle password compromesse usa Pwned Passwords di{" "}
+        <a href="https://haveibeenpwned.com/Passwords" rel="noreferrer">
+          Have I Been Pwned
+        </a>
+        .
+      </p>
+    </section>
+  );
+}

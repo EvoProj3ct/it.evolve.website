@@ -135,16 +135,6 @@
   pointer-events: none;
 }
 
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  color: #42584a;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  line-height: 1.5;
-}
-
 .title {
   margin: 32px 0 0;
   font-family: var(--fonts-body), Arial, sans-serif;
@@ -153,6 +143,28 @@
   letter-spacing: -0.072em;
   line-height: 1.06;
   text-wrap: balance;
+}
+
+.titleAccent {
+  position: relative;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.titleAccent::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -0.06em;
+  left: 0.025em;
+  height: 3px;
+  background: var(--accent-blue, #72c94f);
+  transform: rotate(-2deg);
+  transform-origin: left;
+}
+
+.period {
+  color: var(--accent-blue, #72c94f);
 }
 
 .description {
@@ -240,6 +252,10 @@
   outline-offset: 4px;
 }
 
+@media (max-width: 700px) {
+  .titleAccent::after { height: 2px; }
+}
+
 @media (max-width: 640px) {
   .hero { min-height: 780px; min-height: max(780px, 100svh); }
   .constructionHero { min-height: max(620px, 100svh); }
@@ -251,7 +267,6 @@
     padding-bottom: 170px;
   }
   .copyWash { top: 145px; width: min(530px, 120vw); height: 430px; }
-  .eyebrow { max-width: 300px; font-size: 9px; letter-spacing: 0.12em; }
   .title { margin-top: 30px; font-size: clamp(44px, 11.2vw, 62px); letter-spacing: -0.065em; }
   .description { max-width: 33ch; margin-top: 26px; font-size: 15px; line-height: 1.65; }
   .actions { flex-direction: column; gap: 6px; margin-top: 27px; }

@@ -1,0 +1,9 @@
+// WEBSITE ONLY: src/app/api/internal/customer-identities/route.ts
+// Private caller: Authorization Bearer ECOMMERCE_CUSTOMER_SYNC_SECRET, no browser Origin.
+import { storefrontCustomers } from "@/server/storefront-customers";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 60;
+export async function POST(request: Request) {
+  return storefrontCustomers.handleReconciliation(request);
+}

@@ -1,0 +1,39 @@
+{
+  "formatVersion": 1,
+  "generatedAt": "2026-11-05T12:37:17.864Z",
+  "contractDate": "2026-11-05",
+  "sourceRepository": "it.evolve.atlas.nfcPlatform",
+  "gitHead": "2807a53434cbeb983cf314102213b262d72930e5",
+  "workingTreeDirty": true,
+  "gitMetadataSource": "HEAD and dirty state read from git commands during this handoff; no commit was created.",
+  "snapshotNotice": "Files include local and untracked ecommerce changes. Git HEAD alone does not reproduce this snapshot. Use the manifest hashes.",
+  "package": {
+    "name": "@evolve/ecommerce-server",
+    "version": "0.1.0",
+    "engines": {
+      "node": ">=20"
+    }
+  },
+  "mandate": "docs/ecommerce-handoff-agente-sito.md",
+  "readme": "LEGGIMI.md",
+  "step14": {
+    "handoffDocumented": true,
+    "websiteImplementedInThisRepository": false,
+    "websiteIntegrationAndEndToEndTestsPending": true
+  },
+  "environment": "Two new Vercel test projects: Atlas and storefront. User configures env, credentials, integrations and tests.",
+  "referenceOnly": "reference/atlas is for consultation, not for installation or runtime imports in the storefront.",
+  "excluded": [
+    "Real environment files and credentials",
+    "Installed dependencies",
+    "Build output",
+    "Mongo data",
+    "Git metadata",
+    "Full Atlas application"
+  ],
+  "manifest": {
+    "path": "manifest-sha256.json",
+    "algorithm": "sha256",
+    "selfExcluded": true
+  }
+}
