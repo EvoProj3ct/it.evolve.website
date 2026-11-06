@@ -32,8 +32,8 @@ export function ShopNavigation() {
         <NavInk active={highlighted} navRef={navRef} pressed={pressed} />
       </nav>
       <div className={styles.headerActions}>
-        <button type="button" className={styles.headerTool} disabled aria-label="Profilo, prossimamente" title="Profilo, prossimamente"><UserRound size={18} /></button>
-        <button type="button" className={styles.headerTool} disabled aria-label="Carrello, prossimamente" title="Carrello, prossimamente"><ShoppingCart size={18} /></button>
+        <Link href="/shop/profilo" className={styles.headerTool} aria-label="Il tuo profilo" aria-current={pathname === "/shop/profilo" ? "page" : undefined} title="Il tuo profilo"><UserRound size={18} /></Link>
+        <Link href="/shop/carrello" className={styles.headerTool} aria-label="Il tuo carrello" aria-current={pathname === "/shop/carrello" ? "page" : undefined} title="Il tuo carrello"><ShoppingCart size={18} /></Link>
         <Link href="/" className={styles.backToSite}><span>Il mondo Evolve</span><ArrowUpRight size={14} /></Link>
       </div>
     </header>
