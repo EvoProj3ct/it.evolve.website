@@ -205,21 +205,20 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
             <p className={styles.heroTagline}>{info.tagline}</p>
             <p className={styles.heroDescription}>{info.description}</p>
             <div className={styles.heroActions}>
-              <a href="#configura" className={styles.heroCta}>{isDisk ? "Scegli i tuoi colori" : "Personalizza e-linker"} <ArrowUpRight size={21} /></a>
+              <a href="#configura" className={styles.heroCta}>{isDisk ? "Scegli i tuoi colori" : "Personalizza"} <ArrowUpRight size={21} /></a>
               {isDisk && <a href="#incidi" className={`${styles.heroCta} ${styles.heroDiscsCta}`}>Incidi i tuoi dischi <ArrowUpRight size={21} /></a>}
             </div>
-            {!isDisk && <span className={styles.heroCategory}><Plus size={17} /> {info.category}</span>}
           </div>
           <div className={styles.heroVisual}>
             <div className={styles.visualOrbit} aria-hidden="true" />
-            {isDisk ? <button type="button" className={styles.heroSound} data-playing={heroSoundOn && heroPlaying} aria-pressed={heroSoundOn} aria-busy={heroSoundPending} aria-label={heroSoundOn || heroSoundPending ? "Disattiva la musica" : "Ascolta la musica"} title={heroSoundOn || heroSoundPending ? "Disattiva la musica" : "Ascolta la musica"} onClick={() => void toggleHeroSound()}>{heroSoundOn || heroSoundPending ? <Volume2 size={30} strokeWidth={1.6} /> : <VolumeX size={30} strokeWidth={1.6} />}<span className={styles.soundWaves} aria-hidden="true"><i /><i /><i /></span></button> : <span className={styles.visualCross} aria-hidden="true">✳</span>}
-            <span className={styles.sticker} aria-hidden="true">{isDisk ? <>La tua<br />musica!</> : <>✳ <span>Disegnato da te</span></>}</span>
+            {isDisk && <button type="button" className={styles.heroSound} data-playing={heroSoundOn && heroPlaying} aria-pressed={heroSoundOn} aria-busy={heroSoundPending} aria-label={heroSoundOn || heroSoundPending ? "Disattiva la musica" : "Ascolta la musica"} title={heroSoundOn || heroSoundPending ? "Disattiva la musica" : "Ascolta la musica"} onClick={() => void toggleHeroSound()}>{heroSoundOn || heroSoundPending ? <Volume2 size={30} strokeWidth={1.6} /> : <VolumeX size={30} strokeWidth={1.6} />}<span className={styles.soundWaves} aria-hidden="true"><i /><i /><i /></span></button>}
+            {isDisk && <span className={styles.sticker} aria-hidden="true">La tua<br />musica!</span>}
             {info.video ? <video ref={videoRef} src={info.video} className={styles.heroVideo} autoPlay muted loop playsInline aria-label={`Presentazione ${product}`} /> : <ProductScene product={product} configuration={heroConfiguration} presentation playing={heroPlaying} />}
             {isDisk && !info.video && <CartoonNotes playing={heroPlaying} />}
-            <div className={styles.filmBar}>
+            {isDisk && <div className={styles.filmBar}>
               <span><i /> {isDisk && heroSoundOn ? "Sound on · Rock’n’roll!" : info.video ? "Il film" : "Studio di prodotto · 3D"}</span>
               <button type="button" onClick={() => setHeroPlaying(value => !value)} aria-label={heroPlaying ? "Metti in pausa la presentazione" : "Riprendi la presentazione"}>{heroPlaying ? <Pause size={15} /> : <Play size={15} />} {heroPlaying ? "Pausa" : "Play"}</button>
-            </div>
+            </div>}
             {heroSoundError && <p className={styles.heroSoundError} role="status">{heroSoundError}</p>}
           </div>
         </div>
@@ -230,7 +229,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
       {isDisk && <EDiskGiftIdeas onChoose={setDiscSource} />}
 
       {!isDisk && <section id="scopri" className={styles.story} aria-labelledby="story-title">
-        <div className={styles.storyHeading}><h2 id="story-title">{info.punchline}<span>.</span></h2><p>Un biglietto da visita che rimane, un prodotto da far scoprire, un ricordo da regalare. Il tag NFC dentro e-linker apre il collegamento che scegli: un piccolo gesto, molto più di un portachiavi.</p></div>
+        <div className={styles.storyHeading}><h2 id="story-title">{info.punchline}<span>.</span></h2><p>Il tag NFC apre il collegamento che scegli, con uno smartphone compatibile.</p></div>
         <div className={styles.steps}>{info.steps.map((step, index) => <article key={step.title} className={styles.step}><span className={styles.stepNumber}>0{index + 1}</span><div className={styles.stepGraphic} aria-hidden="true">{index === 0 ? <Store /> : index === 1 ? <Package /> : <Heart />}</div><h3>{step.title}</h3><p>{step.description}</p></article>)}</div>
       </section>}
 
@@ -238,7 +237,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
       {isDisk && <><EDiskDiscStudio source={discSource} onSourceChange={setDiscSource} /><EDiskRecordDemo /><EDiskBundle onChoose={() => { setDiskOffer("bundle"); document.getElementById("offerta-edisk")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }} /></>}
 
       <section id="configura" className={styles.configurator} aria-labelledby="config-title">
-        <div className={styles.configHeading}><h2 id="config-title">Unico.<br />Come te<span>.</span></h2><p>{isDisk ? "Due colori. Trenta possibilità per ognuno. Trova la combinazione che vorresti sul tuo tavolo." : "Parti da una forma, aggiungi la tua scritta e trova il tuo abbinamento. Il prossimo portachiavi lo disegni tu."}</p></div>
+        <div className={styles.configHeading}><h2 id="config-title">Unico.<br />Come te<span>.</span></h2><p>{isDisk ? "Due colori. Trenta possibilità per ognuno. Trova la combinazione che vorresti sul tuo tavolo." : "Una forma, il tuo logo, due colori. Parti da qui."}</p></div>
         <div className={styles.configGrid}>
           <div className={styles.viewer}>
             <div className={styles.viewerTop}><span><i /> {product}</span><span>360°</span></div>
@@ -272,7 +271,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
         </div>
       </section>
 
-      <section className={styles.resources} aria-labelledby="resources-title"><div className={styles.resourceCopy}><h2 id="resources-title">L’oggetto è solo<br />l’inizio<span>.</span></h2><p>{isDisk ? "Dietro ogni disco c’è la tua collezione. Apri l’app, organizza i brani e scopri come dare vita al tuo e-disk." : "Hai in mente qualcosa di preciso? Parti dalla guida: forme, testi e loghi spiegati senza giri di parole."}</p></div><div className={styles.resourceLinks}>{isDisk && <Link href="/shop/e-disk/app"><Smartphone size={26} /><div><span>La tua collezione, online</span><h3>App e-disk</h3><p>Dischi, brani e giradischi. Tutto in un posto.</p></div><ArrowUpRight size={25} /></Link>}<Link href={`/shop/${product}/documentazione`}><BookOpen size={26} /><div><span>Da dove si comincia?</span><h3>Dentro {product}</h3><p>{isDisk ? "Primi passi, NFC e collegamenti." : "Forme, file del logo e personalizzazione."}</p></div><ArrowUpRight size={25} /></Link></div></section>
+      <section className={styles.resources} aria-labelledby="resources-title"><div className={styles.resourceCopy}><h2 id="resources-title">L’oggetto è solo<br />l’inizio<span>.</span></h2><p>{isDisk ? "Dietro ogni disco c’è la tua collezione. Apri l’app, organizza i brani e scopri come dare vita al tuo e-disk." : "Forme, logo e collegamento NFC: prepara la tua idea."}</p></div><div className={styles.resourceLinks}>{isDisk && <Link href="/shop/e-disk/app"><Smartphone size={26} /><div><span>La tua collezione, online</span><h3>App e-disk</h3><p>Dischi, brani e giradischi. Tutto in un posto.</p></div><ArrowUpRight size={25} /></Link>}<Link href={`/shop/${product}/documentazione`}><BookOpen size={26} /><div><span>Da dove si comincia?</span><h3>Dentro {product}</h3><p>{isDisk ? "Primi passi, NFC e collegamenti." : "Forme, file del logo e personalizzazione."}</p></div><ArrowUpRight size={25} /></Link></div></section>
 
       <section className={styles.faq} aria-labelledby="faq-title"><div><h2 id="faq-title">Bella domanda<span>.</span></h2></div><div>{info.faq.map(item => <details key={item.question}><summary>{item.question}<Plus size={20} /></summary><p>{item.answer}</p></details>)}</div></section>
 

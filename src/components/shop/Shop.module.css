@@ -71,13 +71,11 @@
 .heroDiscsCta { background: #cabee6; box-shadow: 5px 5px 0 #3154f4; }
 .heroDiscsCta:hover { box-shadow: 7px 7px 0 #3154f4; }
 .heroDiscsCta:active { box-shadow: 2px 2px 0 #3154f4; }
-.heroCategory { display: flex; align-items: center; gap: 8px; margin-top: 26px; color: #b5cfa9; font-size: 10px; }
 .heroVisual { position: relative; min-width: 0; height: clamp(390px, 42vw, 615px); border: 1px solid #b3df766b; background: #97bb64; isolation: isolate; }
 .heroVisual::before { position: absolute; inset: 0; z-index: -1; content: ""; background-image: radial-gradient(#224b2033 1px, transparent 1px); background-size: 9px 9px; }
 .heroVisual::after { position: absolute; z-index: -2; inset: 10px -10px -10px 10px; border: 1px solid #a5c68c99; content: ""; }
 .visualOrbit { position: absolute; top: 20%; left: 7%; width: 86%; aspect-ratio: 1; border: 1px solid #e9ffd996; border-radius: 50%; transform: rotate(-22deg) scaleY(.6); }
 .visualOrbit::after { position: absolute; inset: -25px; border: 1px dashed #24462947; border-radius: 50%; content: ""; }
-.visualCross { position: absolute; top: 18px; left: 23px; color: #26432c; font-size: 53px; line-height: 1; }
 .heroSound { position: absolute; z-index: 6; top: 18px; left: 23px; display: grid; place-items: center; width: 48px; height: 48px; padding: 0; border: 1px solid transparent; border-radius: 12px; background: transparent; color: #26432c; transition: background .3s, border-color .3s, transform .3s; -webkit-tap-highlight-color: transparent; }
 .heroSound:hover, .heroSound:focus-visible { border-color: #26432c40; background: #fcfdfb40; transform: translateY(-2px); }
 .heroSound:active { transform: scale(.94); }
@@ -293,17 +291,11 @@
 .productPage[data-product="e-linker"] .heroCta > svg { color: #72c94f; }
 .productPage[data-product="e-linker"] .heroCta:hover { transform: translateY(-2px); background: #28452b; box-shadow: none; }
 .productPage[data-product="e-linker"] .heroCta:active { transform: translateY(0); }
-.productPage[data-product="e-linker"] .heroCategory { color: #75886b; }
 .productPage[data-product="e-linker"] .heroVisual { height: clamp(420px,42vw,640px); border: 0; background: radial-gradient(ellipse at 50% 60%, #eaf2e4 0, #fcfdfb00 67%); }
 .productPage[data-product="e-linker"] .heroVisual::before { inset: 18%; border: 1px solid #e0ead9; border-radius: 50%; background: none; transform: rotate(-24deg) scaleY(.8); }
 .productPage[data-product="e-linker"] .heroVisual::after { display: none; }
 .productPage[data-product="e-linker"] .visualOrbit { border-color: #d9e5d0; }
 .productPage[data-product="e-linker"] .visualOrbit::after { border-color: #e5edde; }
-.productPage[data-product="e-linker"] .visualCross { top: 45px; left: 30px; color: #a2b496; font-size: 23px; }
-.productPage[data-product="e-linker"] .sticker { display: flex; align-items: center; gap: 8px; width: auto; height: auto; padding: 9px 13px; border: 1px solid #e0e8d9; border-radius: 24px; background: #fcfdfba8; color: #72a353; font-size: 20px; font-weight: 400; line-height: 1; letter-spacing: 0; transform: none; clip-path: none; }
-.productPage[data-product="e-linker"] .sticker > span { color: #718363; font-size: 9px; }
-.productPage[data-product="e-linker"] .filmBar { border-top-color: #e0e8da; color: #738569; }
-.productPage[data-product="e-linker"] .filmBar button { border-color: #dce6d4; border-radius: 20px; background: #fcfdfb; }
 .productPage[data-product="e-linker"] .story { padding-top: 70px; }
 .productPage[data-product="e-linker"] .steps { gap: 35px; border: 0; }
 .productPage[data-product="e-linker"] .step { padding: 24px 0 0; border: 0; border-top: 1px solid #e0e7d9; background: transparent; }
@@ -376,9 +368,7 @@
   .heroTagline { font-size: clamp(34px, 7.6vw, 49px); }
   .heroDescription { max-width: 390px; font-size: 13px; line-height: 1.75; }
   .heroCta { min-height: 51px; font-size: 13px; }
-  .heroCategory { margin-top: 23px; }
   .heroVisual { height: clamp(340px, 76vw, 490px); margin-bottom: 12px; }
-  .visualCross { font-size: 43px; }
   .sticker { top: 21px; right: 18px; width: 82px; height: 82px; }
   .ticker { padding: 12px 0; }
   .ticker span { gap: 22px; padding-right: 22px; font-size: 13px; }
