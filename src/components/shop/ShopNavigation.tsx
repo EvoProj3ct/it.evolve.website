@@ -18,10 +18,7 @@ export function ShopNavigation() {
   const highlighted = hovered ?? current;
   return (
     <header className={styles.globalHeader}>
-      <Link href="/" className={styles.logoLink} aria-label="Evolve, torna al sito">
-        <Image src="/logoEvolve.png" alt="Evolve" width={61} height={49} priority />
-        <span className={styles.shopWord}>shop</span>
-      </Link>
+      <div className={styles.logoLink}><Link href="/" aria-label="Evolve, torna al sito"><Image src="/logoEvolve.png" alt="Evolve" width={61} height={49} priority /></Link><Link href="/negozio" className={styles.shopWord}>shop</Link></div>
       <nav ref={navRef} className={styles.productLinks} aria-label="Prodotti Evolve" onPointerLeave={() => setHovered(null)}>
         {(Object.keys(PRODUCTS) as ProductId[]).map(id => <Link key={id} data-nav-key={id} href={`/shop/${id}`} aria-current={current === id ? "page" : undefined} onClick={event => {
           if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || event.button > 0) return;
@@ -32,8 +29,8 @@ export function ShopNavigation() {
         <NavInk active={highlighted} navRef={navRef} pressed={pressed} />
       </nav>
       <div className={styles.headerActions}>
-        <Link href="/shop/profilo" className={styles.headerTool} aria-label="Il tuo profilo" aria-current={pathname === "/shop/profilo" ? "page" : undefined} title="Il tuo profilo"><UserRound size={18} /></Link>
-        <Link href="/shop/carrello" className={styles.headerTool} aria-label="Il tuo carrello" aria-current={pathname === "/shop/carrello" ? "page" : undefined} title="Il tuo carrello"><ShoppingCart size={18} /></Link>
+        <Link href="/account" prefetch={false} className={styles.headerTool} aria-label="Il tuo profilo" aria-current={pathname.startsWith("/account") ? "page" : undefined} title="Il tuo profilo"><UserRound size={18} /></Link>
+        <Link href="/carrello" prefetch={false} className={styles.headerTool} aria-label="Il tuo carrello" aria-current={pathname === "/carrello" ? "page" : undefined} title="Il tuo carrello"><ShoppingCart size={18} /></Link>
         <Link href="/" className={styles.backToSite}><span>Il mondo Evolve</span><ArrowUpRight size={14} /></Link>
       </div>
     </header>

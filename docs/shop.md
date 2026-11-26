@@ -1,5 +1,7 @@
 # Shop Evolve: prodotti e sottositi
 
+**Aggiornamento 26 novembre 2026:** profilo e carrello non usano più i dati dimostrativi descritti nella sezione storica del 6 novembre. Sono stati predisposti catalogo reale, autenticazione, API nominate, checkout, ordini e tracking secondo l’handoff Atlas. Stato, configurazione e limiti sono descritti in `docs/ecommerce-integrazione.md`; nessun collaudo sui servizi è stato eseguito.
+
 ## Riferimenti studiati
 
 - [Microduck](https://pollen-robotics.com/microduck/): navigazione globale per prodotto, menu locale, apertura visiva, film, simulatore, scelta del colore, galleria, risorse e invito finale. Il ritmo alterna presentazione, interazione e approfondimento, anziché iniziare da una griglia di articoli.

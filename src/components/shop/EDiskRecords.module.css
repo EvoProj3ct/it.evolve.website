@@ -127,3 +127,10 @@
   .moreDiscs a { width: 100%; margin-left: 59px; }
 }
 @media (prefers-reduced-motion: reduce) { .hangingDisc, .buyBundle { transition: none; } }
+.bundleDiscFields { display: grid; gap: 12px; }
+.bundleDiscFields fieldset { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 10px; border: 1px solid #d0d8c8; border-radius: 8px; padding: 10px; }
+.bundleDiscFields legend { padding-inline: 5px; font-weight: 700; }
+.bundleDiscFields label { display: grid; gap: 4px; font-size: .8rem; }
+.bundleDiscFields label:nth-of-type(n + 3) { grid-column: 1 / -1; }
+.bundleDiscFields input { min-width: 0; padding: 5px; border: 1px solid #a9b6a3; border-radius: 4px; background: #fff; color: #253722; }
+.bundleDiscFields input[type="color"] { padding: 2px; height: 32px; }

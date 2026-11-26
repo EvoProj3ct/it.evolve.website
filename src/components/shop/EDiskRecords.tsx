@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { ArrowUpRight, Check, Disc3, Gift, Heart, Pause, PenLine, Play, Sparkles, Volume2 } from "lucide-react";
 import { FaSpotify, FaYoutube } from "react-icons/fa";
+import { ConfiguredPurchase } from "./ConfiguredPurchase";
 import { defaultConfiguration } from "./products";
 import { ProductIllustration } from "./ProductIllustration";
 import { RecordDemoAudio } from "./RecordDemoAudio";
@@ -31,6 +32,25 @@ function RecordGraphic({ color, title, className }: { color: string; title: stri
 
 export type DiscSource = "ai" | "spotify" | "youtube";
 
+export type BundleDisc = { title: string; color: string; dedication: string; trackUrl: string };
+
+export function BundleDiscFields({ discs, onChange }: { discs: BundleDisc[]; onChange: (discs: BundleDisc[]) => void }) {
+  return <div className={styles.bundleDiscFields}>
+    {discs.map((disc, index) => {
+      function update(key: keyof BundleDisc, value: string) {
+        onChange(discs.map((item, position) => position === index ? { ...item, [key]: value } : item));
+      }
+      return <fieldset key={index}>
+        <legend>Disco {index + 1}</legend>
+        <label>Titolo<input required maxLength={38} value={disc.title} onChange={event => update("title", event.target.value)} /></label>
+        <label>Colore<input type="color" value={disc.color} onChange={event => update("color", event.target.value)} /></label>
+        <label>Dedica, facoltativa<input maxLength={80} value={disc.dedication} onChange={event => update("dedication", event.target.value)} /></label>
+        <label>Link YouTube o Spotify, facoltativo<input type="url" maxLength={512} value={disc.trackUrl} onChange={event => update("trackUrl", event.target.value)} /></label>
+      </fieldset>;
+    })}
+  </div>;
+}
+
 export function EDiskGiftIdeas({ onChoose }: { onChoose: (source: DiscSource) => void }) {
   const giftIdeas = [
     { id: "love", source: "youtube" as const, name: "La vostra storia. In un disco.", description: "La canzone che parla di voi, una dedica solo per chi ami. Un regalo da tenere vicino e riascoltare ogni volta che ne ha voglia.", icon: <Heart size={27} />, caption: "Per chi ami", action: "Dedica un disco" },
@@ -49,6 +69,7 @@ export function EDiskDiscStudio({ source, onSourceChange: setSource }: { source:
   const [title, setTitle] = useState("La nostra canzone");
   const [dedication, setDedication] = useState("Per le cose che restano.");
   const [color, setColor] = useState("#cabee6");
+  const [tracks, setTracks] = useState({ spotify: "", youtube: "" });
   return <section id="incidi" className={styles.studio} aria-labelledby="disc-editor-title">
     <div id="disk-editor" className={styles.personalize}>
       <div className={styles.discPreview}><span className={styles.previewStar} aria-hidden="true">✳</span><RecordGraphic color={color} title={title || "La tua musica"} /><p>{dedication || "La tua dedica, sul tuo disco."}</p><span className={styles.previewTag}>Un disco. La tua storia.</span></div>
@@ -58,8 +79,17 @@ export function EDiskDiscStudio({ source, onSourceChange: setSource }: { source:
         <label htmlFor="custom-disc-dedication">Una dedica<input id="custom-disc-dedication" value={dedication} maxLength={80} onChange={event => setDedication(event.target.value)} placeholder="Per chi, per cosa, per sempre…" /></label>
         <fieldset><legend>Il suo colore</legend><div className={styles.discColors}>{["#cabee6", "#ffab8a", "#b4df7b", "#f7bad5", "#83d7e4"].map((hex, index) => <button key={hex} type="button" style={{ "--disc-color": hex } as CSSProperties} aria-pressed={color === hex} aria-label={["Lilla", "Pesca", "Verde", "Rosa", "Azzurro"][index]} onClick={() => setColor(hex)}><span /></button>)}</div></fieldset>
         <fieldset><legend>La musica sul disco</legend><div className={styles.musicSources}><button type="button" aria-pressed={source === "ai"} onClick={() => setSource("ai")}><Sparkles size={15} /> Scrivila con l’IA</button><button type="button" aria-pressed={source === "youtube"} onClick={() => setSource("youtube")}><FaYoutube size={16} /> YouTube</button><button type="button" aria-pressed={source === "spotify"} onClick={() => setSource("spotify")}><FaSpotify size={15} /> Spotify</button></div></fieldset>
-        {source === "ai" ? <div className={styles.sourceInput}><Sparkles size={19} /><div><strong>La tua storia ha già una canzone. Manca solo la musica.</strong><p>Stiamo preparando il tool IA: potrai partire dalle tue parole e creare una canzone da dedicare, anche senza esperienza musicale.</p><Link href="/lavori-in-corso">Crea la tua musica <ArrowUpRight size={14} /></Link></div></div> : <div className={styles.sourceInput}><div><label htmlFor="custom-disc-url">Il link del brano {source === "spotify" ? "Spotify" : "YouTube"}<input id="custom-disc-url" key={source} type="url" placeholder={source === "spotify" ? "https://open.spotify.com/track/…" : "https://www.youtube.com/watch?v=…"} /></label><p>{source === "spotify" ? "Il collegamento automatico a Spotify è in preparazione." : "Il brano resta su YouTube e viene richiamato dall’app e-disk."}</p></div></div>}
-        <button type="button" className={styles.addDisc} disabled title="Ordini e carrello saranno collegati in seguito">Aggiungi il disco <ArrowUpRight size={19} /></button>
+        {source === "ai" ? <div className={styles.sourceInput}><Sparkles size={19} /><div><strong>La tua storia ha già una canzone. Manca solo la musica.</strong><p>Stiamo preparando il tool IA: potrai partire dalle tue parole e creare una canzone da dedicare, anche senza esperienza musicale.</p><Link href="/lavori-in-corso">Crea la tua musica <ArrowUpRight size={14} /></Link></div></div> : <div className={styles.sourceInput}><div><label htmlFor="custom-disc-url">Il link del brano {source === "spotify" ? "Spotify" : "YouTube"}<input id="custom-disc-url" key={source} type="url" maxLength={512} value={tracks[source]} onChange={event => setTracks(current => ({ ...current, [source]: event.target.value }))} placeholder={source === "spotify" ? "https://open.spotify.com/track/…" : "https://www.youtube.com/watch?v=…"} /></label><p>{source === "spotify" ? "Il collegamento automatico a Spotify è in preparazione." : "Il brano resta su YouTube e viene richiamato dall’app e-disk."}</p></div></div>}
+        <ConfiguredPurchase kind="e-disk-disc" buttonClass={styles.addDisc} disabled={!title.trim()}
+          prepare={() => ({
+            color,
+            inscription: title.trim(),
+            details: {
+              kind: "e-disk-disc",
+              dedication: dedication.trim() || undefined,
+              trackUrl: source === "ai" ? undefined : tracks[source].trim() || undefined,
+            },
+          })} />
       </form>
     </div>
     <p className={styles.studioFoot}>Hai già e-disk? Puoi acquistare altri dischi da Evolve ogni volta che vuoi, senza ricomprare il giradischi.</p>
@@ -130,7 +160,7 @@ export function EDiskRecordDemo() {
 
 export function EDiskBundle({ onChoose }: { onChoose: () => void }) {
   return <section id="bundle" className={styles.bundle} aria-labelledby="bundle-title">
-    <div className={styles.bundleGrid}><div className={styles.bundleArt}><ProductIllustration product="e-disk" configuration={defaultConfiguration("e-disk")} /><div className={styles.bundleRecords}>{DEMO_RECORDS.map(record => <RecordGraphic key={record.title} color={record.color} title={record.title} />)}</div><span className={styles.bundleStamp}>1 e-disk<br />3 dischi<br />∞ storie</span></div><div className={styles.bundleCopy}><h2 id="bundle-title">Il tuo primo<br />lato A<span>.</span></h2><h3>e-disk + 3 dischi</h3><p>Il giradischi nei tuoi colori e tre dischi da personalizzare. Scegli i brani, noi li stampiamo. Tu devi solo decidere da quale iniziare.</p><ul><li><Check size={15} /> Un e-disk nella tua combinazione di colori</li><li><Check size={15} /> Tre dischi personalizzabili</li><li><Check size={15} /> Tre canzoni, tre ricordi, tre occasioni</li></ul><button type="button" className={styles.buyBundle} onClick={onChoose}>Compra il bundle <ArrowUpRight size={21} /></button><a className={styles.onlyDiscs} href="#incidi">Ho già e-disk. Voglio solo i dischi. <ArrowUpRight size={14} /></a></div></div>
+    <div className={styles.bundleGrid}><div className={styles.bundleArt}><ProductIllustration product="e-disk" configuration={defaultConfiguration("e-disk")} /><div className={styles.bundleRecords}>{DEMO_RECORDS.map(record => <RecordGraphic key={record.title} color={record.color} title={record.title} />)}</div><span className={styles.bundleStamp}>1 e-disk<br />3 dischi<br />∞ storie</span></div><div className={styles.bundleCopy}><h2 id="bundle-title">Il tuo primo<br />lato A<span>.</span></h2><h3>e-disk + 3 dischi</h3><p>Il giradischi nei tuoi colori e tre dischi da personalizzare. Scegli i brani, noi li stampiamo. Tu devi solo decidere da quale iniziare.</p><ul><li><Check size={15} /> Un e-disk nella tua combinazione di colori</li><li><Check size={15} /> Tre dischi personalizzabili</li><li><Check size={15} /> Tre canzoni, tre ricordi, tre occasioni</li></ul><button type="button" className={styles.buyBundle} onClick={onChoose}>Configura il bundle <ArrowUpRight size={21} /></button><a className={styles.onlyDiscs} href="#incidi">Ho già e-disk. Voglio solo i dischi. <ArrowUpRight size={14} /></a></div></div>
     <div className={styles.moreDiscs}><Disc3 size={39} strokeWidth={1.1} /><div><h3>La collezione continua.</h3><p>Un regalo, un nuovo pezzo, una canzone che ancora non esiste. Puoi aggiungere nuovi dischi da Evolve ogni volta che vuoi. Il tuo e-disk resta, la musica cambia.</p></div><a href="#incidi">Crea un altro disco <ArrowUpRight size={19} /></a></div>
   </section>;
 }

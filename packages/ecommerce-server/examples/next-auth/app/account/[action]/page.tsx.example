@@ -1,0 +1,42 @@
+// WEBSITE: src/app/account/[action]/page.tsx
+// Exclude these pages from analytics, third-party scripts, service-worker and CDN caches.
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { AuthForm } from "./auth-form";
+const allowed = [
+  "register",
+  "login",
+  "verify-email",
+  "forgot-password",
+  "reset-password",
+  "resend-verification",
+  "change-password",
+  "change-email",
+  "confirm-email",
+  "logout",
+  "logout-all",
+] as const;
+export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Account del negozio",
+  robots: { index: false, follow: false },
+  referrer: "no-referrer",
+};
+export default async function AccountPage({
+  params,
+}: {
+  params: Promise<{ action: string }>;
+}) {
+  const { action } = await params;
+  if (!allowed.includes(action as (typeof allowed)[number])) notFound();
+  return (
+    <main>
+      <AuthForm
+        key={action}
+        action={action as (typeof allowed)[number]}
+        termsVersion={process.env.ECOMMERCE_AUTH_TERMS_VERSION || ""}
+        privacyVersion={process.env.ECOMMERCE_AUTH_PRIVACY_VERSION || ""}
+      />
+    </main>
+  );
+}

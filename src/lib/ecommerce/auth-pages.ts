@@ -1,0 +1,1 @@
+export const AUTH_PAGE_ACTIONS = ["login", "register", "verify-email", "forgot-password", "resend-verification", "reset-password", "change-password", "change-email", "confirm-email", "logout", "logout-all"] as const;

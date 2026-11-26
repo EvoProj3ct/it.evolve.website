@@ -1,0 +1,75 @@
+// WEBSITE component template. Does not display Atlas customer records or technical identifiers.
+"use client";
+import { useEffect, useState } from "react";
+import type { PublicCustomerLink } from "@evolve/ecommerce-server/customers";
+export function CustomerLinkStatus() {
+  const [link, setLink] = useState<PublicCustomerLink | null>(null),
+    [error, setError] = useState(""),
+    [busy, setBusy] = useState(false);
+  async function request(resolve = false) {
+    setBusy(true);
+    setError("");
+    try {
+      let csrfToken = "";
+      if (resolve) {
+        const response = await fetch("/api/ecommerce/v1/auth/csrf", {
+          cache: "no-store",
+          credentials: "same-origin",
+          redirect: "error",
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error("Ricarica la pagina.");
+        csrfToken = data.csrfToken;
+      }
+      const response = await fetch("/api/ecommerce/v1/me/customer-link", {
+        method: resolve ? "POST" : "GET",
+        cache: "no-store",
+        credentials: "same-origin",
+        redirect: "error",
+        ...(resolve
+          ? {
+              headers: {
+                "Content-Type": "application/json",
+                "X-Storefront-CSRF": csrfToken,
+              },
+              body: "{}",
+            }
+          : {}),
+      });
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(
+          data?.error?.message || "Profilo commerciale non disponibile.",
+        );
+      setLink(data);
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : "Operazione non disponibile.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+  useEffect(() => {
+    void request();
+  }, []);
+  return (
+    <section aria-label="Profilo commerciale">
+      <h2>Profilo commerciale</h2>
+      {error && <p role="alert">{error}</p>}
+      {link && <p role="status">{link.message}</p>}
+      <button
+        disabled={busy}
+        onClick={() => void request(link?.status === "pending")}
+      >
+        {busy
+          ? "Attendi…"
+          : link?.status === "pending"
+            ? "Prepara il profilo"
+            : "Aggiorna stato"}
+      </button>
+    </section>
+  );
+}

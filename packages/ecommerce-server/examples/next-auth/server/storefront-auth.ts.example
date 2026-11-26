@@ -1,0 +1,8 @@
+// Copy to src/server/storefront-auth.ts in the WEBSITE, never Atlas.
+import "server-only";
+import mongoose from "mongoose";
+import { createStorefrontAuth } from "@evolve/ecommerce-server/auth";
+export const storefrontAuth = createStorefrontAuth({
+  mongoose,
+  env: process.env,
+});

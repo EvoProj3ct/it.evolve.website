@@ -3,7 +3,8 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useDeferredValue, useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
-import { ArrowUpRight, BookOpen, Check, Download, Move, Pause, Play, Plus, Power, RotateCcw, ShoppingCart, Upload, X } from "lucide-react";
+import { ArrowUpRight, BookOpen, Check, Download, Move, Pause, Play, Plus, Power, RotateCcw, Upload, X } from "lucide-react";
+import { ConfiguredPurchase } from "./ConfiguredPurchase";
 import { ProductColorPicker } from "./ProductColorPicker";
 import { RelatedProducts } from "./RelatedProducts";
 import { colorName, PRODUCTS } from "./products";
@@ -47,7 +48,7 @@ export function ELedExperience() {
     finally { if (token === sequence.current) setUploading(false); }
   };
   const download = () => {
-    const blob = new Blob([JSON.stringify({ version: 1, product: "e-led", ...configuration, note: "Progetto dimostrativo. Misure, potenza, effetti, materiali e installazione da confermare con Evolve." }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ version: 1, product: "e-led", ...configuration, note: "Progetto e-led. Misure definitive, potenza, materiali e installazione da concordare con Evolve." }, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob), link = document.createElement("a");
     link.href = url; link.download = "evolve-e-led-progetto.json"; link.click(); window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
@@ -109,7 +110,21 @@ export function ELedExperience() {
           <fieldset className={styles.fieldset}><legend>Immaginala nel tuo spazio</legend><div className={styles.sizes}>{[60, 100, 140, 180].map(width => <button key={width} type="button" aria-pressed={configuration.width === width} onClick={() => setConfiguration(current => ({ ...current, width }))}>{width}<small>cm</small></button>)}</div><p className={styles.help}>La misura definitiva si progetta insieme, in base a scritta, logo e installazione.</p></fieldset>
           {error && <p className={styles.error} role="status">{error}</p>}
           <div className={styles.summary} aria-live="polite"><span>Il tuo e-led</span><strong>{configuration.mode === "logo" ? "Il tuo logo" : configuration.text || "La tua luce"}</strong><p>{colorName(configuration.primary)} · {LED_EFFECTS.find(effect => effect.id === configuration.effect)?.name} · {configuration.width} cm indicativi</p></div>
-          <button type="button" className={styles.cart} disabled title="Carrello e acquisto saranno collegati in seguito">Aggiungi al carrello <ShoppingCart size={18} /></button>
+          <ConfiguredPurchase kind="e-led" buttonClass={styles.cart} disabled={uploading || (configuration.mode !== "logo" && !configuration.text.trim())}
+            prepare={() => ({
+              color: configuration.primary,
+              inscription: configuration.mode === "logo" ? undefined : configuration.text.trim(),
+              logoAsset: configuration.mode === "text" ? null : configuration.logo,
+              details: {
+                kind: "e-led",
+                secondaryColor: configuration.secondary,
+                mode: configuration.mode,
+                effect: configuration.effect,
+                width: configuration.width,
+                brightness: configuration.brightness,
+                ...(configuration.effect !== "steady" && { speedTenths: Math.round(configuration.speed * 10) }),
+              },
+            })} />
           <button type="button" className={styles.save} onClick={download}><Download size={15} /> Salva il tuo progetto</button>
           <p className={styles.help}>Testo, logo e luce raccontano l’idea. Dimensioni, potenza, materiali e fissaggio vengono definiti con Evolve.</p>
         </form>

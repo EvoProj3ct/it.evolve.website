@@ -3,12 +3,13 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
-import { ArrowUpRight, BookOpen, Check, Download, Heart, MoveHorizontal, Package, Pause, Play, Plus, RotateCcw, ShoppingCart, Smartphone, Store, Upload, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowUpRight, BookOpen, Check, Download, Heart, MoveHorizontal, Package, Pause, Play, Plus, RotateCcw, Smartphone, Store, Upload, Volume2, VolumeX, X } from "lucide-react";
 import { ProductIllustration } from "./ProductIllustration";
 import { ProductColorPicker } from "./ProductColorPicker";
 import { CartoonNotes } from "./CartoonNotes";
-import { EDiskBundle, EDiskDiscStudio, EDiskGiftIdeas, EDiskRecordDemo, type DiscSource } from "./EDiskRecords";
+import { BundleDiscFields, EDiskBundle, EDiskDiscStudio, EDiskGiftIdeas, EDiskRecordDemo, type BundleDisc, type DiscSource } from "./EDiskRecords";
 import { RecordDemoAudio } from "./RecordDemoAudio";
+import { ConfiguredPurchase } from "./ConfiguredPurchase";
 import { RelatedProducts } from "./RelatedProducts";
 import { colorName, defaultConfiguration, KEYRING_SHAPES, PRODUCTS, productColors, type ProductConfiguration, type ProductId } from "./products";
 import styles from "./Shop.module.css";
@@ -46,6 +47,11 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
   const isDisk = product === "e-disk";
   const [configuration, setConfiguration] = useState<ProductConfiguration>(() => defaultConfiguration(product));
   const [diskOffer, setDiskOffer] = useState<"device" | "bundle">("device");
+  const [bundleDiscs, setBundleDiscs] = useState<BundleDisc[]>(() =>
+    ["#cabee6", "#ffab8a", "#b4df7b"].map((color, index) => ({ title: `Disco ${index + 1}`, color, dedication: "", trackUrl: "" })));
+  useEffect(() => {
+    if (isDisk && new URLSearchParams(window.location.search).get("offerta") === "bundle") setDiskOffer("bundle");
+  }, [isDisk]);
   const [discSource, setDiscSource] = useState<DiscSource>("ai");
   const presets = isDisk ? DISK_PRESETS : LINKER_PRESETS;
   const previewConfiguration = useDeferredValue(configuration);
@@ -169,7 +175,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
     setConfiguration(current => ({ ...current, primary: colors[first].hex, secondary: colors[second].hex }));
   };
   const download = () => {
-    const blob = new Blob([JSON.stringify({ version: 1, product, ...(isDisk ? { offer: diskOffer, includedRecords: diskOffer === "bundle" ? 3 : 0 } : {}), ...configuration, note: "Configurazione dimostrativa da confermare con Evolve prima della produzione." }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ version: 1, product, ...(isDisk ? { offer: diskOffer, includedRecords: diskOffer === "bundle" ? 3 : 0, ...(diskOffer === "bundle" && { discs: bundleDiscs }) } : {}), ...configuration, note: "Copia delle scelte del configuratore." }, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url; link.download = `evolve-${product}-configurazione.json`; link.click();
@@ -264,9 +270,31 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
             {sceneError && <p className={styles.error} role="status">{sceneError}</p>}
             <div className={styles.configurationSummary} aria-live="polite" aria-atomic="true"><span>IL TUO {product.toUpperCase()}</span><p>{colorName(configuration.primary)} <b>+</b> {colorName(configuration.secondary)}{!isDisk && <> · {KEYRING_SHAPES.find(shape => shape.id === configuration.shape)?.name}{configuration.text && <> · “{configuration.text}”</>}</>}</p></div>
             {isDisk && <fieldset id="offerta-edisk" className={styles.offerPicker}><legend>Da dove vuoi iniziare?</legend><div><button type="button" aria-pressed={diskOffer === "device"} onClick={() => setDiskOffer("device")}><span>Solo e-disk</span><small>Il giradischi nei tuoi colori</small>{diskOffer === "device" && <Check size={14} />}</button><button type="button" aria-pressed={diskOffer === "bundle"} onClick={() => setDiskOffer("bundle")}><span>Il bundle</span><small>e-disk + 3 dischi personalizzabili</small>{diskOffer === "bundle" && <Check size={14} />}</button></div></fieldset>}
-            {isDisk ? <button type="button" className={`${styles.requestButton} ${styles.conceptCartButton}`} disabled title="Carrello e acquisto verranno collegati in seguito">Aggiungi al carrello <ShoppingCart size={19} /></button> : <a href={mailHref} className={styles.requestButton}>Parliamone <ArrowUpRight size={21} /></a>}
+            {isDisk && diskOffer === "bundle" && <BundleDiscFields discs={bundleDiscs} onChange={setBundleDiscs} />}
+            {isDisk ? <ConfiguredPurchase key={diskOffer} kind={diskOffer === "bundle" ? "e-disk-bundle" : "e-disk"} buttonClass={styles.requestButton}
+              disabled={diskOffer === "bundle" && bundleDiscs.some(disc => !disc.title.trim())}
+              prepare={() => ({
+                color: configuration.primary,
+                details: diskOffer === "bundle" ? {
+                  kind: "e-disk-bundle",
+                  secondaryColor: configuration.secondary,
+                  discs: bundleDiscs.map(disc => ({
+                    color: disc.color,
+                    title: disc.title.trim(),
+                    dedication: disc.dedication.trim() || undefined,
+                    trackUrl: disc.trackUrl.trim() || undefined,
+                  })),
+                } : { kind: "e-disk", secondaryColor: configuration.secondary },
+              })} /> :
+              <ConfiguredPurchase kind="e-linker" buttonClass={styles.requestButton} disabled={uploading}
+                prepare={() => ({
+                  color: configuration.primary,
+                  inscription: configuration.text.trim() || undefined,
+                  logoAsset: configuration.logo,
+                  details: { kind: "e-linker", secondaryColor: configuration.secondary, shape: configuration.shape },
+                })} />}
             <button type="button" onClick={download} className={styles.downloadButton}><Download size={15} /> Salva la tua configurazione</button>
-            <p className={styles.requestNote}>{isDisk ? diskOffer === "bundle" ? "Il bundle include il giradischi e tre dischi da personalizzare. Potrai aggiungerne altri alla tua collezione quando vuoi." : "Il giradischi, nella tua combinazione. I dischi si acquistano anche separatamente." : <>Apri una mail con le tue scelte. Prezzo, materiali e disponibilità li definiamo insieme.{configuration.logo && " Ricorda di allegare il logo originale alla mail."}</>}</p>
+            {!isDisk && <a href={mailHref} className={styles.downloadButton}>Parliamone <ArrowUpRight size={15} /></a>}
           </div>
         </div>
       </section>

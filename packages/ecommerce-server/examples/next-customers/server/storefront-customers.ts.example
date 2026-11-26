@@ -1,0 +1,8 @@
+// WEBSITE ONLY: src/server/storefront-customers.ts
+import "server-only";
+import { storefrontCustomerHandlersFromEnv } from "@evolve/ecommerce-server/customers";
+import { storefrontAuth } from "@/server/storefront-auth";
+export const storefrontCustomers = storefrontCustomerHandlersFromEnv({
+  auth: storefrontAuth,
+  env: process.env,
+});

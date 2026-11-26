@@ -1,0 +1,11 @@
+// WEBSITE ONLY: src/app/api/ecommerce/v1/me/customer-link/route.ts
+import { storefrontCustomers } from "@/server/storefront-customers";
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+export const maxDuration = 30;
+export async function GET(request: Request) {
+  return storefrontCustomers.handle(request);
+}
+export async function POST(request: Request) {
+  return storefrontCustomers.handle(request);
+}

@@ -1,0 +1,69 @@
+{
+  "name": "@evolve/ecommerce-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "browser": "./src/browser-denied.js",
+      "default": "./src/index.js"
+    },
+    "./identity": {
+      "types": "./src/identity.d.ts",
+      "browser": "./src/browser-denied.js",
+      "default": "./src/identity.js"
+    },
+    "./client": {
+      "types": "./src/client.d.ts",
+      "browser": "./src/browser-denied.js",
+      "default": "./src/client-entry.js"
+    },
+    "./catalog": {
+      "types": "./src/catalog.d.ts",
+      "browser": "./src/browser-denied.js",
+      "default": "./src/catalog.js"
+    },
+    "./auth": {
+      "types": "./src/auth.d.ts",
+      "browser": "./src/browser-denied.js",
+      "default": "./src/auth.js"
+    },
+    "./customers": {
+      "types": "./src/customers.d.ts",
+      "browser": "./src/browser-denied.js",
+      "default": "./src/customers.js"
+    },
+    "./assertions": {
+      "types": "./src/assertions.d.ts",
+      "browser": "./src/browser-denied.js",
+      "default": "./src/assertions.js"
+    },
+    "./tracking": {
+      "types": "./src/tracking.d.ts",
+      "browser": "./src/browser-denied.js",
+      "default": "./src/tracking.js"
+    },
+    "./persistence": {
+      "types": "./src/persistence.d.ts",
+      "browser": "./src/browser-denied.js",
+      "default": "./src/persistence.js"
+    }
+  },
+  "files": [
+    "src",
+    "examples",
+    "README.md",
+    ".env.example"
+  ],
+  "dependencies": {
+    "@vercel/oidc": "^4.0.4",
+    "jose": "^6.1.0"
+  },
+  "peerDependencies": {
+    "mongoose": "^8.15.1"
+  }
+}

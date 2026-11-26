@@ -158,7 +158,7 @@ export const PRODUCTS = {
       { question: "La luce può cambiare colore?", answer: "Il concept prevede LED a colori ed effetti luminosi. Nell’anteprima puoi esplorare luce fissa, respiro, pulsazione e un flusso continuo di colori. Effetti e comandi del prodotto definitivo saranno confermati con il progetto." },
       { question: "Quanto può essere grande?", answer: "Le misure nel configuratore servono a immaginare il progetto nel tuo spazio. Dimensioni effettive, eventuali moduli, alimentazione e installazione vengono definiti con Evolve prima della produzione." },
       { question: "Posso usarla in vetrina o all’esterno?", answer: "Raccontaci dove vuoi installarla. Per vetrine, pareti e ambienti esterni valutiamo leggibilità, fissaggio, alimentazione e protezione necessaria. L’anteprima non dichiara un grado di protezione o un impiego esterno già certificato." },
-      { question: "Il prezzo viene calcolato qui?", answer: "Per ora esplori il concept e salvi la tua configurazione. Prezzo, potenza, materiali e disponibilità vengono definiti sul progetto; carrello e acquisto saranno collegati in seguito." },
+      { question: "Il prezzo viene calcolato qui?", answer: "Qui esplori il progetto e salvi la tua idea. Gli articoli acquistabili e i loro prezzi sono nello shop. Per una realizzazione personalizzata, potenza, materiali e disponibilità vengono definiti con Evolve." },
     ],
   },
 } as const;
