@@ -53,6 +53,18 @@ export function createCatalogClient({
       );
     }
     if (!response.ok) {
+      if (response.status !== 404) {
+        const atlasRequestId = response.headers.get("x-request-id");
+        const vercelRequestId = response.headers.get("x-vercel-id");
+        const contentType = response.headers.get("content-type") || "";
+        // Record the upstream response even if the request never reached an Atlas function.
+        console.error("storefront.ecommerce.catalog.atlas_rejected", {
+          atlasStatus: response.status,
+          atlasJson: contentType.startsWith("application/json"),
+          atlasRequestId: atlasRequestId && /^[a-f0-9-]{36}$/i.test(atlasRequestId) ? atlasRequestId : undefined,
+          vercelRequestId: vercelRequestId && /^[a-z0-9:-]{1,120}$/i.test(vercelRequestId) ? vercelRequestId : undefined,
+        });
+      }
       await response.body?.cancel();
       if (response.status === 404)
         throw new CommerceServiceError(
