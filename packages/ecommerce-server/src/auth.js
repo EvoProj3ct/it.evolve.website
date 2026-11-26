@@ -243,7 +243,6 @@ export function createStorefrontAuth({ mongoose, env = process.env }) {
     async handleProfile(request) {
       const requestId = commerceRequestId();
       try {
-        const config = authConfig(env);
         if (request.method !== "GET" && request.method !== "PATCH")
           return commerceJson(
             {
@@ -255,6 +254,10 @@ export function createStorefrontAuth({ mongoose, env = process.env }) {
             },
             { status: 405, requestId, headers: { Allow: "GET, PATCH" } },
           );
+        const session = cookie(request, SESSION_COOKIE);
+        if (!session)
+          authError(401, "LOGIN_REQUIRED", "Accedi al negozio per continuare.");
+        const config = authConfig(env);
         if (request.method === "PATCH") checkMutation(request, config);
         else readGuard(request, config);
         const store = await runtime();
@@ -264,7 +267,7 @@ export function createStorefrontAuth({ mongoose, env = process.env }) {
             store,
             request,
             "profile",
-            cookie(request, SESSION_COOKIE) || "anonymous",
+            session,
           );
           return commerceJson(
             {
@@ -282,7 +285,7 @@ export function createStorefrontAuth({ mongoose, env = process.env }) {
           store,
           request,
           "read",
-          cookie(request, SESSION_COOKIE) || "anonymous",
+          session,
         );
         return commerceJson(
           {
@@ -349,6 +352,9 @@ export function createStorefrontAuth({ mongoose, env = process.env }) {
                 : null;
       if (!method || request.method !== method)
         authError(400, "INVALID_OPERATION", "Operazione non ammessa.");
+      const session = cookie(request, SESSION_COOKIE);
+      if (!session)
+        authError(401, "LOGIN_REQUIRED", "Accedi al negozio per continuare.");
       const config = authConfig(env);
       if (read) readGuard(request, config);
       else checkMutation(request, config);
@@ -364,7 +370,7 @@ export function createStorefrontAuth({ mongoose, env = process.env }) {
         store,
         request,
         read ? "read" : "checkout",
-        cookie(request, SESSION_COOKIE) || "anonymous",
+        session,
       );
       const context = await accountContext(store, request, undefined, true),
         p = context.principal;

@@ -14,17 +14,14 @@ import {
 export function mailTransportConfig(env) {
   const apiKey = env.ECOMMERCE_AUTH_RESEND_API_KEY,
     from = env.ECOMMERCE_AUTH_MAIL_FROM;
-  if (
-    typeof apiKey !== "string" ||
-    !/^re_[A-Za-z0-9_-]+$/.test(apiKey) ||
-    typeof from !== "string" ||
-    from.length > 254
-  )
-    throw configurationError();
+  if (typeof apiKey !== "string" || !/^re_[A-Za-z0-9_-]+$/.test(apiKey))
+    throw configurationError("ECOMMERCE_AUTH_RESEND_API_KEY");
+  if (typeof from !== "string" || from.length > 254)
+    throw configurationError("ECOMMERCE_AUTH_MAIL_FROM");
   try {
     if (email(from) !== from) throw new Error();
   } catch {
-    throw configurationError();
+    throw configurationError("ECOMMERCE_AUTH_MAIL_FROM");
   }
   return { apiKey, from };
 }

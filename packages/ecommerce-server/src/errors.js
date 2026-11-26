@@ -7,12 +7,14 @@ export class CommerceServiceError extends Error {
   }
 }
 
-export function configurationError() {
-  return new CommerceServiceError(
+export function configurationError(configurationVariable) {
+  const error = new CommerceServiceError(
     503,
     "SERVICE_NOT_CONFIGURED",
     "Servizio non configurato.",
   );
+  if (configurationVariable) error.configurationVariable = configurationVariable;
+  return error;
 }
 
 export function authenticationError() {

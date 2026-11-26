@@ -35,6 +35,11 @@
 .headerTool:hover, .headerTool:focus-visible { border-color: #dfe9d8; background: #f0f5eb; transform: translateY(-1px); }
 .headerTool[aria-current="page"] { border-color: #d9e7d0; background: #eaf3e3; color: #426e31; }
 .headerTool:active { transform: scale(.94); }
+.headerTool.headerAccount { display: inline-flex; align-items: center; gap: 7px; width: auto; min-width: 0; padding: 0 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+.headerAccount > svg { flex: none; }
+.headerAccount > span { max-width: 126px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.headerAccount[data-guest="true"] { border-color: #d9e7d0; background: #edf5e8; color: #26452b; }
+.cartBadge { position: absolute; top: 0; right: -4px; display: grid; place-items: center; min-width: 17px; height: 17px; padding: 0 3px; border: 1px solid var(--shop-paper); border-radius: 10px; background: #26452b; color: white; font-size: 10px; font-weight: 700; line-height: 1; }
 .backToSite { display: inline-flex; align-items: center; gap: 8px; margin-left: 14px; font-size: 11px; color: #5d6b60; }
 .backToSite > span { position: relative; }
 .backToSite > span::after { position: absolute; right: 0; bottom: -4px; left: 0; height: 1px; background: #72c94f; content: ""; transform: scaleX(0); transform-origin: left; transition: transform .35s cubic-bezier(.22,1,.36,1); }
@@ -356,6 +361,7 @@
   .productLinks a { min-height: 38px; padding-inline: 15px; font-size: 12px; }
   .headerActions { gap: 3px; }
   .headerTool { width: 33px; height: 33px; }
+  .headerAccount > span { max-width: 80px; }
   .productHeader { top: 68px; height: 57px; padding: 0 22px; gap: 25px; }
   .productIdentity { gap: 8px; font-size: 20px; }
   .productMark { width: 44px; height: 34px; }
@@ -445,11 +451,20 @@
   .cartoonNotes { --note-rise-scale: .85; }
   .logoLink img { width: 43px; }
 }
+@media (max-width: 520px) {
+  .globalHeader { grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: 42px 34px; gap: 0 12px; height: 94px; padding-block: 8px; }
+  .headerActions { grid-column: 2; grid-row: 1; }
+  .productLinks { grid-column: 1 / -1; grid-row: 2; }
+  .productLinks a { min-height: 32px; padding-inline: 13px; }
+  .productHeader { top: 94px; }
+}
 @media (max-width: 360px) {
   .globalHeader, .productHeader { padding-inline: 16px; }
   .globalHeader { gap: 6px; }
   .productLinks a { padding-inline: 6px; font-size: 11px; }
   .headerTool { width: 30px; }
+  .headerTool.headerAccount { gap: 4px; padding-inline: 5px; }
+  .headerAccount > span { max-width: 51px; }
   .productHeader { gap: 18px; }
   .sectionLinks a { padding-inline: 8px; }
   .shapeOptions button { font-size: 8px; }

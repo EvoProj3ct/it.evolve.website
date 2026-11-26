@@ -26,6 +26,17 @@ export function commerceJson(
 
 export function commerceErrorResponse(error, requestId = commerceRequestId()) {
   const known = error instanceof CommerceServiceError;
+  if (
+    known &&
+    error.code === "SERVICE_NOT_CONFIGURED" &&
+    typeof error.configurationVariable === "string" &&
+    /^ECOMMERCE_[A-Z0-9_]+$/.test(error.configurationVariable)
+  ) {
+    console.error("storefront.ecommerce.configuration_invalid", {
+      requestId,
+      configurationVariable: error.configurationVariable,
+    });
+  }
   return commerceJson(
     {
       error: {

@@ -10,18 +10,33 @@ const SESSION_EVENT = "evolve:storefront-session";
 let generation = 0;
 let retryUntil = 0;
 let mutationQueue: Promise<unknown> = Promise.resolve();
+type SessionChange = "changed" | "invalid";
+let sessionChannel: BroadcastChannel | undefined;
 
-export function sessionChanged() {
+function notifySession(reason: SessionChange) {
   generation++;
-  window.dispatchEvent(new Event(SESSION_EVENT));
-  if (typeof BroadcastChannel !== "undefined") { const channel = new BroadcastChannel(SESSION_EVENT); channel.postMessage("changed"); channel.close(); }
+  window.dispatchEvent(new CustomEvent(SESSION_EVENT, { detail: reason }));
 }
-export function subscribeSession(callback: () => void) {
-  const local = () => callback();
+
+function getSessionChannel() {
+  if (!sessionChannel && typeof BroadcastChannel !== "undefined") {
+    sessionChannel = new BroadcastChannel(SESSION_EVENT);
+    sessionChannel.onmessage = ({ data }) => {
+      if (data === "changed" || data === "invalid") notifySession(data);
+    };
+  }
+  return sessionChannel;
+}
+
+export function sessionChanged(reason: SessionChange = "changed") {
+  notifySession(reason);
+  getSessionChannel()?.postMessage(reason);
+}
+export function subscribeSession(callback: (reason: SessionChange) => void) {
+  const local = (event: Event) => callback((event as CustomEvent<SessionChange>).detail);
+  getSessionChannel();
   window.addEventListener(SESSION_EVENT, local);
-  const channel = typeof BroadcastChannel !== "undefined" ? new BroadcastChannel(SESSION_EVENT) : null;
-  if (channel) channel.onmessage = () => { generation++; callback(); };
-  return () => { window.removeEventListener(SESSION_EVENT, local); channel?.close(); };
+  return () => { window.removeEventListener(SESSION_EVENT, local); };
 }
 async function readResponse(response: Response): Promise<unknown> {
   if (!response.headers.get("content-type")?.toLowerCase().startsWith("application/json")) { await response.body?.cancel(); throw new StorefrontError("Il servizio non è disponibile in questo momento.", 502, "RESPONSE_INVALID"); }
@@ -48,7 +63,7 @@ async function perform(path: string, init: RequestInit, epoch: number): Promise<
     const wait = response.headers.get("retry-after");
     const seconds = wait && /^\d{1,5}$/.test(wait) ? Math.min(Number(wait), 86400) : response.status === 429 ? 60 : 0;
     if (seconds) retryUntil = Date.now() + seconds * 1000;
-    if (code === "SESSION_INVALID" || code === "CUSTOMER_AUTH_REQUIRED") sessionChanged();
+    if (code === "SESSION_INVALID" || code === "CUSTOMER_AUTH_REQUIRED") sessionChanged("invalid");
     throw new StorefrontError(typeof fault?.message === "string" ? fault.message.slice(0, 2000) : "Operazione non disponibile.", response.status, code, seconds);
   }
   return data;

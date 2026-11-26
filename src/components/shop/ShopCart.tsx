@@ -4,27 +4,39 @@ import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, Minus, Plus, Save, ShoppingBag, Trash2 } from "lucide-react";
 import type { PublicCatalogList } from "@evolve/ecommerce-server/catalog";
 import { cartLineKey, cartSchema, checkoutOptionsSchema, money, type Cart, type CheckoutOptions } from "@/lib/ecommerce/contracts";
-import { errorText, storefrontGet, storefrontMutate, storefrontRead } from "@/lib/ecommerce/browser";
+import { errorText, StorefrontError, storefrontGet, storefrontRead, subscribeSession } from "@/lib/ecommerce/browser";
+import { importGuestCart, saveAccountCart } from "@/lib/ecommerce/cart";
+import { useGuestCart } from "@/lib/ecommerce/guest-cart";
 import { useStorefrontResource } from "./useStorefrontResource";
 import { CatalogArtwork, ResourceFeedback, ShopPageHeader } from "./ShopPreviewShared";
 import { PersonalizationText } from "./ShopPersonalization";
+import { ShopGuestCart } from "./ShopGuestCart";
 import styles from "./CommercePreview.module.css";
 import live from "./Storefront.module.css";
 
 async function readCart(signal: AbortSignal) {
-  const cart = await storefrontGet("/cart", cartSchema, signal);
+  let accountCart: Cart;
+  try {
+    accountCart = await storefrontGet("/cart", cartSchema, signal);
+  } catch (error) {
+    if (!(error instanceof StorefrontError) || error.code !== "LOGIN_REQUIRED") throw error;
+    return { cart: null, policy: null, policyError: "", products: [], importError: null };
+  }
+  const { cart, importError } = await importGuestCart(accountCart, signal);
   const [policyResult, catalogResult] = await Promise.allSettled([storefrontGet("/checkout-options", checkoutOptionsSchema, signal), storefrontRead<PublicCatalogList>("/catalog?limit=50", signal)]);
   if (signal.aborted) throw new DOMException("Richiesta annullata.", "AbortError");
   const policy: CheckoutOptions | null = policyResult.status === "fulfilled" ? policyResult.value : null;
   const policyError = policyResult.status === "rejected" ? errorText(policyResult.reason) : "";
   // Le immagini sono decorative: un errore non sostituisce carrello o prezzi con fixture.
   const products = catalogResult.status === "fulfilled" ? catalogResult.value.items : [];
-  return { cart, policy, policyError, products };
+  return { cart, policy, policyError, products, importError };
 }
 type DraftLine = { id: string; quantity: number };
 
 export function ShopCart() {
   const resource = useStorefrontResource(readCart);
+  const { reload } = resource;
+  const guestLines = useGuestCart();
   const [edit, setEdit] = useState<{ cart: Cart; draft: DraftLine[]; reviewed: boolean }>();
   const [saving, setSaving] = useState(false);
   const lock = useRef(false);
@@ -32,6 +44,7 @@ export function ShopCart() {
   const [saveError, setSaveError] = useState("");
   const cart = resource.data?.cart;
   useEffect(() => { setEdit(undefined); }, [cart]);
+  useEffect(() => subscribeSession(reason => { if (reason === "changed") reload(); }), [reload]);
   const items = new Map(cart?.items.map(item => [cartLineKey(item), item]));
   const initialDraft = cart?.items.map(item => ({ id: cartLineKey(item), quantity: item.quantity })) ?? [];
   const activeEdit = edit?.cart === cart ? edit : undefined;
@@ -57,19 +70,21 @@ export function ShopCart() {
     if (!cart || !canSave || lock.current) return;
     lock.current = true; setSaving(true); setSaveError(""); setNotice("");
     try {
-      const saved: Cart = await storefrontMutate("/cart/items", "PUT", { cartPublicId: cart.id, expectedRevision: cart.revision, items: draft.map(item => {
+      const saved = await saveAccountCart({ cartPublicId: cart.id, expectedRevision: cart.revision, items: draft.map(item => {
         const source = items.get(item.id)!;
-        return { productPublicId: source.productPublicId, personalizationId: source.personalizationId, quantity: item.quantity, listingRevision: reviewed ? source.currentListingRevision : source.listingRevision };
-      }) }, cartSchema);
+        return { productPublicId: source.productPublicId, personalizationId: source.personalizationId, quantity: item.quantity, listingRevision: (reviewed ? source.currentListingRevision : source.listingRevision)! };
+      }) });
       resource.setData(current => current ? { ...current, cart: saved } : current);
       setNotice("Carrello salvato. I totali sono aggiornati.");
     } catch (error) { setSaveError(errorText(error)); resource.reload(); }
     finally { lock.current = false; setSaving(false); }
   }
-  const ready = !!cart && cart.status === "active" && !!draft.length && !cart.requiresReview && !dirty && !!resource.data?.policy && !saving;
+  const ready = !!cart && cart.status === "active" && !!draft.length && !cart.requiresReview && !dirty && !!resource.data?.policy && !saving && !guestLines.length;
   return <main id="shop-content" className={styles.page}>
     <ShopPageHeader title="Il tuo carrello" description="Le tue scelte, pronte a prendere forma." />
     <ResourceFeedback busy={resource.busy} error={resource.error} reload={resource.reload} next="/carrello" />
+    {resource.data && !cart && <ShopGuestCart />}
+    {cart && guestLines.length > 0 && <ShopGuestCart importError={resource.data?.importError} retry={resource.reload} />}
     {cart && <div className={styles.cartGrid}><section className={styles.cartContent} aria-label="Prodotti nel carrello"><div className={styles.listHeading}><span>Le tue scelte</span><span>Lordo IVA inclusa</span></div>
       {notice && <p className={live.success} role="status">{notice}</p>}{saveError && <p className={live.error} role="alert">{saveError}</p>}
       {cart.status === "converted" && <p className={live.notice}>Questo carrello è già diventato un ordine.{cart.convertedOrderPublicId && <Link href={`/account/ordini/${cart.convertedOrderPublicId}`}>Apri l’ordine <ArrowRight size={15} /></Link>}</p>}

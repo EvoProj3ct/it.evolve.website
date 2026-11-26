@@ -3,12 +3,12 @@ import { configurationError } from "./errors.js";
 function required(env, name) {
   const value = env[name];
   if (typeof value !== "string" || !value.trim() || value !== value.trim()) {
-    throw configurationError();
+    throw configurationError(name);
   }
   return value;
 }
 
-export function requireHttpsOrigin(value) {
+export function requireHttpsOrigin(value, configurationVariable) {
   try {
     const url = new URL(value);
     if (
@@ -21,7 +21,7 @@ export function requireHttpsOrigin(value) {
     }
     return url.origin;
   } catch {
-    throw configurationError();
+    throw configurationError(configurationVariable);
   }
 }
 
@@ -75,13 +75,13 @@ export function readVercelTrustPolicy(
 export function readStorefrontDatabaseConfig(env) {
   const uri = required(env, "ECOMMERCE_MONGODB_URI");
   const dbName = required(env, "ECOMMERCE_MONGODB_DB");
+  if (!/^[a-zA-Z0-9_-]{1,64}$/.test(dbName))
+    throw configurationError("ECOMMERCE_MONGODB_DB");
   if (
     !/^mongodb(?:\+srv)?:\/\//i.test(uri) ||
-    !/^[a-zA-Z0-9_-]{1,64}$/.test(dbName) ||
     (typeof env.MONGODB_URI === "string" && uri === env.MONGODB_URI.trim())
-  ) {
-    throw configurationError();
-  }
+  )
+    throw configurationError("ECOMMERCE_MONGODB_URI");
   const authority = uri.slice(uri.indexOf("://") + 3).split(/[/?]/, 1)[0];
   const hosts = authority.slice(authority.lastIndexOf("@") + 1).split(",");
   const local = hosts.some((host) =>
@@ -94,7 +94,7 @@ export function readStorefrontDatabaseConfig(env) {
       /[?&](?:tls|ssl)=false(?:&|$)/i.test(uri) ||
       (!/^mongodb\+srv:\/\//i.test(uri) && !tlsExplicit))
   ) {
-    throw configurationError();
+    throw configurationError("ECOMMERCE_MONGODB_URI");
   }
   return Object.freeze({ uri, dbName });
 }

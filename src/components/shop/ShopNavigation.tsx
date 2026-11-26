@@ -4,7 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowUpRight, ShoppingCart, UserRound } from "lucide-react";
+import { ArrowUpRight, LogIn, ShoppingCart, UserRound } from "lucide-react";
+import { storefrontGet, subscribeSession } from "@/lib/ecommerce/browser";
+import { cartSchema, profileSchema, type Account } from "@/lib/ecommerce/contracts";
+import { subscribeCartChanges } from "@/lib/ecommerce/cart";
+import { useGuestCart } from "@/lib/ecommerce/guest-cart";
 import { PRODUCTS, type ProductId } from "./products";
 import { NavInk, type NavInkPress } from "./NavInk";
 import styles from "./Shop.module.css";
@@ -14,8 +18,52 @@ export function ShopNavigation() {
   const navRef = useRef<HTMLElement>(null);
   const [pressed, setPressed] = useState<NavInkPress | null>(null);
   const [hovered, setHovered] = useState<ProductId | null>(null);
+  const [account, setAccount] = useState<Account | null>(null);
+  const [accountQuantity, setAccountQuantity] = useState(0);
+  const guestCart = useGuestCart();
+  const accountId = account?.id;
+  const quantity = accountQuantity + guestCart.reduce((total, line) => total + line.quantity, 0);
   const current = (Object.keys(PRODUCTS) as ProductId[]).find(id => pathname.startsWith(`/shop/${id}`));
   const highlighted = hovered ?? current;
+
+  useEffect(() => {
+    let pending: AbortController | undefined;
+    function clearProfile() {
+      pending?.abort();
+      setAccount(null);
+      setAccountQuantity(0);
+    }
+    function loadProfile() {
+      clearProfile();
+      pending = new AbortController();
+      const { signal } = pending;
+      void storefrontGet("/me", profileSchema, signal).then(profile => {
+        if (!signal.aborted) setAccount(profile.account);
+      }).catch(() => {});
+    }
+    loadProfile();
+    const unsubscribe = subscribeSession(reason => {
+      if (reason === "invalid") clearProfile();
+      else loadProfile();
+    });
+    return () => { unsubscribe(); pending?.abort(); };
+  }, []);
+
+  useEffect(() => {
+    if (!accountId) return;
+    let pending: AbortController | undefined;
+    function loadCart() {
+      pending?.abort();
+      pending = new AbortController();
+      const { signal } = pending;
+      void storefrontGet("/cart", cartSchema, signal).then(cart => {
+        if (!signal.aborted) setAccountQuantity(cart.items.reduce((total, line) => total + line.quantity, 0));
+      }).catch(() => {});
+    }
+    loadCart();
+    const unsubscribe = subscribeCartChanges(loadCart);
+    return () => { unsubscribe(); pending?.abort(); };
+  }, [accountId]);
   return (
     <header className={styles.globalHeader}>
       <div className={styles.logoLink}><Link href="/" aria-label="Evolve, torna al sito"><Image src="/logoEvolve.png" alt="Evolve" width={61} height={49} priority /></Link><Link href="/negozio" className={styles.shopWord}>shop</Link></div>
@@ -29,8 +77,14 @@ export function ShopNavigation() {
         <NavInk active={highlighted} navRef={navRef} pressed={pressed} />
       </nav>
       <div className={styles.headerActions}>
-        <Link href="/account" prefetch={false} className={styles.headerTool} aria-label="Il tuo profilo" aria-current={pathname.startsWith("/account") ? "page" : undefined} title="Il tuo profilo"><UserRound size={18} /></Link>
-        <Link href="/carrello" prefetch={false} className={styles.headerTool} aria-label="Il tuo carrello" aria-current={pathname === "/carrello" ? "page" : undefined} title="Il tuo carrello"><ShoppingCart size={18} /></Link>
+        <Link href={account ? "/account" : "/account/login"} prefetch={false} className={`${styles.headerTool} ${styles.headerAccount}`} data-guest={!account} aria-current={pathname.startsWith("/account") ? "page" : undefined} title={account ? `Il tuo profilo · ${account.name}` : "Accedi"}>
+          {account ? <UserRound size={17} aria-hidden="true" /> : <LogIn size={16} aria-hidden="true" />}
+          <span>{account?.name || "Accedi"}</span>
+        </Link>
+        <Link href="/carrello" prefetch={false} className={styles.headerTool} aria-label={quantity ? `Il tuo carrello, ${quantity} ${quantity === 1 ? "articolo" : "articoli"}` : "Il tuo carrello"} aria-current={pathname === "/carrello" ? "page" : undefined} title="Il tuo carrello">
+          <ShoppingCart size={18} aria-hidden="true" />
+          {quantity > 0 && <span className={styles.cartBadge} aria-hidden="true">{quantity}</span>}
+        </Link>
         <Link href="/" className={styles.backToSite}><span>Il mondo Evolve</span><ArrowUpRight size={14} /></Link>
       </div>
     </header>

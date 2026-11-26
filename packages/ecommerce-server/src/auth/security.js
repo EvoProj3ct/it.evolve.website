@@ -38,27 +38,31 @@ export const keyedHash = (config, purpose, value) =>
   createHmac("sha256", config.hmacKey)
     .update(`${config.shopId}\0${purpose}\0${value}`)
     .digest("hex");
-function key(value) {
+function key(value, configurationVariable) {
   if (typeof value !== "string" || !/^[A-Za-z0-9_-]{43}$/.test(value))
-    throw configurationError();
+    throw configurationError(configurationVariable);
   const decoded = Buffer.from(value, "base64url");
   if (decoded.length !== 32 || decoded.toString("base64url") !== value)
-    throw configurationError();
+    throw configurationError(configurationVariable);
   return decoded;
 }
 export function authConfig(env) {
-  const origin = requireHttpsOrigin(env.ECOMMERCE_STOREFRONT_ORIGIN);
+  const origin = requireHttpsOrigin(
+    env.ECOMMERCE_STOREFRONT_ORIGIN,
+    "ECOMMERCE_STOREFRONT_ORIGIN",
+  );
+  if (!/^[A-Za-z0-9_-]{1,80}$/.test(env.ECOMMERCE_SHOP_ID || ""))
+    throw configurationError("ECOMMERCE_SHOP_ID");
   if (
-    !/^[A-Za-z0-9_-]{1,80}$/.test(env.ECOMMERCE_SHOP_ID || "") ||
     env.ECOMMERCE_AUTH_HMAC_KEY === env.NEXTAUTH_SECRET ||
     env.ECOMMERCE_AUTH_HMAC_KEY === env.ECOMMERCE_AUTH_DELIVERY_SECRET ||
     env.ECOMMERCE_AUTH_HMAC_KEY === env.ECOMMERCE_CUSTOMER_SYNC_SECRET
   )
-    throw configurationError();
+    throw configurationError("ECOMMERCE_AUTH_HMAC_KEY");
   return Object.freeze({
     origin,
     shopId: env.ECOMMERCE_SHOP_ID,
-    hmacKey: key(env.ECOMMERCE_AUTH_HMAC_KEY),
+    hmacKey: key(env.ECOMMERCE_AUTH_HMAC_KEY, "ECOMMERCE_AUTH_HMAC_KEY"),
   });
 }
 export function mailKeys(env) {
@@ -66,17 +70,18 @@ export function mailKeys(env) {
   try {
     raw = JSON.parse(env.ECOMMERCE_AUTH_EMAIL_KEYS || "");
   } catch {
-    throw configurationError();
+    throw configurationError("ECOMMERCE_AUTH_EMAIL_KEYS");
   }
   const active = env.ECOMMERCE_AUTH_EMAIL_KEY_ID;
+  if (!/^[A-Za-z0-9_-]{1,40}$/.test(active || ""))
+    throw configurationError("ECOMMERCE_AUTH_EMAIL_KEY_ID");
   if (
     !raw ||
     Array.isArray(raw) ||
     typeof raw !== "object" ||
-    Object.keys(raw).length > 5 ||
-    !/^[A-Za-z0-9_-]{1,40}$/.test(active || "")
+    Object.keys(raw).length > 5
   )
-    throw configurationError();
+    throw configurationError("ECOMMERCE_AUTH_EMAIL_KEYS");
   const keys = new Map();
   for (const [id, value] of Object.entries(raw)) {
     if (
@@ -86,10 +91,10 @@ export function mailKeys(env) {
       value === env.ECOMMERCE_AUTH_DELIVERY_SECRET ||
       value === env.ECOMMERCE_CUSTOMER_SYNC_SECRET
     )
-      throw configurationError();
-    keys.set(id, key(value));
+      throw configurationError("ECOMMERCE_AUTH_EMAIL_KEYS");
+    keys.set(id, key(value, "ECOMMERCE_AUTH_EMAIL_KEYS"));
   }
-  if (!keys.has(active)) throw configurationError();
+  if (!keys.has(active)) throw configurationError("ECOMMERCE_AUTH_EMAIL_KEY_ID");
   return { active, keys };
 }
 export function sealMail(env, config, id, payload) {

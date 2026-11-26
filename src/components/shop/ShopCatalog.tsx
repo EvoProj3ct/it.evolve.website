@@ -1,11 +1,10 @@
 "use client";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowRight, ArrowUpRight, ShoppingCart } from "lucide-react";
 import type { PublicCatalogList, PublicCatalogProduct, PublicProductPage } from "@evolve/ecommerce-server/catalog";
 import { money, type PersonalizationInput } from "@/lib/ecommerce/contracts";
-import { errorText, loginHref, StorefrontError, storefrontRead, subscribeSession } from "@/lib/ecommerce/browser";
+import { errorText, StorefrontError, storefrontRead, subscribeSession } from "@/lib/ecommerce/browser";
 import { addCatalogProduct } from "@/lib/ecommerce/cart";
 import { configuratorHref } from "./ConfiguredPurchase";
 import { useStorefrontResource } from "./useStorefrontResource";
@@ -14,7 +13,6 @@ import common from "./CommercePreview.module.css";
 import styles from "./Storefront.module.css";
 
 export function AddToCart({ product }: { product: PublicCatalogProduct }) {
-  const router = useRouter();
   const [busy, setBusy] = useState(false), [error, setError] = useState(""), [added, setAdded] = useState(false), [review, setReview] = useState(false);
   const [custom, setCustom] = useState(false), [withColor, setWithColor] = useState(false);
   const lock = useRef(false);
@@ -56,7 +54,7 @@ export function AddToCart({ product }: { product: PublicCatalogProduct }) {
       await addCatalogProduct(product, personalization);
       if (attempt === session.current) setAdded(true);
     } catch (reason) {
-      if (reason instanceof StorefrontError && reason.status === 401) { router.push(loginHref(`/negozio/${product.slug}`)); return; }
+      if (reason instanceof StorefrontError && reason.status === 401) { setError("La sessione è scaduta. Premi di nuovo per aggiungere al carrello."); return; }
       if (attempt !== session.current) return;
       if (reason instanceof StorefrontError && (reason.status === 409 || reason.status >= 500 || reason.status === 0)) setReview(true);
       setError(errorText(reason));

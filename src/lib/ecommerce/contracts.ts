@@ -18,7 +18,7 @@ const configurationDetailsSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("e-led"), secondaryColor: colorSchema, effect: z.enum(["flow", "steady", "breathe", "pulse"]), mode: z.enum(["text", "logo", "both"]), width: integer.min(60).max(180), brightness: integer.min(20).max(100), speedTenths: integer.min(5).max(15).optional() }).strict(),
 ]);
 const personalizationSummarySchema = z.object({ color: colorSchema.optional(), inscription: inscriptionSchema.optional(), hasLogo: z.boolean(), details: configurationDetailsSchema.optional() }).strict();
-const personalizationInputSchema = z.object({
+export const personalizationInputSchema = z.object({
   color: colorSchema.optional(),
   inscription: inscriptionSchema.optional(),
   logo: z.string().min(4).max(16384).regex(/^[A-Za-z0-9+/]+={0,2}$/).optional(),
@@ -44,7 +44,8 @@ const saveCartItemSchema = z.object({
   personalizationId: publicIdSchema.optional(),
   personalization: personalizationInputSchema.optional(),
 }).strict().refine(item => !(item.personalizationId && item.personalization));
-export const saveCartSchema = z.object({ cartPublicId: publicIdSchema.nullable(), expectedRevision: integer, items: z.array(saveCartItemSchema).max(98) }).strict().refine(value => {
+export const saveCartSchema = z.object({ cartPublicId: publicIdSchema.nullable(), expectedRevision: integer, items: z.array(saveCartItemSchema).max(98), guestImportId: publicIdSchema.optional() }).strict().refine(value => {
+  if (value.guestImportId) return value.items.length === 1 && !value.items[0].personalizationId;
   const existing = value.items.filter(item => !item.personalization);
   return value.items.length - existing.length <= 1 && new Set(existing.map(cartLineKey)).size === existing.length;
 });

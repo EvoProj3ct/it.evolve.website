@@ -57,7 +57,7 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
   const [catalogError, setCatalogError] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const [outcome, setOutcome] = useState<"added" | "login" | "review" | null>(null);
+  const [outcome, setOutcome] = useState<"added" | "review" | null>(null);
   const pending = useRef<AbortController | null>(null);
   const product = selected ? products.find(item => item.id === selected) : products[0];
 
@@ -114,7 +114,7 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
       await addCatalogProduct(product, { ...options, logo }, controller.signal);
       if (!controller.signal.aborted) setOutcome("added");
     } catch (reason) {
-      if (reason instanceof StorefrontError && reason.status === 401) setOutcome("login");
+      if (reason instanceof StorefrontError && reason.status === 401) setError("La sessione è scaduta. Premi di nuovo per aggiungere al carrello.");
       else if (!controller.signal.aborted) {
         if (reason instanceof StorefrontError && (reason.status === 409 || reason.status === 0 || reason.status >= 500)) setOutcome("review");
         setError(errorText(reason));
@@ -139,7 +139,6 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
     {!loading && !catalogError && !product && <p>{products.length ? "L’articolo selezionato non è più disponibile. Scegline uno dall’elenco." : "Nessun articolo acquistabile è pubblicato per questo configuratore."}</p>}
     {next && <button type="button" className={styles.secondary} disabled={loading || busy} onClick={() => setCursor(next)}>Altri articoli</button>}
     {error && <p role="alert">{error}</p>}
-    {outcome === "login" && <p><Link href="/account/login" target="_blank" rel="noreferrer">Accedi in un’altra scheda</Link>, poi torna qui per aggiungere la configurazione.</p>}
     {(outcome === "review" || outcome === "added") && <Link href="/carrello" className={styles.secondary}>{outcome === "added" ? "Aggiunto · Apri il carrello" : "Controlla il carrello"} <ArrowRight size={16} /></Link>}
     {outcome === "review" && <button type="button" className={styles.secondary} disabled={loading} onClick={() => {
       setOutcome(null);

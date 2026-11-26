@@ -26,8 +26,10 @@ type Legal = { termsVersion: string; privacyVersion: string; termsPath: string; 
 const messageSchema = z.object({ message: z.string().max(2000) }).strict();
 const loginSchema = z.object({ account: accountSchema, csrfToken: z.string() }).strict();
 
-export function ShopAuthForm({ action, legal }: { action: AuthAction; legal: Legal }) {
+export function ShopAuthForm({ action, legal, nextPath }: { action: AuthAction; legal: Legal; nextPath?: string }) {
   const router = useRouter();
+  const next = safeReturnTo(nextPath);
+  const returnQuery = next === "/account" ? "" : `?next=${encodeURIComponent(next)}`;
   const info = AUTH_ACTIONS[action];
   const tokenAction = ["verify-email", "reset-password", "confirm-email"].includes(action);
   const [token, setToken] = useState("");
@@ -69,7 +71,6 @@ export function ShopAuthForm({ action, legal }: { action: AuthAction; legal: Leg
     try {
       if (action === "login") {
         await storefrontMutate(`/auth/${action}`, "POST", body, loginSchema);
-        const next = safeReturnTo(new URLSearchParams(window.location.search).get("next"));
         sessionChanged(); router.replace(next); router.refresh();
       } else {
         const result = await storefrontMutate(`/auth/${action}`, "POST", body, messageSchema);
@@ -101,7 +102,7 @@ export function ShopAuthForm({ action, legal }: { action: AuthAction; legal: Leg
         {action === "login" && <Link className={styles.inlineLink} href="/account/forgot-password" prefetch={false}>Password dimenticata?</Link>}
         <button className={styles.primary} type="submit" disabled={disabled}>{busy ? "Attendi…" : info.button}<ArrowRight size={18} /></button>
       </form>}
-      <nav className={styles.authLinks} aria-label="Account">{action === "login" ? <span>Non hai ancora un account? <Link href="/account/register" prefetch={false}>Registrati <ArrowUpRight size={13} /></Link></span> : <Link href="/account/login" prefetch={false}>Vai all’accesso <ArrowRight size={14} /></Link>}{action === "login" && <Link href="/account/resend-verification" prefetch={false}>Verifica la tua email</Link>}</nav>
+      <nav className={styles.authLinks} aria-label="Account">{action === "login" ? <span>Non hai ancora un account? <Link href={`/account/register${returnQuery}`} prefetch={false}>Registrati <ArrowUpRight size={13} /></Link></span> : <Link href={`/account/login${returnQuery}`} prefetch={false}>Vai all’accesso <ArrowRight size={14} /></Link>}{action === "login" && <Link href={`/account/resend-verification${returnQuery}`} prefetch={false}>Verifica la tua email</Link>}</nav>
       {["register", "change-password", "reset-password"].includes(action) && <p className={styles.attribution}>Il controllo delle password compromesse usa Pwned Passwords di <a href="https://haveibeenpwned.com/Passwords" target="_blank" rel="noreferrer">Have I Been Pwned</a>.</p>}
     </section>
   </main>;

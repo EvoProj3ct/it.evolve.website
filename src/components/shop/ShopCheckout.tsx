@@ -5,6 +5,8 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowRight } from "lucide-react";
 import { cartSchema, checkoutOptionsSchema, customerLinkSchema, money, placedOrderSchema, profileSchema, quoteSchema, type Address, type Quote, type QuoteInput } from "@/lib/ecommerce/contracts";
 import { errorText, StorefrontError, storefrontGet, storefrontMutate } from "@/lib/ecommerce/browser";
+import { cartChanged } from "@/lib/ecommerce/cart";
+import { useGuestCart } from "@/lib/ecommerce/guest-cart";
 import { PersonalizationText } from "./ShopPersonalization";
 import { AddressText, BillingText } from "./ShopAddress";
 import { ResourceFeedback, ShopPageHeader } from "./ShopPreviewShared";
@@ -25,6 +27,7 @@ function address(data: FormData, prefix: string): Address {
 }
 export function ShopCheckout({ termsPath, termsVersion }: { termsPath: string; termsVersion: string }) {
   const resource = useStorefrontResource(loadCheckout), router = useRouter();
+  const guestCart = useGuestCart();
   const [physical, setPhysical] = useState(""), [service, setService] = useState("");
   const [billingCountry, setBillingCountry] = useState(""), [shippingCountry, setShippingCountry] = useState("");
   const [sameAddress, setSameAddress] = useState(true), [accepted, setAccepted] = useState(false);
@@ -40,7 +43,7 @@ export function ShopCheckout({ termsPath, termsVersion }: { termsPath: string; t
   const shipping = hasPhysical && selection?.mode === "shipping";
   const physicalOptions = data?.policy.options.filter(option => option.mode !== "service" && data.cart.items.filter(item => item.kind === "physical").every(item => item.fulfillmentModes?.includes(option.mode))) || [];
   const serviceOptions = data?.policy.options.filter(option => option.mode === "service" && data.cart.items.filter(item => item.kind === "service").every(item => item.fulfillmentModes?.includes("service"))) || [];
-  const cartReady = !!data && data.cart.status === "active" && !!data.cart.id && data.cart.items.length > 0 && !data.cart.requiresReview && data.cart.items.every(item => item.state === "available");
+  const cartReady = !guestCart.length && !!data && data.cart.status === "active" && !!data.cart.id && data.cart.items.length > 0 && !data.cart.requiresReview && data.cart.items.every(item => item.state === "available");
   const remaining = quote ? Math.max(0, Math.ceil((new Date(quote.expiresAt).getTime() - now) / 1000)) : 0;
   const termsReady = !!termsPath && !!quote && termsVersion === quote.termsVersion;
   async function prepare(event: FormEvent<HTMLFormElement>) {
@@ -72,6 +75,7 @@ export function ShopCheckout({ termsPath, termsVersion }: { termsPath: string; t
     lock.current = true; setBusy(true); setError("");
     try {
       const result = await storefrontMutate("/orders/place", "POST", { quotePublicId: orderIntent.current.quoteId, idempotencyKey: orderIntent.current.key, acceptedTermsVersion: quote.termsVersion }, placedOrderSchema);
+      cartChanged();
       router.replace(`/account/ordini/${result.order.id}`);
     } catch (reason) {
       setUncertain(previous => previous || !(reason instanceof StorefrontError) || reason.status === 0 || reason.status >= 500);

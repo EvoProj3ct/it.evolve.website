@@ -97,7 +97,7 @@ export async function handleCommerce(request: Request, operation: Operation, raw
     const result = checked.data as unknown as Record<string, unknown>;
     const mismatch = (operation === "readQuote" || operation === "order") && result.id !== id
       || (operation === "payment" || operation === "paymentStatus") && result.orderPublicId !== id
-      || operation === "saveCart" && input.cartPublicId !== null && result.id !== input.cartPublicId
+      || operation === "saveCart" && !input.guestImportId && input.cartPublicId !== null && result.id !== input.cartPublicId
       || operation === "quote" && (result.cartPublicId !== input.cartPublicId || result.cartRevision !== input.cartRevision || result.policyRevision !== input.policyRevision || result.termsVersion !== input.termsVersion
         || (result.discount as { code: string } | undefined)?.code !== (input.discountCode as string | undefined)?.toUpperCase());
     if (mismatch) throw new CommerceServiceError(502, "ATLAS_RESPONSE_INVALID", "Il servizio ha restituito dati non coerenti.");
