@@ -7,7 +7,7 @@ import { money, placedOrderSchema, quoteSchema, type Quote, type QuoteInput } fr
 import { errorText, StorefrontError, storefrontMutate, subscribeSession } from "@/lib/ecommerce/browser";
 import { cartChanged } from "@/lib/ecommerce/cart";
 import { useGuestCart } from "@/lib/ecommerce/guest-cart";
-import { shopApi, shopReads, useShopStore, type ShopStore } from "@/lib/ecommerce/shop-store";
+import { cachedShopData, shopApi, shopReads, useShopStore, type ShopStore } from "@/lib/ecommerce/shop-store";
 import { PersonalizationText } from "./ShopPersonalization";
 import { AddressText, BillingText } from "./ShopAddress";
 import { AddressFields, BillingFields, readAddressFields, readBillingFields } from "./ShopBillingFields";
@@ -33,7 +33,16 @@ async function loadCheckout(store: ShopStore, signal: AbortSignal, refresh: bool
 export function ShopCheckout({ termsPath, termsVersion }: { termsPath: string; termsVersion: string }) {
   const store = useShopStore();
   const load = useCallback((signal: AbortSignal, refresh: boolean) => loadCheckout(store, signal, refresh), [store]);
-  const resource = useStorefrontResource(load), router = useRouter();
+  const state = store.getState();
+  const profile = cachedShopData(shopApi.endpoints.profile.select()(state));
+  const cart = cachedShopData(shopApi.endpoints.cart.select()(state));
+  const policy = cachedShopData(shopApi.endpoints.checkoutOptions.select()(state));
+  const link = cachedShopData(shopApi.endpoints.customerLink.select()(state));
+  const savedBilling = cachedShopData(shopApi.endpoints.billing.select()(state));
+  const cached = profile && cart && policy && link && savedBilling
+    ? { account: profile.account, cart, policy, link, billing: savedBilling.billing, billingUnavailable: false }
+    : undefined;
+  const resource = useStorefrontResource(load, cached), router = useRouter();
   const guestCart = useGuestCart();
   const [physical, setPhysical] = useState(""), [service, setService] = useState("");
   const [selectedBillingCountry, setBillingCountry] = useState<string | null>(null), [shippingCountry, setShippingCountry] = useState("");
@@ -50,7 +59,9 @@ export function ShopCheckout({ termsPath, termsVersion }: { termsPath: string; t
     setPhysical("");
     setService("");
   }), []);
-  useEffect(() => { setQuote(null); setAccepted(false); quoteIntent.current = null; orderIntent.current = null; setUncertain(false); }, [data]);
+  useEffect(() => {
+    setQuote(null); setAccepted(false); quoteIntent.current = null; orderIntent.current = null; setUncertain(false);
+  }, [data?.account.id, data?.cart.id, data?.cart.revision, data?.cart.requiresReview, data?.policy.revision, data?.link.checkoutReady]);
   useEffect(() => { if (!quote) return; const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(timer); }, [quote]);
   const selection = data?.policy.options.find(option => option.publicId === physical);
   const hasPhysical = !!data?.cart.items.some(item => item.kind === "physical");
@@ -62,7 +73,7 @@ export function ShopCheckout({ termsPath, termsVersion }: { termsPath: string; t
   const remaining = quote ? Math.max(0, Math.ceil((new Date(quote.expiresAt).getTime() - now) / 1000)) : 0;
   const termsReady = !!termsPath && !!quote && termsVersion === quote.termsVersion;
   async function prepare(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); if (!data || !cartReady || !data.link.checkoutReady || lock.current) return;
+    event.preventDefault(); if (!data || !cartReady || !data.link.checkoutReady || lock.current || resource.refreshing) return;
     const form = new FormData(event.currentTarget);
     const billing = readBillingFields(form);
     const physicalOption = physicalOptions.find(option => option.publicId === physical);
@@ -95,6 +106,7 @@ export function ShopCheckout({ termsPath, termsVersion }: { termsPath: string; t
     try {
       const result = await storefrontMutate("/orders/place", "POST", { quotePublicId: orderIntent.current.quoteId, idempotencyKey: orderIntent.current.key, acceptedTermsVersion: quote.termsVersion }, placedOrderSchema);
       cartChanged();
+      store.dispatch(shopApi.util.invalidateTags(["Orders"]));
       router.replace(`/account/ordini/${result.order.id}`);
     } catch (reason) {
       const blockedBeforeOrder = reason instanceof StorefrontError &&
@@ -117,7 +129,7 @@ export function ShopCheckout({ termsPath, termsVersion }: { termsPath: string; t
         </fieldset>
       <fieldset disabled={busy || !!quote}><legend>Consegna e servizi</legend>{hasPhysical && <div className={styles.deliveryOptions}><h3>Per i tuoi oggetti</h3>{physicalOptions.map(option => <label key={option.publicId} data-selected={physical === option.publicId}><input type="radio" name="physical-option" required value={option.publicId} checked={physical === option.publicId} onChange={() => setPhysical(option.publicId)} /><span><strong>{option.label}</strong><small>{option.details}</small></span><span>{money(option.totals.grossMinor)}</span></label>)}{!physicalOptions.length && <p className={styles.notice}>Non ci sono modalità compatibili con tutti gli oggetti del carrello.</p>}</div>}{hasService && <div className={styles.deliveryOptions}><h3>Per i tuoi servizi</h3>{serviceOptions.map(option => <label key={option.publicId} data-selected={service === option.publicId}><input type="radio" name="service-option" required value={option.publicId} checked={service === option.publicId} onChange={() => setService(option.publicId)} /><span><strong>{option.label}</strong><small>{option.details}</small></span><span>{money(option.totals.grossMinor)}</span></label>)}{!serviceOptions.length && <p className={styles.notice}>Non ci sono modalità compatibili con i servizi scelti.</p>}</div>}{shipping && <><label className={styles.check}><input type="checkbox" checked={sameAddress} onChange={event => setSameAddress(event.target.checked)} />Usa l’indirizzo di fatturazione per la spedizione.</label>{!sameAddress && <AddressFields prefix="shipping" name={data.account.name} countries={data.policy.countries.filter(code => (selection?.countries || []).includes(code))} country={shippingCountry} onCountry={setShippingCountry} />}</>}</fieldset>
       <fieldset disabled={busy || !!quote}><legend>Sconto</legend><div className={styles.fieldGrid}><label>Codice sconto, facoltativo<input name="discountCode" maxLength={32} pattern={"[A-Za-z0-9][A-Za-z0-9_\\x2D]{2,31}"} autoComplete="off" /></label></div></fieldset>
-      <button className={styles.primary} type="submit" disabled={busy || hasPhysical && !physicalOptions.length || hasService && !serviceOptions.length}>{busy ? "Preparazione…" : "Prepara il riepilogo"}<ArrowRight size={17} /></button></form>
+      <button className={styles.primary} type="submit" disabled={busy || resource.refreshing || hasPhysical && !physicalOptions.length || hasService && !serviceOptions.length}>{busy ? "Preparazione…" : "Prepara il riepilogo"}<ArrowRight size={17} /></button></form>
       {quote && <section className={styles.quote} aria-label="Riepilogo definitivo">
         <div className={common.panelHeading}><h2>Le tue scelte, confermate<span>.</span></h2><span className={styles.help}>{remaining ? `Valido per ${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}` : "Riepilogo scaduto"}</span></div>
         <div className={styles.quoteLines}>{quote.lines.map(line =>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRef, useState, type FormEvent } from "react";
 import { ArrowRight, ArrowUpRight, FileText, LayoutGrid, LogOut, Package, RefreshCw, Settings2 } from "lucide-react";
 import { customerLinkSchema, profileSchema, type Account } from "@/lib/ecommerce/contracts";
-import { errorText, storefrontMutate } from "@/lib/ecommerce/browser";
+import { errorText, hidesPreviousData, storefrontMutate } from "@/lib/ecommerce/browser";
 import { announceShopPreference, cacheShopEntries, shopApi, shopQueryError, useShopStore } from "@/lib/ecommerce/shop-store";
 import { ShopBillingProfile } from "./ShopBillingProfile";
 import { ResourceFeedback, ShopPageHeader } from "./ShopPreviewShared";
@@ -35,9 +35,10 @@ export function CustomerLinkStatus() {
     }
   }
 
-  const link = resource.currentData;
+  const queryError = resource.error && shopQueryError(resource.error);
+  const link = hidesPreviousData(queryError) ? undefined : resource.currentData;
   return <section className={live.customerStatus} aria-label="Stato del profilo commerciale">
-    <ResourceFeedback busy={resource.isLoading} error={resource.error && shopQueryError(resource.error)}
+    <ResourceFeedback busy={!link && resource.isFetching} error={queryError}
       reload={resource.refetch} />
     {link && <>
       <span className={live.status} data-ready={link.checkoutReady}>
@@ -106,10 +107,11 @@ const sectionLabels = { overview: "Panoramica", profile: "Dati personali", billi
 export function ShopProfile() {
   const resource = shopApi.useProfileQuery(undefined, { refetchOnMountOrArgChange: 90 });
   const [section, setSection] = useState<keyof typeof sectionLabels>("overview");
-  const account = resource.currentData?.account;
+  const error = resource.error && shopQueryError(resource.error);
+  const account = hidesPreviousData(error) ? undefined : resource.currentData?.account;
   return <main id="shop-content" className={styles.page}>
     <ShopPageHeader title="Il tuo spazio" description={account ? `Bentornato, ${account.name}.` : "I tuoi oggetti, ordini e prossime idee."} />
-    <ResourceFeedback busy={resource.isLoading} error={resource.error && shopQueryError(resource.error)}
+    <ResourceFeedback busy={!account && resource.isFetching} error={error}
       reload={resource.refetch} />
     {account && <div className={styles.profileGrid}>
       <aside className={styles.profileSidebar}>

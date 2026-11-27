@@ -14,8 +14,8 @@ import { requireHttpsOrigin } from "../config.js";
 export const SESSION_COOKIE = "__Host-storefront_session";
 export const CSRF_COOKIE = "__Host-storefront_csrf";
 export const AUTH_TTL = Object.freeze({
-  idle: 1800,
-  absolute: 43200,
+  idle: 7 * 24 * 60 * 60,
+  absolute: 30 * 24 * 60 * 60,
   csrf: 1800,
   verify_email: 86400,
   reset_password: 900,

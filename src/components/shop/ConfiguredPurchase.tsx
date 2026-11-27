@@ -6,8 +6,9 @@ import { ArrowRight, ShoppingCart } from "lucide-react";
 import type { ConfiguratorKind, PublicCatalogProduct } from "@evolve/ecommerce-server/catalog";
 import { money, publicIdSchema, type PersonalizationInput } from "@/lib/ecommerce/contracts";
 import { addCatalogProduct } from "@/lib/ecommerce/cart";
-import { errorText, StorefrontError, subscribeSession } from "@/lib/ecommerce/browser";
-import { shopReads, useShopStore } from "@/lib/ecommerce/shop-store";
+import { errorText, hidesPreviousData, StorefrontError, subscribeSession } from "@/lib/ecommerce/browser";
+import { readCatalogSnapshot } from "@/lib/ecommerce/catalog-snapshot";
+import { cachedShopData, shopApi, shopReads, useShopStore } from "@/lib/ecommerce/shop-store";
 import type { LogoAsset } from "./products";
 import styles from "./Storefront.module.css";
 
@@ -77,14 +78,38 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
     if (cursor) query.set("cursor", cursor);
     const location = new URLSearchParams(window.location.search);
     const id = publicIdSchema.safeParse(location.get("tipo") === kind ? location.get("articolo") : null);
+    const queryKey = query.toString();
     setLoading(true);
     setCatalogError("");
     const refresh = lastRetry.current !== retry;
     lastRetry.current = retry;
     let retryTimer: number | undefined;
+    function show(items: PublicCatalogProduct[], nextCursor: string | null) {
+      setProducts(current => {
+        if (!cursor) return items;
+        const byId = new Map(current.map(item => [item.id, item]));
+        for (const item of items) byId.set(item.id, item);
+        return Array.from(byId.values());
+      });
+      if (!cursor && id.success) setSelected(current => current || (items.some(item => item.id === id.data) ? id.data : ""));
+      setNext(nextCursor);
+    }
     async function load(canRetry: boolean, force: boolean) {
       try {
-        const page = await shopReads.catalog(store, query.toString(), force);
+        const fresh = shopReads.catalog(store, queryKey, force);
+        const state = store.getState();
+        const entry = shopApi.endpoints.catalog.select(queryKey)(state);
+        const snapshot = !entry.data && readCatalogSnapshot("catalog", queryKey);
+        const cached = cachedShopData(entry) ?? (snapshot && snapshot.endpointName === "catalog" ? snapshot.value : undefined);
+        const previous = cached?.items.filter(item => item.configurator === kind) ?? [];
+        if (!cursor && id.success && !previous.some(item => item.id === id.data)) {
+          const detail = shopApi.endpoints.catalogProduct.select(id.data)(state);
+          const saved = !detail.data && readCatalogSnapshot("catalogProduct", id.data);
+          const requested = cachedShopData(detail) ?? (saved && saved.endpointName === "catalogProduct" ? saved.value : undefined);
+          if (requested?.configurator === kind) previous.unshift(requested);
+        }
+        if (previous.length && (cursor || !id.success || previous.some(item => item.id === id.data))) show(previous, cached?.nextCursor ?? null);
+        const page = await fresh;
         if (signal.aborted) return;
         const items = page.items.filter(item => item.configurator === kind);
         const requested = !cursor && id.success && !items.some(item => item.id === id.data)
@@ -92,11 +117,10 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
           : null;
         if (signal.aborted) return;
         if (requested?.configurator === kind && !items.some(item => item.id === requested.id)) items.unshift(requested);
-        setProducts(current => cursor ? [...current, ...items.filter(item => !current.some(old => old.id === item.id))] : items);
-        if (!cursor && id.success) setSelected(current => current || (items.some(item => item.id === id.data) ? id.data : ""));
-        setNext(page.nextCursor);
+        show(items, page.nextCursor);
       } catch (reason) {
         if (signal.aborted) return;
+        if (hidesPreviousData(reason)) { setProducts([]); setNext(null); }
         if (canRetry && reason instanceof StorefrontError &&
             (reason.status === 0 || reason.status === 503 &&
               ["ATLAS_UNAVAILABLE", "ATLAS_SERVICE_REJECTED"].includes(reason.code))) {
@@ -150,7 +174,7 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
       <button type="button" className={buttonClass} disabled={busy || loading || disabled || outcome === "review"} onClick={() => void add()}>
         {busy ? "Aggiunta…" : "Aggiungi la configurazione al carrello"} <ShoppingCart size={18} />
       </button></>}
-    {loading && <p role="status">Caricamento articoli…</p>}
+    {loading && !products.length && <p role="status">Caricamento articoli…</p>}
     {catalogError && <p role="alert">{catalogError} <button type="button" onClick={() => setRetry(value => value + 1)}>Riprova</button></p>}
     {!loading && !catalogError && !product && <p>{products.length ? "L’articolo selezionato non è più disponibile. Scegline uno dall’elenco." : "Nessun articolo acquistabile è pubblicato per questo configuratore."}</p>}
     {next && <button type="button" className={styles.secondary} disabled={loading || busy} onClick={() => setCursor(next)}>Altri articoli</button>}

@@ -7,7 +7,7 @@ import { cartLineKey, money, type Cart, type CheckoutOptions } from "@/lib/ecomm
 import { errorText, StorefrontError, subscribeSession } from "@/lib/ecommerce/browser";
 import { importGuestCart, saveAccountCart } from "@/lib/ecommerce/cart";
 import { useGuestCart } from "@/lib/ecommerce/guest-cart";
-import { shopReads, useShopStore, type ShopStore } from "@/lib/ecommerce/shop-store";
+import { cachedShopData, shopApi, shopReads, useShopStore, type ShopStore } from "@/lib/ecommerce/shop-store";
 import { useStorefrontResource } from "./useStorefrontResource";
 import { CartProductArtwork, ResourceFeedback, ShopPageHeader } from "./ShopPreviewShared";
 import { PersonalizationText } from "./ShopPersonalization";
@@ -42,7 +42,10 @@ type DraftLine = { id: string; quantity: number };
 export function ShopCart() {
   const store = useShopStore();
   const load = useCallback((signal: AbortSignal, refresh: boolean) => readCart(store, signal, refresh), [store]);
-  const resource = useStorefrontResource(load);
+  const state = store.getState();
+  const cachedCart = cachedShopData(shopApi.endpoints.cart.select()(state));
+  const cachedPolicy = cachedShopData(shopApi.endpoints.checkoutOptions.select()(state)) ?? null;
+  const resource = useStorefrontResource(load, cachedCart ? { cart: cachedCart, policy: cachedPolicy, policyError: "", importError: null } : undefined);
   const { reload } = resource;
   const guestLines = useGuestCart();
   const [edit, setEdit] = useState<{ cart: Cart; draft: DraftLine[]; reviewed: boolean }>();
@@ -86,7 +89,7 @@ export function ShopCart() {
   const changed = retained.some(item => item.state === "changed" || item.currentListingRevision !== undefined && item.listingRevision !== item.currentListingRevision);
   const unavailable = retained.some(item => item.state === "unavailable");
   const maxQuantity = resource.data?.policy?.maxQuantity ?? 1000;
-  const canSave = !!cart && (dirty || changed && reviewed) && !unavailable && (!changed || reviewed) && !saving && !resource.busy && cart.status !== "converted";
+  const canSave = !!cart && (dirty || changed && reviewed) && !unavailable && (!changed || reviewed) && !saving && !resource.refreshing && cart.status !== "converted";
 
   async function save() {
     if (!cart || !canSave || lock.current) return;
@@ -101,7 +104,7 @@ export function ShopCart() {
     } catch (error) { setSaveError(errorText(error)); resource.reload(); }
     finally { lock.current = false; setSaving(false); }
   }
-  const ready = !!cart && cart.status === "active" && !!draft.length && !cart.requiresReview && !dirty && !!resource.data?.policy && !saving && !guestLines.length;
+  const ready = !!cart && cart.status === "active" && !!draft.length && !cart.requiresReview && !dirty && !!resource.data?.policy && !saving && !resource.refreshing && !guestLines.length;
   return <main id="shop-content" className={styles.page}>
     <ShopPageHeader title="Il tuo carrello" description="Le tue scelte, pronte a prendere forma." />
     <ResourceFeedback busy={resource.busy} error={resource.error} reload={resource.reload} next="/carrello" />

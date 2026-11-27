@@ -27,6 +27,10 @@
       "browser": "./src/browser-denied.js",
       "default": "./src/catalog.js"
     },
+    "./catalog-validation": {
+      "types": "./src/catalog-validation.d.ts",
+      "default": "./src/catalog-contract.js"
+    },
     "./auth": {
       "types": "./src/auth.d.ts",
       "browser": "./src/browser-denied.js",

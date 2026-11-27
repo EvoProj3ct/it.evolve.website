@@ -5,6 +5,10 @@ import type { z } from "zod";
 export class StorefrontError extends Error {
   constructor(message: string, public readonly status = 0, public readonly code = "NETWORK_UNAVAILABLE", public readonly retryAfter = 0) { super(message); }
 }
+export function hidesPreviousData(error: unknown) {
+  return error instanceof StorefrontError &&
+    ([401, 403, 404, 410].includes(error.status) || error.code === "TRACKING_CHANGED");
+}
 const API = "/api/ecommerce/v1";
 const SESSION_EVENT = "evolve:storefront-session";
 let generation = 0;

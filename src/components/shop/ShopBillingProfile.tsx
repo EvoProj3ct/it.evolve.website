@@ -3,7 +3,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import { ArrowRight } from "lucide-react";
 import { savedBillingSchema, type Account, type BillingProfile } from "@/lib/ecommerce/contracts";
-import { errorText, storefrontMutate } from "@/lib/ecommerce/browser";
+import { errorText, hidesPreviousData, storefrontMutate } from "@/lib/ecommerce/browser";
 import { announceShopPreference, cacheShopEntries, shopApi, shopQueryError, useShopStore } from "@/lib/ecommerce/shop-store";
 import { BillingFields, readBillingFields } from "./ShopBillingFields";
 import { ResourceFeedback } from "./ShopPreviewShared";
@@ -12,17 +12,20 @@ import styles from "./Storefront.module.css";
 
 export function ShopBillingProfile({ account }: { account: Account }) {
   const resource = shopApi.useBillingQuery(undefined, { refetchOnMountOrArgChange: 90 });
+  const error = resource.error && shopQueryError(resource.error);
+  const data = hidesPreviousData(error) ? undefined : resource.currentData;
   return <>
     <div className={common.panelHeading}><h2>Fatturazione<span>.</span></h2></div>
     <p className={styles.help}>Salva i tuoi dati per ritrovarli già compilati quando acquisti.</p>
-    <ResourceFeedback busy={resource.isLoading} error={resource.error && shopQueryError(resource.error)} reload={resource.refetch} />
-    {resource.currentData && !resource.error && <BillingForm key={account.id} account={account} billing={resource.currentData.billing} />}
+    <ResourceFeedback busy={!data && resource.isFetching} error={error} reload={resource.refetch} />
+    {data && <BillingForm key={account.id} account={account} billing={data.billing} />}
   </>;
 }
 
 function BillingForm({ account, billing }: { account: Account; billing: BillingProfile | null }) {
   const store = useShopStore();
-  const [country, setCountry] = useState(billing?.address.country ?? "IT");
+  const [editedCountry, setCountry] = useState<string>();
+  const country = editedCountry ?? billing?.address.country ?? "IT";
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
@@ -40,6 +43,7 @@ function BillingForm({ account, billing }: { account: Account; billing: BillingP
       const saved = await storefrontMutate("/me/billing", "PUT", { billing }, savedBillingSchema);
       await cacheShopEntries(store, [{ endpointName: "billing", arg: undefined, value: saved }]);
       announceShopPreference("Billing");
+      setCountry(undefined);
       setMessage("Dati di fatturazione salvati.");
     } catch (reason) {
       setError(errorText(reason));

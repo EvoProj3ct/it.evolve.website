@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, LogIn, ShoppingCart, UserRound } from "lucide-react";
 import { useGuestCart } from "@/lib/ecommerce/guest-cart";
-import { shopApi } from "@/lib/ecommerce/shop-store";
+import { shopApi, useShopQueryView } from "@/lib/ecommerce/shop-store";
 import { PRODUCTS, type ProductId } from "./products";
 import { ProductMark } from "./ProductMark";
 import { NavInk, type NavInkPress } from "./NavInk";
@@ -17,11 +17,12 @@ export function ShopNavigation() {
   const navRef = useRef<HTMLElement>(null);
   const [pressed, setPressed] = useState<NavInkPress | null>(null);
   const [hovered, setHovered] = useState<ProductId | null>(null);
-  const { currentData: profile } = shopApi.useProfileQuery();
+  const { data: profile, busy: checkingProfile } = useShopQueryView(shopApi.useProfileQuery());
   const account = profile?.account;
-  const { currentData: cart } = shopApi.useCartCountQuery(undefined, { skip: !account });
+  const { data: cart } = useShopQueryView(shopApi.useCartCountQuery(undefined, { skip: !account }));
   const guestCart = useGuestCart();
   const quantity = (account ? cart?.quantity ?? 0 : 0) + guestCart.reduce((total, line) => total + line.quantity, 0);
+  const accountLabel = account?.name ?? (checkingProfile ? "Account" : "Accedi");
   const current = (Object.keys(PRODUCTS) as ProductId[]).find(id => pathname.startsWith(`/shop/${id}`));
   const highlighted = hovered ?? current;
 
@@ -43,9 +44,9 @@ export function ShopNavigation() {
           <ShoppingCart size={18} aria-hidden="true" />
           {quantity > 0 && <span className={styles.cartBadge} aria-hidden="true">{quantity}</span>}
         </Link>
-        <Link href={account ? "/account" : "/account/login"} prefetch={false} className={`${styles.headerTool} ${styles.headerAccount}`} data-guest={!account} aria-current={pathname.startsWith("/account") ? "page" : undefined} title={account ? `Il tuo profilo · ${account.name}` : "Accedi"}>
-          {account ? <UserRound size={17} aria-hidden="true" /> : <LogIn size={16} aria-hidden="true" />}
-          <span>{account?.name || "Accedi"}</span>
+        <Link href={account || checkingProfile ? "/account" : "/account/login"} prefetch={false} className={`${styles.headerTool} ${styles.headerAccount}`} data-guest={!account && !checkingProfile} aria-current={pathname.startsWith("/account") ? "page" : undefined} title={account ? `Il tuo profilo · ${account.name}` : accountLabel}>
+          {account || checkingProfile ? <UserRound size={17} aria-hidden="true" /> : <LogIn size={16} aria-hidden="true" />}
+          <span>{accountLabel}</span>
         </Link>
       </div>
     </header>
