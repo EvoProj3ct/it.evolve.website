@@ -1,28 +1,42 @@
-.section { padding: 0 var(--shop-gutter) clamp(50px, 6vw, 95px); background: #fcfdfb; }
-.section h2 { margin: 0 0 18px; color: var(--shop-ink); font-size: clamp(29px, 3.2vw, 49px); font-weight: 400; line-height: 1.04; letter-spacing: -.06em; }
-.section h2 > span { color: #65c342; }
-.panel { overflow: hidden; border: 1px solid #dce7d5; border-radius: 23px; background: #f5f8f2; }
-.stage { position: relative; height: clamp(365px, 30vw, 485px); overflow: hidden; background: radial-gradient(ellipse at 50% 52%, #e4eddc, #f5f8f2 76%); }
-.stage[data-phase="ready"] { cursor: grab; touch-action: pan-y; }
-.stage[data-grabbing="true"] { cursor: grabbing; }
-.stage[data-hand="true"] { cursor: none; }
-.stage > canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
-.hand { position: absolute; z-index: 2; top: var(--hand-y); left: var(--hand-x); display: none; place-items: center; width: 43px; height: 43px; transform: translate(-50%, -50%) rotate(-12deg); border: 1px solid #8bbc80; border-radius: 50%; background: #f3fbeeee; color: #21482d; box-shadow: 0 3px 14px #203a2529; pointer-events: none; }
-.stage[data-hand="true"] .hand { display: grid; }
-.hand > svg:last-child, .stage[data-grabbing="true"] .hand > svg:first-child { display: none; }
-.stage[data-grabbing="true"] .hand > svg:last-child { display: block; }
-.loading { position: absolute; inset: 0; display: grid; place-items: center; }
-.fallback { position: absolute; inset: 0 6%; }
-.fallback > span { position: absolute; width: clamp(62px, 16%, 150px); transform: translate(-50%, -50%) rotate(var(--rotation)); filter: drop-shadow(0 4px 3px #182d233a); }
-.fallback svg { display: block; width: 100%; }
-.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px 20px; min-height: 62px; padding: 9px 16px; border-top: 1px solid #dce7d5; }
-.toolbar > p { margin: 0; color: #475f49; font-size: 13px; line-height: 1.45; }
-.controls { display: flex; flex-wrap: wrap; gap: 8px; }
-.controls > button { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 37px; padding: 5px 11px; border: 1px solid #cadbc0; border-radius: 999px; background: #fcfdfb; color: #254b31; font-size: 12px; white-space: nowrap; }
-.controls > button:hover:not(:disabled) { background: #e8f4e2; border-color: #a6c49b; }
-.controls > button:focus-visible { outline-offset: 2px; }
-@media (max-width: 680px) {
-  .stage { height: clamp(295px, 92vw, 390px); }
-  .toolbar { flex-wrap: wrap; padding: 11px 12px; }
-  .controls > button { min-height: 42px; }
+.carpet { background: var(--shop-paper, #fcfdfb); }
+.surface {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: clamp(450px, 38vw, 610px);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  touch-action: pan-y pinch-zoom;
+  -webkit-tap-highlight-color: transparent;
 }
+.surface:focus-visible { outline-offset: -5px; }
+.surface.surface:disabled {
+  opacity: 1;
+  cursor: default;
+  background: url('/shop/brand/e-linker.svg') 0 0 / 108px 80px repeat;
+  mask-image: linear-gradient(transparent, #000 16%, #000 84%, transparent);
+}
+.artwork {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  mask-image: linear-gradient(transparent, #000 7%, #000 93%, transparent);
+}
+.surface[data-hand="true"] { cursor: none; }
+.hand {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+  transform: translate3d(var(--hand-x, 0), var(--hand-y, 0), 0) translate(-42%, -28%) rotate(-11deg);
+  filter: drop-shadow(0 2px 3px #22332438);
+  color: #263c35;
+  pointer-events: none;
+}
+.hand svg { fill: #fcfdfb; stroke-width: 1.7; }
+.surface[data-hand="true"] .hand { display: block; }
+.hand > svg:last-child, .surface[data-grabbing="true"] .hand > svg:first-child { display: none; }
+.surface[data-grabbing="true"] .hand > svg:last-child { display: block; }
+@media (max-width: 680px) { .surface { height: clamp(320px, 112vw, 440px); } }

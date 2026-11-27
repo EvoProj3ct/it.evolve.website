@@ -337,7 +337,7 @@
 .productPage[data-product="e-linker"] .stepNumber { color: #89a575; }
 .productPage[data-product="e-linker"] .stepGraphic { height: 130px; color: #73a957; }
 .productPage[data-product="e-linker"] .shapeGraphic { font-weight: 400; }
-.productPage[data-product="e-linker"] .configurator { border-color: #e7eddf; background: #fcfdfb; }
+.productPage[data-product="e-linker"] .configurator { padding-bottom: clamp(30px, 4.5vw, 65px); border-color: #e7eddf; border-bottom: 0; background: #fcfdfb; }
 .productPage[data-product="e-linker"] .viewer { border-color: #e4ecdc; background: radial-gradient(ellipse at 50% 50%, #fcfdfb, #f0f5eb); box-shadow: 0 18px 70px #233a1810; }
 .productPage[data-product="e-linker"] .shapeOptions { gap: 7px; }
 .productPage[data-product="e-linker"] .shapeOptions button { min-height: 76px; border-color: #e0e7d8; border-radius: 13px; color: #74826a; }
