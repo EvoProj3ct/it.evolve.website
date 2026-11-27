@@ -12,6 +12,11 @@ export function ProductMark({ product, primary, secondary, className }: {
   if (product === "e-linker") {
     const body = primary ?? PRODUCTS[product].defaultPrimary;
     const ink = secondary ?? PRODUCTS[product].defaultSecondary;
+    const recolored = primary !== undefined || secondary !== undefined;
+    const edge = recolored ? body : "#829BA3";
+    const outline = recolored ? ink : "#101914";
+    const accent = recolored ? ink : "#72C94F";
+    const metal = recolored ? "#58645F" : "#263C42";
     return <svg className={className} viewBox="12 30 474 352" fill="none" aria-hidden="true">
       <defs>
         <mask id={id} maskUnits="userSpaceOnUse" x="25" y="100" width="325" height="250">
@@ -21,11 +26,11 @@ export function ProductMark({ product, primary, secondary, className }: {
       </defs>
       <g transform="rotate(-9 260 210)">
         <circle cx="447" cy="109" r="36.5" stroke="#D4DEDF" strokeWidth="7" />
-        <g stroke="#263C42" strokeWidth="5">
+        <g stroke={metal} strokeWidth="5">
           <circle cx="447" cy="109" r="40" />
           <circle cx="447" cy="109" r="33" />
         </g>
-        <g stroke="#263C42" strokeWidth="4">
+        <g stroke={metal} strokeWidth="4">
           <ellipse cx="405" cy="120" rx="12" ry="6" transform="rotate(-18 405 120)" />
           <ellipse cx="386" cy="126" rx="12" ry="9" transform="rotate(-18 386 126)" />
           <ellipse cx="367" cy="132" rx="12" ry="6" transform="rotate(-18 367 132)" />
@@ -33,15 +38,15 @@ export function ProductMark({ product, primary, secondary, className }: {
           <ellipse cx="329" cy="144" rx="12" ry="6" transform="rotate(-18 329 144)" />
           <ellipse cx="310" cy="150" rx="15" ry="9" transform="rotate(-18 310 150)" />
         </g>
-        <g mask={`url(#${id})`} stroke="#101914" strokeWidth="5">
-          <rect x="36" y="126" width="300" height="210" rx="32" fill="#829BA3" />
+        <g mask={`url(#${id})`} stroke={outline} strokeWidth="5">
+          <rect x="36" y="126" width="300" height="210" rx="32" fill={edge} />
           <rect x="36" y="110" width="300" height="210" rx="32" fill={body} />
         </g>
-        <path d="M300 145c-4 2-6 6-3 10 4 6 15 5 24-1" stroke="#263C42" strokeWidth="4" strokeLinecap="round" />
-        <path d="M70 152v-7a7 7 0 0 1 7-7h20" stroke="#A5BAB3" strokeWidth="4" strokeLinecap="round" />
-        <text x="185" y="235" textAnchor="middle" fill={ink} fontFamily="Arial, sans-serif" fontSize="46" fontWeight="700" letterSpacing="-2">e-linker<tspan fill={secondary ?? "#72C94F"}>.</tspan></text>
-        <path d="M76 279h26m8 0h12" stroke={secondary ?? "#72C94F"} strokeWidth="6" strokeLinecap="round" />
-        <circle cx="297" cy="281" r="5" fill="#829BA3" />
+        <path d="M300 145c-4 2-6 6-3 10 4 6 15 5 24-1" stroke={metal} strokeWidth="4" strokeLinecap="round" />
+        <path d="M70 152v-7a7 7 0 0 1 7-7h20" stroke={recolored ? ink : "#A5BAB3"} strokeWidth="4" strokeLinecap="round" />
+        <text x="185" y="235" textAnchor="middle" fill={ink} fontFamily="Arial, sans-serif" fontSize="46" fontWeight="700" letterSpacing="-2">e-linker<tspan fill={accent}>.</tspan></text>
+        <path d="M76 279h26m8 0h12" stroke={accent} strokeWidth="6" strokeLinecap="round" />
+        <circle cx="297" cy="281" r="5" fill={recolored ? ink : "#829BA3"} />
       </g>
     </svg>;
   }
