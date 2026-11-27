@@ -3,7 +3,12 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
-import { ArrowUpRight, BookOpen, Check, Download, MoveHorizontal, Pause, Play, Plus, RotateCcw, Smartphone, Upload, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowUpRight, BookOpen, Check, CircleDot, Download, Eraser, MoveHorizontal, Pause, Play, Plus, RotateCcw, Smartphone, Type, Upload, Volume2, VolumeX, X } from "lucide-react";
+import {
+  cleanKeyringLettering, keyringDesignLabels, keyringHoleName, keyringHoleOptions, keyringTextLimit,
+  keyringTextOrientationNames, keyringTextOrientations, keyringTextSizeNames, keyringTextSizes,
+  type KeyringFace, type KeyringLettering, type KeyringTextOrientation, type KeyringTextSize,
+} from "@evolve/ecommerce-server/keyring-design";
 import { isLinkerOfferKind, linkerBundleSize, linkerBundleSizes, linkerOfferKind, type LinkerOfferKind } from "@evolve/ecommerce-server/keyring-offers";
 import { ProductMark } from "./ProductMark";
 import { LinkerBundleArtwork } from "./LinkerBundleArtwork";
@@ -15,7 +20,8 @@ import { BundleDiscFields, EDiskBundle, EDiskDiscStudio, EDiskGiftIdeas, EDiskRe
 import { RecordDemoAudio } from "./RecordDemoAudio";
 import { ConfiguredPurchase } from "./ConfiguredPurchase";
 import { RelatedProducts } from "./RelatedProducts";
-import { colorName, defaultConfiguration, KEYRING_SHAPES, PRODUCTS, productColors, type ProductConfiguration, type ProductId } from "./products";
+import type { KeyringEditor } from "./ProductScene";
+import { colorName, defaultConfiguration, KEYRING_SHAPES, PRODUCTS, productColors, type LogoAsset, type ProductConfiguration, type ProductId } from "./products";
 import styles from "./Shop.module.css";
 
 const ProductScene = dynamic(() => import("./ProductScene"), { ssr: false, loading: () => <span className={styles.sceneLoading}>L’oggetto prende forma…</span> });
@@ -40,16 +46,13 @@ const LINKER_PRESETS = [
   { name: "Sand", primary: "#D7C4A0", secondary: "#795442" },
 ];
 
-function configurationSummary(product: ProductId, configuration: ProductConfiguration) {
-  const lines = [PRODUCTS[product].name, `${product === "e-disk" ? "Scocca" : "Base"}: ${colorName(configuration.primary)} (${configuration.primary})`, `${product === "e-disk" ? "Piano" : "Scritta e logo SVG"}: ${colorName(configuration.secondary)} (${configuration.secondary})`];
-  if (product === "e-linker") lines.push(`Forma: ${KEYRING_SHAPES.find(shape => shape.id === configuration.shape)?.name}`, `Testo: ${configuration.text || "Nessun testo"}`, `Logo: ${configuration.logo?.name ?? "Nessun logo"}`);
-  return lines.join("\n");
-}
-
 export function ShopProductExperience({ product }: { product: Exclude<ProductId, "e-led"> }) {
   const info = PRODUCTS[product];
   const isDisk = product === "e-disk";
   const [configuration, setConfiguration] = useState<ProductConfiguration>(() => defaultConfiguration(product));
+  const [logoAttachment, setLogoAttachment] = useState<LogoAsset | null>(null);
+  const [face, setFace] = useState<KeyringFace>("front");
+  const [canvasTool, setCanvasTool] = useState<KeyringEditor["tool"]>("rotate");
   const [diskOffer, setDiskOffer] = useState<"device" | "bundle">("device");
   const [linkerOffer, setLinkerOffer] = useState<LinkerOfferKind | null>(null);
   const [bundleDiscs, setBundleDiscs] = useState<BundleDisc[]>(() =>
@@ -64,9 +67,31 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
     }
   }, [isDisk]);
   const linkerCount = linkerBundleSize(linkerOffer) ?? 1;
+  const canAttachLogo = !isDisk && linkerCount >= 20;
+  const orderLogo = canAttachLogo ? logoAttachment : null;
   const [discSource, setDiscSource] = useState<DiscSource>("ai");
   const presets = isDisk ? DISK_PRESETS : LINKER_PRESETS;
   const previewConfiguration = useDeferredValue(configuration);
+  const activeLettering = configuration.keyring[face];
+  const activeText = face === "front" ? configuration.text : configuration.keyring.back.text;
+  const textLimit = (side: KeyringFace) => {
+    const lettering = configuration.keyring[side];
+    return keyringTextLimit(configuration.shape, lettering.orientation, lettering.size);
+  };
+  const invalidFaces = (["front", "back"] as const).filter(side =>
+    (side === "front" ? configuration.text : configuration.keyring.back.text).trim().length > textLimit(side));
+  const changeLettering = (side: KeyringFace, patch: Partial<KeyringLettering>) => setConfiguration(current => ({
+    ...current, keyring: { ...current.keyring, [side]: { ...current.keyring[side], ...patch } },
+  }));
+  const changeText = (value: string) => {
+    const text = cleanKeyringLettering(value);
+    setConfiguration(current => face === "front" ? { ...current, text }
+      : { ...current, keyring: { ...current.keyring, back: { ...current.keyring.back, text } } });
+  };
+  const changeHole = (hole: string) => setConfiguration(current =>
+    current.keyring.hole === hole || !keyringHoleName(current.shape, hole) ? current
+      : { ...current, keyring: { ...current.keyring, hole } });
+  const canvasEditor: KeyringEditor = { face, tool: canvasTool, onHole: changeHole, onText: changeLettering };
   const heroConfiguration = useMemo(() => defaultConfiguration(product), [product]);
   const [heroPlaying, setHeroPlaying] = useState(true);
   const [heroSoundOn, setHeroSoundOn] = useState(false);
@@ -143,9 +168,9 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
   const uploadLogo = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     event.target.value = "";
-    if (!file) return;
+    if (!file || !canAttachLogo) return;
     const sequence = ++uploadSequence.current;
-    setUploadError(""); setSceneError("");
+    setUploadError("");
     if (file.size > 2 * 1024 * 1024) { setUploadError("Scegli un file di massimo 2 MB."); return; }
     const svg = file.name.toLowerCase().endsWith(".svg") && (file.type === "image/svg+xml" || !file.type);
     if (!svg && !["image/png", "image/jpeg"].includes(file.type)) { setUploadError("Usa un logo SVG, PNG o JPG."); return; }
@@ -172,7 +197,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
           image.src = data;
         });
       }
-      if (sequence === uploadSequence.current) setConfiguration(current => ({ ...current, logo: { name: file.name, kind: svg ? "svg" : "image", data } }));
+      if (sequence === uploadSequence.current) setLogoAttachment({ name: file.name, kind: svg ? "svg" : "image", data });
     } catch (error) {
       if (sequence === uploadSequence.current) setUploadError(error instanceof Error ? error.message : "Non riesco a leggere questo logo.");
     } finally {
@@ -190,14 +215,14 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
     const offer = isDisk
       ? { offer: diskOffer, includedRecords: diskOffer === "bundle" ? 3 : 0, ...(diskOffer === "bundle" && { discs: bundleDiscs }) }
       : { offer: linkerOffer ?? "e-linker", includedKeyrings: linkerCount };
-    const blob = new Blob([JSON.stringify({ version: 1, product, ...offer, ...configuration, note: "Copia delle scelte del configuratore." }, null, 2)], { type: "application/json" });
+    const { keyring, ...baseConfiguration } = configuration;
+    const blob = new Blob([JSON.stringify({ version: isDisk ? 1 : 2, product, ...offer, ...baseConfiguration,
+      ...(!isDisk && { keyring, logo: orderLogo }), note: "Copia delle scelte del configuratore." }, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url; link.download = `evolve-${product}-configurazione.json`; link.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
-  const mailBody = `Ciao Evolve!\nVorrei saperne di più su questa configurazione:\n\n${configurationSummary(product, configuration)}\nQuantità: ${linkerCount}\n\n${configuration.logo ? "Allego alla mail il logo originale.\n\n" : ""}Mi indicate prezzo, disponibilità e prossimi passi?`;
-  const mailHref = `mailto:infoevolvecompany@gmail.com?subject=${encodeURIComponent(`Il mio ${product}`)}&body=${encodeURIComponent(mailBody)}`;
   const colorStudies = (
     <section className={styles.colorStudies} aria-labelledby="studies-title">
       <h2 id="studies-title">Nei colori che preferisci<span>.</span></h2>
@@ -259,12 +284,33 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
       {isDisk && <><EDiskDiscStudio source={discSource} onSourceChange={setDiscSource} /><EDiskRecordDemo /><EDiskBundle onChoose={() => { setDiskOffer("bundle"); document.getElementById("offerta-edisk")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" }); }} /></>}
 
       <section id="configura" className={styles.configurator} aria-labelledby="config-title">
-        <div className={styles.configHeading}><h2 id="config-title">Unico.<br />Come te<span>.</span></h2><p>{isDisk ? "Due colori. Trenta possibilità per ognuno. Trova la combinazione che vorresti sul tuo tavolo." : "Una forma, il tuo logo, due colori. Parti da qui."}</p></div>
+        <div className={styles.configHeading}>
+          <h2 id="config-title">{isDisk ? <>Unico.<br />Come te</> : "Sbizzarrisciti"}<span>.</span></h2>
+          {isDisk && <p>Due colori. Trenta possibilità per ognuno. Trova la combinazione che vorresti sul tuo tavolo.</p>}
+        </div>
         <div className={styles.configGrid}>
           <div className={styles.viewer}>
             <div className={styles.viewerTop}><span><i /> {product}</span><span>360°</span></div>
-            <div className={styles.configScene}><ProductScene product={product} configuration={previewConfiguration} playing={isDisk && recordPlaying} reset={viewReset} onError={setSceneError} /></div>
-            <div className={styles.viewerTools}><span><MoveHorizontal size={16} />{isDisk ? "Trascina per ruotare" : "Ruota liberamente in 3D"}</span><div>{isDisk && <button type="button" onClick={() => setRecordPlaying(current => !current)} aria-label={recordPlaying ? "Metti in pausa la rotazione dell’anteprima" : "Riprendi la rotazione dell’anteprima"}>{recordPlaying ? <Pause size={16} /> : <Play size={16} />}</button>}<button type="button" onClick={() => setViewReset(value => value + 1)} aria-label="Ripristina la vista 3D"><RotateCcw size={16} /></button></div></div>
+            <div className={styles.configScene}>
+              <ProductScene product={product} configuration={previewConfiguration} playing={isDisk && recordPlaying}
+                reset={viewReset} onError={setSceneError} keyringEditor={isDisk ? undefined : canvasEditor} />
+              {!isDisk && <div className={styles.keyringCanvasTools}>
+                <div role="group" aria-label="Faccia del portachiavi">
+                  <button type="button" aria-pressed={face === "front"} onClick={() => setFace("front")}>Fronte</button>
+                  <button type="button" aria-pressed={face === "back"} onClick={() => setFace("back")}>Retro</button>
+                </div>
+                <div role="group" aria-label="Strumenti dell’anteprima">
+                  <button type="button" aria-pressed={canvasTool === "rotate"} onClick={() => setCanvasTool("rotate")}><RotateCcw size={15} />Ruota</button>
+                  <button type="button" aria-pressed={canvasTool === "hole"} onClick={() => setCanvasTool("hole")}><CircleDot size={15} />Foro</button>
+                  <button type="button" aria-pressed={canvasTool === "text"} onClick={() => setCanvasTool("text")}><Type size={15} />Scritta</button>
+                  <button type="button" disabled={!activeText} aria-label={face === "front" ? "Cancella la scritta sul fronte" : "Cancella la scritta sul retro"} onClick={() => changeText("")}><Eraser size={15} />Gomma</button>
+                </div>
+                {canvasTool === "hole" && <select aria-label="Posizione del foro" value={configuration.keyring.hole} onChange={event => changeHole(event.target.value)}>
+                  {keyringHoleOptions(configuration.shape).map(option => <option key={option.id} value={option.id}>{option.label}</option>)}
+                </select>}
+              </div>}
+            </div>
+            <div className={styles.viewerTools}><span><MoveHorizontal size={16} />{isDisk ? "Trascina per ruotare" : canvasTool === "hole" ? "Trascina il foro" : canvasTool === "text" ? (activeText.trim() ? "Trascina la scritta" : "Inserisci una scritta per spostarla") : "Ruota liberamente in 3D"}</span><div>{isDisk && <button type="button" onClick={() => setRecordPlaying(current => !current)} aria-label={recordPlaying ? "Metti in pausa la rotazione dell’anteprima" : "Riprendi la rotazione dell’anteprima"}>{recordPlaying ? <Pause size={16} /> : <Play size={16} />}</button>}<button type="button" onClick={() => setViewReset(value => value + 1)} aria-label="Ripristina la vista 3D"><RotateCcw size={16} /></button></div></div>
             <div className={styles.viewerCaption}><span>Anteprima dimostrativa</span><span>Designed by Evolve ↗</span></div>
           </div>
 
@@ -283,15 +329,41 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
                     </button>;
                   })}
                 </div>
-                {linkerCount > 1 && <p className={styles.help}>Forma, colori, scritta e logo si applicano a tutto il bundle.</p>}
+                {linkerCount > 1 && <p className={styles.help}>Forma, colori e scritte si applicano a tutto il bundle.</p>}
               </fieldset>
-              <fieldset className={styles.controlGroup}><legend>Scegli la forma</legend><div className={styles.shapeOptions}>{KEYRING_SHAPES.map(shape => <button type="button" key={shape.id} aria-pressed={configuration.shape === shape.id} onClick={() => setConfiguration(current => ({ ...current, shape: shape.id }))}><span aria-hidden="true">{shape.symbol}</span>{shape.name}</button>)}</div></fieldset>
-              <div className={styles.controlGroup}><label className={styles.fieldLabel} htmlFor="keyring-text">Lascia il tuo segno</label><div className={styles.textInput}><input id="keyring-text" type="text" value={configuration.text} maxLength={18} placeholder="Il tuo nome, un’idea…" onChange={event => setConfiguration(current => ({ ...current, text: event.target.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ0-9 .!?&+@#'_-]/g, "") }))} aria-describedby="text-help" /><span>{configuration.text.length}/18</span></div><p id="text-help" className={styles.help}>La scritta prende forma in rilievo. Puoi anche lasciare solo il logo.</p>
-                <input ref={inputRef} className={styles.fileInput} tabIndex={-1} type="file" accept=".svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg" onChange={uploadLogo} aria-label="Carica il logo per il portachiavi" />
-                <button type="button" className={styles.uploadButton} onClick={() => inputRef.current?.click()} disabled={uploading}><Upload size={17} />{uploading ? "Leggo il logo…" : configuration.logo ? "Cambia logo" : "Aggiungi il tuo logo"}<Plus size={16} /></button>
-                <p className={styles.help}>SVG in rilievo · PNG/JPG sulla superficie · max 2 MB</p>
-                {configuration.logo && <div className={styles.uploadedLogo}><Check size={16} /><span>{configuration.logo.name}</span><button type="button" onClick={() => { uploadSequence.current++; setUploading(false); setConfiguration(current => ({ ...current, logo: null })); setSceneError(""); setUploadError(""); }} aria-label="Rimuovi il logo"><X size={15} /></button></div>}
-                {uploadError && <p className={styles.error} role="alert">{uploadError}</p>}
+              <fieldset className={styles.controlGroup}><legend>Scegli la forma</legend><div className={styles.shapeOptions}>{KEYRING_SHAPES.map(shape => <button type="button" key={shape.id} aria-pressed={configuration.shape === shape.id} onClick={() => setConfiguration(current => ({
+                ...current, shape: shape.id, keyring: { ...current.keyring,
+                  hole: keyringHoleName(shape.id, current.keyring.hole) ? current.keyring.hole : keyringHoleOptions(shape.id)[0].id },
+              }))}><span aria-hidden="true">{shape.symbol}</span>{shape.name}</button>)}</div></fieldset>
+              <div className={styles.controlGroup}>
+                <label className={styles.fieldLabel} htmlFor="keyring-text">{face === "front" ? "Scritta sul fronte" : "Scritta sul retro"}</label>
+                <div className={styles.keyringLetterOptions}>
+                  <label>Orientamento<select value={activeLettering.orientation} onChange={event => changeLettering(face, { orientation: event.target.value as KeyringTextOrientation })}>
+                    {keyringTextOrientations.map(value => <option key={value} value={value}>{keyringTextOrientationNames[value]}</option>)}
+                  </select></label>
+                  <label>Grandezza<select value={activeLettering.size} onChange={event => changeLettering(face, { size: event.target.value as KeyringTextSize })}>
+                    {keyringTextSizes.map(value => <option key={value} value={value}>{keyringTextSizeNames[value]}</option>)}
+                  </select></label>
+                </div>
+                <div className={styles.textInput}><input id="keyring-text" type="text" value={activeText} maxLength={textLimit(face)}
+                  placeholder="Il tuo nome, un’idea…" onChange={event => changeText(event.target.value)}
+                  aria-invalid={invalidFaces.includes(face) || undefined} aria-describedby={invalidFaces.length ? "keyring-text-limit" : undefined} />
+                  <span>{activeText.length}/{textLimit(face)}</span></div>
+                {invalidFaces.length > 0 && <p id="keyring-text-limit" className={styles.error} role="status">{invalidFaces.map(side =>
+                  `${side === "front" ? "Fronte" : "Retro"} · massimo ${textLimit(side)} caratteri`).join(" · ")}</p>}
+              </div>
+              <div className={styles.controlGroup}>
+                {canAttachLogo ? <>
+                  <input ref={inputRef} className={styles.fileInput} tabIndex={-1} type="file" accept=".svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg" onChange={uploadLogo} aria-label="Carica il logo per il portachiavi" />
+                  <button type="button" className={styles.uploadButton} onClick={() => inputRef.current?.click()} disabled={uploading}>
+                    <Upload size={17} />{uploading ? "Leggo il logo…" : orderLogo ? "Cambia logo" : "Aggiungi il tuo logo"}<Plus size={16} />
+                  </button>
+                  <p className={styles.help}>SVG, PNG o JPG · max 2 MB. Il nostro team riceverà il logo con l’ordine.</p>
+                  {orderLogo && <div className={styles.uploadedLogo}><Check size={16} /><span>{orderLogo.name}</span>
+                    <button type="button" onClick={() => { uploadSequence.current++; setUploading(false); setLogoAttachment(null); setUploadError(""); }}
+                      aria-label="Rimuovi il logo"><X size={15} /></button></div>}
+                  {uploadError && <p className={styles.error} role="alert">{uploadError}</p>}
+                </> : <p className={styles.help}>Prendi il bundle da 20 in su per caricare il tuo logo e avere un design su misura.</p>}
               </div>
             </>}
             <fieldset className={styles.controlGroup}><legend>Trova i tuoi colori</legend>
@@ -299,7 +371,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
               <div className={styles.presets}><span>Abbinamenti</span><div>{presets.map(preset => <button type="button" key={preset.name} aria-pressed={configuration.primary === preset.primary && configuration.secondary === preset.secondary} onClick={() => setConfiguration(current => ({ ...current, primary: preset.primary, secondary: preset.secondary }))}><i style={swatchStyle(preset.primary)} /><i style={swatchStyle(preset.secondary)} />{preset.name}</button>)}</div></div>
             </fieldset>
             {sceneError && <p className={styles.error} role="status">{sceneError}</p>}
-            <div className={styles.configurationSummary} aria-live="polite" aria-atomic="true"><span>IL TUO {product.toUpperCase()}</span><p>{colorName(configuration.primary)} <b>+</b> {colorName(configuration.secondary)}{!isDisk && <> · {KEYRING_SHAPES.find(shape => shape.id === configuration.shape)?.name}{configuration.text && <> · “{configuration.text}”</>}</>}</p></div>
+            <div className={styles.configurationSummary} aria-live="polite" aria-atomic="true"><span>IL TUO {product.toUpperCase()}</span><p>{colorName(configuration.primary)} <b>+</b> {colorName(configuration.secondary)}{!isDisk && <> · {keyringDesignLabels(configuration.shape, configuration.text.trim(), configuration.keyring).join(" · ")}</>}</p></div>
             {isDisk && <fieldset id="offerta-edisk" className={styles.offerPicker}><legend>Da dove vuoi iniziare?</legend><div><button type="button" aria-pressed={diskOffer === "device"} onClick={() => setDiskOffer("device")}><span>Solo e-disk</span><small>Il giradischi nei tuoi colori</small>{diskOffer === "device" && <Check size={14} />}</button><button type="button" aria-pressed={diskOffer === "bundle"} onClick={() => setDiskOffer("bundle")}><span>Il bundle</span><small>e-disk + 3 dischi personalizzabili</small>{diskOffer === "bundle" && <Check size={14} />}</button></div></fieldset>}
             {isDisk && diskOffer === "bundle" && <BundleDiscFields discs={bundleDiscs} onChange={setBundleDiscs} />}
             {isDisk ? <ConfiguredPurchase key={diskOffer} kind={diskOffer === "bundle" ? "e-disk-bundle" : "e-disk"} buttonClass={styles.requestButton}
@@ -317,22 +389,42 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
                   })),
                 } : { kind: "e-disk", secondaryColor: configuration.secondary },
               })} /> :
-              linkerOffer && <ConfiguredPurchase key={linkerOffer} kind={linkerOffer} buttonClass={styles.requestButton} disabled={uploading}
+              linkerOffer && <ConfiguredPurchase key={linkerOffer} kind={linkerOffer} buttonClass={styles.requestButton} disabled={(canAttachLogo && uploading) || invalidFaces.length > 0}
                 prepare={() => ({
                   color: configuration.primary,
                   inscription: configuration.text.trim() || undefined,
-                  logoAsset: configuration.logo,
-                  details: { kind: linkerOffer, secondaryColor: configuration.secondary, shape: configuration.shape },
+                  logoAsset: orderLogo,
+                  details: { kind: linkerOffer, secondaryColor: configuration.secondary, shape: configuration.shape,
+                    hole: configuration.keyring.hole,
+                    front: configuration.text.trim() ? configuration.keyring.front : undefined,
+                    back: configuration.keyring.back.text.trim()
+                      ? { ...configuration.keyring.back, text: configuration.keyring.back.text.trim() } : undefined },
                 })} />}
-            <button type="button" onClick={download} className={styles.downloadButton}><Download size={15} /> Salva la tua configurazione</button>
-            {!isDisk && <a href={mailHref} className={styles.downloadButton}>Parliamone <ArrowUpRight size={15} /></a>}
+            <button type="button" onClick={download} className={styles.downloadButton}
+              disabled={!isDisk && (invalidFaces.length > 0 || (canAttachLogo && uploading))}><Download size={15} /> Salva la tua configurazione</button>
+            {!isDisk && <Link href="/contact" prefetch={false} className={styles.downloadButton}>Vuoi qualcosa che non trovi qui? Parliamone. <ArrowUpRight size={15} /></Link>}
           </div>
         </div>
       </section>
 
       {!isDisk && <LinkerPile />}
 
-      <section className={styles.resources} aria-labelledby="resources-title"><div className={styles.resourceCopy}><h2 id="resources-title">L’oggetto è solo<br />l’inizio<span>.</span></h2><p>{isDisk ? "Dietro ogni disco c’è la tua collezione. Apri l’app, organizza i brani e scopri come dare vita al tuo e-disk." : "Forme, logo e collegamento NFC: prepara la tua idea."}</p></div><div className={styles.resourceLinks}>{isDisk && <Link href="/shop/e-disk/app"><Smartphone size={26} /><div><span>La tua collezione, online</span><h3>App e-disk</h3><p>Dischi, brani e giradischi. Tutto in un posto.</p></div><ArrowUpRight size={25} /></Link>}<Link href={`/shop/${product}/documentazione`}><BookOpen size={26} /><div><span>Da dove si comincia?</span><h3>Dentro {product}</h3><p>{isDisk ? "Primi passi, NFC e collegamenti." : "Forme, file del logo e personalizzazione."}</p></div><ArrowUpRight size={25} /></Link></div></section>
+      <section className={styles.resources} aria-labelledby="resources-title">
+        <div className={styles.resourceCopy}>
+          <h2 id="resources-title">{isDisk ? <>L’oggetto è solo<br />l’inizio</> : "Condividiti"}<span>.</span></h2>
+          {isDisk && <p>Dietro ogni disco c’è la tua collezione. Apri l’app, organizza i brani e scopri come dare vita al tuo e-disk.</p>}
+        </div>
+        <div className={styles.resourceLinks}>
+          {isDisk && <Link href="/shop/e-disk/app"><Smartphone size={26} /><div><span>La tua collezione, online</span><h3>App e-disk</h3><p>Dischi, brani e giradischi. Tutto in un posto.</p></div><ArrowUpRight size={25} /></Link>}
+          <Link href={`/shop/${product}/documentazione`}>
+            <BookOpen size={26} />
+            <div><span>Da dove si comincia?</span><h3>Dentro {product}</h3>
+              <p>{isDisk ? "Primi passi, NFC e collegamenti." : "Come cominciare a utilizzare e-linker in pochi secondi"}</p>
+            </div>
+            <ArrowUpRight size={25} />
+          </Link>
+        </div>
+      </section>
 
       <section className={styles.faq} aria-labelledby="faq-title"><div><h2 id="faq-title">Bella domanda<span>.</span></h2></div><div>{info.faq.map(item => <details key={item.question}><summary>{item.question}<Plus size={20} /></summary><p>{item.answer}</p></details>)}</div></section>
 

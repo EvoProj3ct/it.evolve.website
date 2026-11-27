@@ -3,6 +3,7 @@ import * as THREE from "three";
 export type KeyringChainRig = {
   body: THREE.Group;
   outline: THREE.Shape;
+  depth: number;
   anchor: THREE.Vector3;
   links: THREE.Mesh[];
   ring: THREE.Mesh;
@@ -20,7 +21,7 @@ class KeyringCollider {
   private normal = new THREE.Vector3();
   scale = 1;
 
-  constructor(shape: THREE.Shape) {
+  constructor(shape: THREE.Shape, private readonly depth: number) {
     const points = shape.extractPoints(16);
     this.loops = [points.shape, ...points.holes];
     this.bounds.setFromPoints(points.shape);
@@ -33,7 +34,7 @@ class KeyringCollider {
   project(point: THREE.Vector3, radius: number, correction: THREE.Vector3) {
     const p = this.local.copy(point).applyMatrix4(this.inverse);
     const r = radius / this.scale;
-    if (p.x < this.bounds.min.x - r || p.x > this.bounds.max.x + r || p.y < this.bounds.min.y - r || p.y > this.bounds.max.y + r || p.z < -.02 - r || p.z > .18 + r) return false;
+    if (p.x < this.bounds.min.x - r || p.x > this.bounds.max.x + r || p.y < this.bounds.min.y - r || p.y > this.bounds.max.y + r || p.z < -.02 - r || p.z > this.depth + .03 + r) return false;
     let material = false, nearest = Infinity, nx = 0, ny = 0;
     for (const loop of this.loops) {
       let inside = false;
@@ -52,15 +53,15 @@ class KeyringCollider {
     }
     const distance = Math.sqrt(nearest);
     const xy = material ? -distance : distance;
-    const z = Math.abs(p.z - .08) - .1;
+    const z = Math.abs(p.z - this.depth / 2) - (this.depth / 2 + .025);
     const outsideXY = Math.max(xy, 0), outsideZ = Math.max(z, 0);
     const signed = Math.hypot(outsideXY, outsideZ) + Math.min(Math.max(xy, z), 0);
     if (signed >= r) return false;
     const direction = material ? -1 : 1;
     const inverseDistance = distance > 1e-8 ? direction / distance : 0;
     this.normal.set(nx * inverseDistance, ny * inverseDistance, 0);
-    if (outsideXY > 0 && outsideZ > 0) this.normal.multiplyScalar(outsideXY).setZ(Math.sign(p.z - .08) * outsideZ);
-    else if (z >= xy || distance < 1e-8) this.normal.set(0, 0, p.z >= .08 ? 1 : -1);
+    if (outsideXY > 0 && outsideZ > 0) this.normal.multiplyScalar(outsideXY).setZ(Math.sign(p.z - this.depth / 2) * outsideZ);
+    else if (z >= xy || distance < 1e-8) this.normal.set(0, 0, p.z >= this.depth / 2 ? 1 : -1);
     correction.copy(this.normal).normalize().applyQuaternion(this.rotation).multiplyScalar((r - signed) * this.scale);
     return true;
   }
@@ -103,7 +104,7 @@ export class KeyringChainPhysics {
   private size = 1;
 
   constructor(private rig: KeyringChainRig, cameraOrientation: THREE.Quaternion) {
-    this.collider = new KeyringCollider(rig.outline);
+    this.collider = new KeyringCollider(rig.outline, rig.depth);
     this.down = new THREE.Vector3(0, -1, 0).applyQuaternion(cameraOrientation);
     this.gravity = this.down.clone().multiplyScalar(17);
     this.right = new THREE.Vector3(1, 0, 0).applyQuaternion(cameraOrientation);

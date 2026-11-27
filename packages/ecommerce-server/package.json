@@ -35,6 +35,10 @@
       "types": "./src/keyring-offers.d.ts",
       "default": "./src/keyring-offers.js"
     },
+    "./keyring-design": {
+      "types": "./src/keyring-design.d.ts",
+      "default": "./src/keyring-design.js"
+    },
     "./stripe-checkout-url": {
       "types": "./src/stripe-checkout-url.d.ts",
       "default": "./src/stripe-checkout-url.js"

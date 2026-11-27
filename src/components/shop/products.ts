@@ -1,7 +1,8 @@
 import type { ProductId } from "@/lib/ecommerce/product-visibility";
+import { defaultKeyringLettering, keyringHoleOptions, keyringShapeNames, keyringShapes, type KeyringLettering, type KeyringShape } from "@evolve/ecommerce-server/keyring-design";
 
 export type { ProductId } from "@/lib/ecommerce/product-visibility";
-export type KeyringShape = "rectangle" | "square" | "circle" | "triangle";
+export type { KeyringShape } from "@evolve/ecommerce-server/keyring-design";
 export type LogoAsset = { name: string; kind: "svg" | "image"; data: string };
 export type ProductConfiguration = {
   primary: string;
@@ -9,6 +10,7 @@ export type ProductConfiguration = {
   shape: KeyringShape;
   text: string;
   logo: LogoAsset | null;
+  keyring: { hole: string; front: KeyringLettering; back: KeyringLettering & { text: string } };
 };
 
 // Palette dimostrativa: non rappresenta ancora la disponibilità dei filamenti.
@@ -84,12 +86,10 @@ export function productColors(product: ProductId) {
   return product === "e-linker" ? LINKER_COLORS : product === "e-led" ? LED_COLORS : SHOP_COLORS;
 }
 
-export const KEYRING_SHAPES: { id: KeyringShape; name: string; symbol: string }[] = [
-  { id: "rectangle", name: "Rettangolo", symbol: "▭" },
-  { id: "square", name: "Quadrato", symbol: "□" },
-  { id: "circle", name: "Cerchio", symbol: "○" },
-  { id: "triangle", name: "Triangolo", symbol: "△" },
-];
+const shapeSymbols: Record<KeyringShape, string> = {
+  rectangle: "▭", square: "□", circle: "○", triangle: "△", ellipse: "⬭", heart: "♡", star: "☆", cube: "⬡",
+};
+export const KEYRING_SHAPES = keyringShapes.map(id => ({ id, name: keyringShapeNames[id], symbol: shapeSymbols[id] }));
 
 export const PRODUCTS = {
   "e-disk": {
@@ -124,7 +124,7 @@ export const PRODUCTS = {
     number: "02",
     category: "Il tuo portachiavi NFC personalizzato",
     tagline: "Il tuo logo fuori.\nIl tuo mondo dentro.",
-    description: "Un portachiavi NFC stampato in 3D. Avvicinalo allo smartphone per condividere la tua attività, un prodotto o un ricordo.",
+    description: "Un portachiavi NFC con scocca in bioplastica stampata in 3D. Avvicinalo allo smartphone per condividere la tua attività, un prodotto o un ricordo.",
     punchline: "Condividi ciò\nche conta",
     defaultPrimary: "#E9F0ED",
     defaultSecondary: "#263C42",
@@ -146,10 +146,10 @@ export const PRODUCTS = {
       { question: "Che cosa contiene e-linker?", answer: "Un tag NFC all’interno del portachiavi stampato in 3D. Avvicinandolo a uno smartphone compatibile puoi aprire il collegamento scelto: la tua attività, un prodotto oppure un contenuto personale." },
       { question: "Come posso usarlo per la mia attività?", answer: "Puoi collegarlo al sito, ai social, al menu, al catalogo o alla pagina di un prodotto. All’esterno ci sono il tuo logo e i tuoi colori; all’interno, un accesso diretto a ciò che vuoi far scoprire." },
       { question: "Posso regalarlo con un ricordo personale?", answer: "Sì: il collegamento può portare a un album, a un video o a una dedica online. I contenuti rimangono nella pagina collegata; il tag custodisce il collegamento, non i file. Per i ricordi privati scegli una destinazione con le impostazioni di accesso adatte." },
-      { question: "Che cosa posso personalizzare?", answer: "La forma della base, i colori, la scritta e il logo, oltre alla destinazione NFC da concordare con Evolve. Il configuratore mostra l’aspetto del portachiavi; indica il collegamento desiderato nella richiesta." },
-      { question: "Quale formato uso per il logo?", answer: "Un SVG con tracciati pieni permette di visualizzare il logo in rilievo. PNG e JPG vengono mostrati come immagine sulla superficie: non vengono trasformati automaticamente in un modello stampabile. Per un SVG, converti prima eventuali testi in tracciati." },
+      { question: "Che cosa posso personalizzare?", answer: "Scegli forma, colori, foro e scritte. Dal bundle da 20 puoi anche allegare il logo. La destinazione NFC si concorda con Evolve." },
+      { question: "Quale formato uso per il logo?", answer: "Dal bundle da 20 puoi allegare un file SVG, PNG o JPG fino a 2 MB. Se usi un SVG, converti prima eventuali testi in tracciati. Il nostro team userà il logo per preparare il design." },
       { question: "Il modello è pronto per la stampa?", answer: "L’anteprima serve a scegliere l’aspetto del portachiavi. Spessori, dimensioni, leggibilità del testo e lavorabilità del logo vengono verificati insieme prima della produzione." },
-      { question: "Come richiedo il mio e-linker?", answer: "Configuralo e usa “Parliamone”: si aprirà una mail con il riepilogo delle tue scelte. Se hai caricato un logo, allegalo alla mail. Prezzo e disponibilità vengono concordati con Evolve." },
+      { question: "Come richiedo il mio e-linker?", answer: "Puoi acquistare le offerte disponibili direttamente dal configuratore. Per un progetto su misura, salva la configurazione e usa il link ai contatti." },
     ],
   },
   "e-led": {
@@ -174,7 +174,11 @@ export const PRODUCTS = {
 } as const;
 
 export function defaultConfiguration(product: ProductId): ProductConfiguration {
-  return { primary: PRODUCTS[product].defaultPrimary, secondary: PRODUCTS[product].defaultSecondary, shape: "rectangle", text: product === "e-linker" ? "e-linker." : product === "e-led" ? "EVOLVE" : "CIAO.", logo: null };
+  return {
+    primary: PRODUCTS[product].defaultPrimary, secondary: PRODUCTS[product].defaultSecondary,
+    shape: "rectangle", text: product === "e-linker" ? "e-linker." : product === "e-led" ? "EVOLVE" : "CIAO.", logo: null,
+    keyring: { hole: keyringHoleOptions("rectangle")[0].id, front: { ...defaultKeyringLettering }, back: { ...defaultKeyringLettering, text: "" } },
+  };
 }
 
 export function colorName(hex: string) {

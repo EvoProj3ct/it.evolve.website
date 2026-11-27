@@ -376,6 +376,47 @@
 .productPage[data-product="e-linker"] .shapeOptions button[aria-pressed="true"] { border-color: #b9d4a6; background: #f0f6eb; color: #3a6a2d; box-shadow: none; }
 .productPage[data-product="e-linker"] .shapeOptions button > span { font-size: 29px; }
 .productPage[data-product="e-linker"] .textInput { border-color: #dfe7d7; border-radius: 11px; }
+.productPage[data-product="e-linker"] .configScene { position: relative; }
+.keyringCanvasTools {
+  position: absolute;
+  inset: auto 12px 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  pointer-events: none;
+}
+.keyringCanvasTools > div { display: flex; gap: 3px; padding: 3px; border: 1px solid #dce6d4; border-radius: 12px; background: #fcfdfbef; pointer-events: auto; }
+.keyringCanvasTools button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 38px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #40543b;
+  font-size: 11px;
+}
+.keyringCanvasTools button:hover, .keyringCanvasTools button[aria-pressed="true"] { background: #e3efdc; color: #2c5728; }
+.keyringCanvasTools button:disabled { cursor: default; }
+.keyringCanvasTools select, .keyringLetterOptions select {
+  min-height: 43px;
+  max-width: 100%;
+  padding: 6px 24px 6px 10px;
+  border: 1px solid #dce6d4;
+  border-radius: 11px;
+  background: #fcfdfb;
+  color: #40543b;
+  font: inherit;
+  font-size: 13px;
+}
+.keyringCanvasTools select { pointer-events: auto; }
+.keyringLetterOptions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.keyringLetterOptions label { display: grid; min-width: 0; gap: 6px; color: #50634a; font-size: 11px; }
+.scene[data-edit-tool="hole"], .scene[data-edit-tool="text"] { cursor: crosshair; }
 .productPage[data-product="e-linker"] .uploadButton { border-color: #ccdabc; border-radius: 11px; color: #6a7c5d; }
 .productPage[data-product="e-linker"] .requestButton { border-radius: 28px; }
 .productPage[data-product="e-linker"] { font-family: "HelveticaLocal", Helvetica, Arial, sans-serif; }

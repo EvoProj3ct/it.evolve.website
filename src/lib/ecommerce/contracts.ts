@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { linkerOfferKinds } from "@evolve/ecommerce-server/keyring-offers";
+import { keyringHoleIds, keyringLetteringPattern, keyringShapes, keyringTextOrientations, keyringTextSizes } from "@evolve/ecommerce-server/keyring-design";
 import { stripeCheckoutUrlIssue, stripeCheckoutUrlMaxLength } from "@evolve/ecommerce-server/stripe-checkout-url";
 
 export const publicIdSchema = z.string().regex(/^[A-Za-z0-9_-]{16,80}$/);
@@ -8,6 +9,12 @@ const text = (max: number) => z.string().max(max).refine(value => !/[\u0000-\u00
 const date = z.string().datetime({ offset: true });
 const colorSchema = z.string().regex(/^#[0-9A-Fa-f]{6}$/);
 const inscriptionSchema = z.string().trim().min(1).max(80).refine(value => !/[\u0000-\u001f\u007f\u202a-\u202e\u2066-\u2069]/.test(value));
+const keyringLetteringSchema = z.object({
+  orientation: z.enum(keyringTextOrientations),
+  size: z.enum(keyringTextSizes),
+  x: z.number().int().min(-100).max(100),
+  y: z.number().int().min(-100).max(100),
+}).strict();
 const configurationDetailsSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("e-disk"), secondaryColor: colorSchema }).strict(),
   z.object({
@@ -15,7 +22,12 @@ const configurationDetailsSchema = z.discriminatedUnion("kind", [
     secondaryColor: colorSchema,
     discs: z.array(z.object({ title: inscriptionSchema, color: colorSchema, dedication: inscriptionSchema.optional(), trackUrl: z.string().max(512).optional() }).strict()).length(3),
   }).strict(),
-  z.object({ kind: z.enum(linkerOfferKinds), secondaryColor: colorSchema, shape: z.enum(["rectangle", "square", "circle", "triangle"]) }).strict(),
+  z.object({
+    kind: z.enum(linkerOfferKinds), secondaryColor: colorSchema, shape: z.enum(keyringShapes),
+    hole: z.enum(keyringHoleIds).optional(),
+    front: keyringLetteringSchema.optional(),
+    back: keyringLetteringSchema.extend({ text: z.string().trim().min(1).max(18).regex(keyringLetteringPattern) }).optional(),
+  }).strict(),
   z.object({ kind: z.literal("e-disk-disc"), dedication: inscriptionSchema.optional(), trackUrl: z.string().max(512).optional() }).strict(),
   z.object({ kind: z.literal("e-led"), secondaryColor: colorSchema, effect: z.enum(["flow", "steady", "breathe", "pulse"]), mode: z.enum(["text", "logo", "both"]), width: integer.min(60).max(180), brightness: integer.min(20).max(100), speedTenths: integer.min(5).max(15).optional() }).strict(),
 ]);

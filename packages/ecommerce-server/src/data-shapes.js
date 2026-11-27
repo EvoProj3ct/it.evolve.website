@@ -5,6 +5,7 @@ import {
   assertInvariant,
 } from "./schema-kit.js";
 import { linkerOfferKinds } from "./keyring-offers.js";
+import { keyringHoleIds, keyringShapes, keyringTextOrientations, keyringTextSizes } from "./keyring-design.js";
 
 // Technical ceilings, not shop commercial settings. Checkout must use its lower configured cap.
 export const COMMERCE_LIMITS = Object.freeze({
@@ -49,10 +50,19 @@ export const billing = () =>
     certifiedEmail: f.text(254, opt),
     address: address(),
   });
+const keyringLetteringFields = () => ({
+  size: f.choice(keyringTextSizes),
+  orientation: f.choice(keyringTextOrientations),
+  x: f.integer(100, { min: -100 }),
+  y: f.integer(100, { min: -100 }),
+});
 export const configurationDetails = () => f.object({
   kind: f.choice(["e-disk", "e-disk-bundle", "e-disk-disc", ...linkerOfferKinds, "e-led"]),
   secondaryColor: f.text(7, { ...opt, pattern: "^#[0-9A-F]{6}$" }),
-  shape: f.choice(["rectangle", "square", "circle", "triangle"], opt),
+  shape: f.choice(keyringShapes, opt),
+  hole: f.choice(keyringHoleIds, opt),
+  front: f.object(keyringLetteringFields(), opt),
+  back: f.object({ ...keyringLetteringFields(), text: f.text(18) }, opt),
   dedication: f.text(80, opt),
   trackUrl: f.text(512, opt),
   effect: f.choice(["flow", "steady", "breathe", "pulse"], opt),
