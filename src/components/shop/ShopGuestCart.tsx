@@ -7,7 +7,7 @@ import { errorText, loginHref } from "@/lib/ecommerce/browser";
 import { money } from "@/lib/ecommerce/contracts";
 import { removeGuestLine, setGuestQuantity, useGuestCart } from "@/lib/ecommerce/guest-cart";
 import { PersonalizationText } from "./ShopPersonalization";
-import { CatalogArtwork } from "./ShopPreviewShared";
+import { CartProductArtwork } from "./ShopPreviewShared";
 import styles from "./CommercePreview.module.css";
 import live from "./Storefront.module.css";
 
@@ -37,7 +37,7 @@ export function ShopGuestCart({ importError, retry }: { importError?: unknown; r
       {error && <p className={live.error} role="alert">{error}</p>}
       <ul className={styles.cartList}>
         {lines.map(line => <li key={line.id} className={`${styles.cartItem} ${live.liveCartItem}`}>
-          <div className={styles.cartArtLink}><CatalogArtwork /></div>
+          <CartProductArtwork slug={line.slug} personalization={line.personalization} />
           <div className={styles.itemContent}>
             <div className={styles.itemTitle}>
               <h2><Link href={`/negozio/${line.slug}`}>{line.title}</Link></h2>

@@ -218,13 +218,13 @@
 .studyDetails { display: grid; min-width: 0; gap: 7px; }
 .studyDetails > small { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; color: #7b8783; font-size: 8px; line-height: 1.5; }
 .studyDetails > small > i { flex: none; width: 8px; height: 8px; border: 1px solid #10191420; border-radius: 2px; background: var(--swatch); }
-.studyArtwork { aspect-ratio: 1.04; overflow: hidden; background: #aacf7d; }
+.studyArtwork { display: grid; place-items: center; aspect-ratio: 1.04; overflow: hidden; background: #aacf7d; }
 .studyArtwork[data-study="1"] { background: #bda5ee; }
 .studyArtwork[data-study="2"] { background: #ffada5; }
 .studyArtwork[data-study="3"] { background: #b1dbe5; }
 .studyArtwork[data-study="4"] { background: #f6c9b3; }
 .studyArtwork[data-study="5"] { background: #d2c4e8; }
-.studyArtwork > svg { height: 100%; transition: transform .4s; }
+.studyArtwork > svg { display: block; width: 78%; height: 78%; transition: transform .4s; }
 .studyLink:hover .studyArtwork > svg, .studyLink:focus-visible .studyArtwork > svg { transform: rotate(4deg) scale(1.05); }
 .studyGrid figcaption { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 13px 0; border-bottom: 1px solid #ccd6c7; font-size: 9px; }
 .studyAction { display: inline-flex; align-items: center; gap: 5px; min-height: 34px; color: #47643c; font-size: 9px; }

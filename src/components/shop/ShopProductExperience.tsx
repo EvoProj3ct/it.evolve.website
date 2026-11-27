@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
 import { ArrowUpRight, BookOpen, Check, Download, Heart, MoveHorizontal, Package, Pause, Play, Plus, RotateCcw, Smartphone, Store, Upload, Volume2, VolumeX, X } from "lucide-react";
-import { ProductIllustration } from "./ProductIllustration";
+import { ProductMark } from "./ProductMark";
 import { ProductColorPicker } from "./ProductColorPicker";
 import { CartoonNotes } from "./CartoonNotes";
 import { BundleDiscFields, EDiskBundle, EDiskDiscStudio, EDiskGiftIdeas, EDiskRecordDemo, type BundleDisc, type DiscSource } from "./EDiskRecords";
@@ -185,7 +185,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
   const mailHref = `mailto:infoevolvecompany@gmail.com?subject=${encodeURIComponent(`Il mio ${product}`)}&body=${encodeURIComponent(mailBody)}`;
   const colorStudies = (
     <section className={styles.colorStudies} aria-labelledby="studies-title">
-      <h2 id="studies-title">Il colore è tuo<span>.</span></h2>
+      <h2 id="studies-title">Nei colori che preferisci<span>.</span></h2>
       <div className={styles.studyGrid}>{presets.map((preset, index) => (
         <a key={preset.name} href="#configura" className={styles.studyLink} aria-label={`Personalizza ${product}: abbinamento ${preset.name}`} onClick={event => {
           event.preventDefault();
@@ -193,7 +193,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
           document.getElementById("configura")?.scrollIntoView({ behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
         }}>
           <figure>
-            <div className={styles.studyArtwork} data-study={index}><ProductIllustration product={product} configuration={{ ...defaultConfiguration(product), primary: preset.primary, secondary: preset.secondary }} /></div>
+            <div className={styles.studyArtwork} data-study={index}><ProductMark product={product} primary={preset.primary} secondary={preset.secondary} /></div>
             <figcaption><span className={styles.studyDetails}><span>{preset.name}</span>{!isDisk && <small><i style={swatchStyle(preset.primary)} /><i style={swatchStyle(preset.secondary)} />{colorName(preset.primary)} · {colorName(preset.secondary)}</small>}</span><span className={styles.studyAction}>{isDisk ? "Prova il mix" : "Scegli l’abbinamento"} <ArrowUpRight size={15} /></span></figcaption>
           </figure>
         </a>

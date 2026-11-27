@@ -76,7 +76,8 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
     const id = publicIdSchema.safeParse(location.get("tipo") === kind ? location.get("articolo") : null);
     setLoading(true);
     setCatalogError("");
-    async function load() {
+    let retryTimer: number | undefined;
+    async function load(canRetry: boolean) {
       try {
         const [page, requested] = await Promise.all([
           storefrontRead<PublicCatalogList>(`/catalog?${query}`, signal),
@@ -88,16 +89,27 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
         const items = page.items.filter(item => item.configurator === kind);
         if (requested?.configurator === kind && !items.some(item => item.id === requested.id)) items.unshift(requested);
         setProducts(current => cursor ? [...current, ...items.filter(item => !current.some(old => old.id === item.id))] : items);
-        if (!cursor && id.success) setSelected(current => current || id.data);
+        if (!cursor && id.success) setSelected(current => current || (items.some(item => item.id === id.data) ? id.data : ""));
         setNext(page.nextCursor);
       } catch (reason) {
-        if (!signal.aborted) setCatalogError(errorText(reason));
+        if (signal.aborted) return;
+        if (canRetry && reason instanceof StorefrontError &&
+            (reason.status === 0 || reason.status === 503 &&
+              ["ATLAS_UNAVAILABLE", "ATLAS_SERVICE_REJECTED"].includes(reason.code))) {
+          retryTimer = window.setTimeout(() => {
+            retryTimer = undefined;
+            void load(false);
+          }, 600);
+        } else setCatalogError(errorText(reason));
       } finally {
-        if (!signal.aborted) setLoading(false);
+        if (!signal.aborted && retryTimer === undefined) setLoading(false);
       }
     }
-    void load();
-    return () => controller.abort();
+    void load(true);
+    return () => {
+      controller.abort();
+      window.clearTimeout(retryTimer);
+    };
   }, [kind, cursor, retry]);
 
   async function add() {

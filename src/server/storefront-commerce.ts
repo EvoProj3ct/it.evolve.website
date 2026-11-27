@@ -38,9 +38,14 @@ allow(409, "Le condizioni di consegna sono cambiate. Aggiorna il riepilogo.", ["
 allow(409, "Le condizioni di acquisto sono cambiate. Aggiorna il riepilogo.", ["TERMS_CHANGED"]);
 allow(409, "Il riepilogo è scaduto o è cambiato. Preparane uno nuovo.", ["QUOTE_EXPIRED_OR_CHANGED"]);
 allow(409, "Questa operazione richiede una verifica. Aggiorna i dati prima di continuare.", ["BILLING_REVIEW_REQUIRED", "CUSTOMER_REVIEW_REQUIRED", "ORDER_CHANGED", "ORDER_ALREADY_CREATED", "IDEMPOTENCY_CONFLICT", "REQUEST_REPLAY", "ORDER_NOT_PAYABLE", "PAYMENT_BUSY", "PAYMENT_REVIEW_REQUIRED"]);
+allow(409, "Il profilo commerciale è cambiato. Aggiorna il checkout e prepara un nuovo riepilogo.", ["CUSTOMER_LINK_CHANGED"]);
 allow(404, "La risorsa richiesta non è disponibile.", ["CART_NOT_FOUND", "QUOTE_NOT_FOUND", "ORDER_NOT_FOUND", "PRODUCT_NOT_FOUND"]);
 allow(429, "Troppe richieste. Attendi prima di riprovare.", ["AUTH_RATE_LIMITED", "RATE_LIMITED"]);
-allow(503, "Il servizio non è disponibile in questo momento. Riprova più tardi.", ["CHECKOUT_DISABLED", "CHECKOUT_INCOMPLETE", "PAYMENTS_DISABLED", "PAYMENTS_NOT_CONFIGURED", "PAYMENT_UNAVAILABLE", "ORDER_NUMBER_UNAVAILABLE", "REVENUE_MAPPING_REQUIRED"]);
+allow(503, "Il negozio non ha ancora attivato i riepiloghi d’acquisto.", ["CHECKOUT_DISABLED"]);
+allow(503, "Le modalità di consegna non sono ancora configurate.", ["CHECKOUT_INCOMPLETE"]);
+allow(503, "La numerazione degli ordini è temporaneamente indisponibile.", ["ORDER_NUMBER_UNAVAILABLE"]);
+allow(503, "Il negozio deve completare la configurazione per gli ordini con categorie di ricavo diverse.", ["REVENUE_MAPPING_REQUIRED"]);
+allow(503, "Il servizio non è disponibile in questo momento. Riprova più tardi.", ["PAYMENTS_DISABLED", "PAYMENTS_NOT_CONFIGURED", "PAYMENT_UNAVAILABLE"]);
 const upstreamError = z.object({ error: z.object({ code: z.string().max(100), message: z.string().max(2000), requestId: z.string().max(100) }).strict() }).strict();
 
 function connection() {
@@ -112,8 +117,23 @@ export async function handleCommerce(request: Request, operation: Operation, raw
     if (!response.ok) {
       const parsedError = upstreamError.safeParse(value);
       const code = parsedError.success ? parsedError.data.error.code : "ATLAS_UNAVAILABLE";
+      const upstreamId = response.headers.get("x-request-id");
+      const atlasRequestId = upstreamId && /^[a-f0-9-]{36}$/i.test(upstreamId) ? upstreamId : undefined;
+      if (response.status >= 500) {
+        console.warn("storefront.ecommerce.atlas_rejected", {
+          operation,
+          atlasStatus: response.status,
+          atlasCode: /^[A-Z0-9_]+$/.test(code) ? code : undefined,
+          atlasRequestId,
+        });
+      }
       const allowed = errors[code];
-      if (!allowed || allowed.status !== response.status) throw new CommerceServiceError(response.status >= 500 ? 503 : 502, "ATLAS_SERVICE_REJECTED", "Il servizio non è disponibile in questo momento.");
+      if (!allowed || allowed.status !== response.status) {
+        const message = operation === "placeOrder" && atlasRequestId
+          ? `Non è stato possibile confermare l’ordine. Riferimento ${atlasRequestId}.`
+          : "Il servizio non è disponibile in questo momento.";
+        throw new CommerceServiceError(response.status >= 500 ? 503 : 502, "ATLAS_SERVICE_REJECTED", message);
+      }
       const error = new CommerceServiceError(allowed.status, code, allowed.message) as CommerceServiceError & { retryAfter?: number };
       const retry = response.headers.get("retry-after");
       if (response.status === 429 && retry && /^\d{1,5}$/.test(retry)) error.retryAfter = Math.min(86400, Number(retry));

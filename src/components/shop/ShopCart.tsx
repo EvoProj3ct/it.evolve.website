@@ -8,7 +8,7 @@ import { errorText, StorefrontError, storefrontGet, storefrontRead, subscribeSes
 import { importGuestCart, saveAccountCart } from "@/lib/ecommerce/cart";
 import { useGuestCart } from "@/lib/ecommerce/guest-cart";
 import { useStorefrontResource } from "./useStorefrontResource";
-import { CatalogArtwork, ResourceFeedback, ShopPageHeader } from "./ShopPreviewShared";
+import { CartProductArtwork, ResourceFeedback, ShopPageHeader } from "./ShopPreviewShared";
 import { PersonalizationText } from "./ShopPersonalization";
 import { ShopGuestCart } from "./ShopGuestCart";
 import styles from "./CommercePreview.module.css";
@@ -20,16 +20,20 @@ async function readCart(signal: AbortSignal) {
     accountCart = await storefrontGet("/cart", cartSchema, signal);
   } catch (error) {
     if (!(error instanceof StorefrontError) || error.code !== "LOGIN_REQUIRED") throw error;
-    return { cart: null, policy: null, policyError: "", products: [], importError: null };
+    return { cart: null, policy: null, policyError: "", importError: null };
   }
   const { cart, importError } = await importGuestCart(accountCart, signal);
-  const [policyResult, catalogResult] = await Promise.allSettled([storefrontGet("/checkout-options", checkoutOptionsSchema, signal), storefrontRead<PublicCatalogList>("/catalog?limit=50", signal)]);
-  if (signal.aborted) throw new DOMException("Richiesta annullata.", "AbortError");
-  const policy: CheckoutOptions | null = policyResult.status === "fulfilled" ? policyResult.value : null;
-  const policyError = policyResult.status === "rejected" ? errorText(policyResult.reason) : "";
-  // Le immagini sono decorative: un errore non sostituisce carrello o prezzi con fixture.
-  const products = catalogResult.status === "fulfilled" ? catalogResult.value.items : [];
-  return { cart, policy, policyError, products, importError };
+  let policy: CheckoutOptions | null = null;
+  let policyError = "";
+  if (cart.items.length) {
+    try {
+      policy = await storefrontGet("/checkout-options", checkoutOptionsSchema, signal);
+    } catch (error) {
+      signal.throwIfAborted();
+      policyError = errorText(error);
+    }
+  }
+  return { cart, policy, policyError, importError };
 }
 type DraftLine = { id: string; quantity: number };
 
@@ -42,7 +46,21 @@ export function ShopCart() {
   const lock = useRef(false);
   const [notice, setNotice] = useState("");
   const [saveError, setSaveError] = useState("");
+  const [products, setProducts] = useState<PublicCatalogList["items"]>([]);
   const cart = resource.data?.cart;
+  const hasItems = !!cart?.items.length;
+  useEffect(() => {
+    if (!hasItems) {
+      setProducts([]);
+      return;
+    }
+    const controller = new AbortController();
+    const { signal } = controller;
+    void storefrontRead<PublicCatalogList>("/catalog?limit=50", signal)
+      .then(({ items }) => { if (!signal.aborted) setProducts(items); })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [hasItems]);
   useEffect(() => { setEdit(undefined); }, [cart]);
   useEffect(() => subscribeSession(reason => { if (reason === "changed") reload(); }), [reload]);
   const items = new Map(cart?.items.map(item => [cartLineKey(item), item]));
@@ -92,8 +110,11 @@ export function ShopCart() {
       {cart.requiresReview && <p className={live.notice}>Alcuni prodotti, prezzi o limiti sono cambiati. Controlla le righe e salva le scelte prima di continuare.</p>}
       {draft.length ? <ul className={styles.cartList}>{draft.map(line => {
         const item = items.get(line.id)!;
-        const published = resource.data?.products.find(product => product.id === item.productPublicId);
-        return <li key={line.id} className={`${styles.cartItem} ${live.liveCartItem}`}><div className={styles.cartArtLink}>{published ? <Link href={`/negozio/${published.slug}`} aria-label={`Scopri ${published.name}`}><CatalogArtwork product={published} /></Link> : <CatalogArtwork />}</div><div className={styles.itemContent}><div className={styles.itemTitle}><div><h2>{item.title || "Prodotto non disponibile"}<span>.</span></h2>{item.code && <p>{item.code}</p>}</div><span className={styles.itemPrice}>{item.totals ? money(item.totals.grossMinor) : "—"}</span></div>
+        const published = products.find(product => product.id === item.productPublicId);
+        const artwork = <CartProductArtwork product={published} personalization={item.personalization} />;
+        return <li key={line.id} className={`${styles.cartItem} ${live.liveCartItem}`}>
+          {published ? <Link className={styles.cartArtLink} href={`/negozio/${published.slug}`} aria-label={`Scopri ${published.name}`}>{artwork}</Link> : artwork}
+          <div className={styles.itemContent}><div className={styles.itemTitle}><div><h2>{item.title || "Prodotto non disponibile"}<span>.</span></h2>{item.code && <p>{item.code}</p>}</div><span className={styles.itemPrice}>{item.totals ? money(item.totals.grossMinor) : "—"}</span></div>
           {item.price && <p className={live.help}>{money(item.price.unitMinor)} cad. · {item.price.taxMode === "inclusive" ? "IVA inclusa" : "IVA esclusa"}</p>}
           {item.personalization && <PersonalizationText value={item.personalization} />}
           {item.state !== "available" && <p className={live.lineWarning}>{item.state === "changed" ? "Prezzo o scheda aggiornati: controlla il prezzo attuale e riconferma." : item.state === "limit_exceeded" ? "Quantità o importo oltre i limiti: modifica il carrello." : "Articolo non disponibile: rimuovilo prima di procedere."}</p>}

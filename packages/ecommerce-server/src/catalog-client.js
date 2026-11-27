@@ -31,6 +31,7 @@ export function createCatalogClient({
         "Identità del sito non disponibile.",
       );
     let response;
+    const startedAt = performance.now();
     try {
       response = await fetch(new URL(path, origin), {
         method: "GET",
@@ -45,7 +46,12 @@ export function createCatalogClient({
             : {}),
         },
       });
-    } catch {
+    } catch (error) {
+      console.warn("storefront.ecommerce.catalog.transport_failed", {
+        durationMs: Math.round(performance.now() - startedAt),
+        timeoutMs,
+        timedOut: error?.name === "TimeoutError",
+      });
       throw new CommerceServiceError(
         503,
         "ATLAS_UNAVAILABLE",

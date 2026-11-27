@@ -10,6 +10,7 @@ import { cartCountSchema, profileSchema, type Account } from "@/lib/ecommerce/co
 import { subscribeCartChanges } from "@/lib/ecommerce/cart";
 import { useGuestCart } from "@/lib/ecommerce/guest-cart";
 import { PRODUCTS, type ProductId } from "./products";
+import { ProductMark } from "./ProductMark";
 import { NavInk, type NavInkPress } from "./NavInk";
 import styles from "./Shop.module.css";
 
@@ -121,7 +122,7 @@ export function ProductNavigation({ product }: { product: ProductId }) {
   return (
     <div className={styles.productHeader} data-product={product}>
       <Link href={root} className={styles.productIdentity} onClick={() => setSection("scopri")}>
-        <Image src={`/shop/brand/${product}.svg`} alt="" width={56} height={42} className={styles.productMark} />
+        <ProductMark product={product} className={styles.productMark} />
         <span>{product}<span className={styles.identityDot}>.</span></span>
       </Link>
       <nav ref={navRef} aria-label={`Esplora ${product}`} className={styles.sectionLinks} onPointerLeave={() => setHovered(null)}>

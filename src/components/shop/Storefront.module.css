@@ -125,6 +125,8 @@
 .quoteLines > div { display: flex; align-items: flex-start; justify-content: space-between; gap: 25px; padding: 18px 0; border-bottom: 1px solid #e0e9d7; font-size: 14px; }
 .quoteLines small { display: block; margin-top: 7px; color: #8e9f7f; font-size: 10px; line-height: 1.7; }
 .quoteLines strong { flex: none; font-weight: 400; }
+.quoteLineDescription { display: flex; align-items: flex-start; min-width: 0; gap: 12px; }
+.quoteLineArtwork { width: clamp(44px, 8vw, 74px); flex: none; }
 .totals { display: grid; gap: 16px; margin: 24px 0; }
 .totals > div { display: flex; justify-content: space-between; gap: 20px; color: #80946d; font-size: 12px; }
 .totals dd { margin: 0; color: #4b663c; }

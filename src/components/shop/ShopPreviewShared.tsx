@@ -2,7 +2,9 @@
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, Package } from "lucide-react";
 import { errorText, loginHref, StorefrontError } from "@/lib/ecommerce/browser";
+import type { PersonalizationSummary } from "@/lib/ecommerce/contracts";
 import type { PublicCatalogProduct } from "@evolve/ecommerce-server/catalog";
+import { ProductMark } from "./ProductMark";
 import styles from "./CommercePreview.module.css";
 import live from "./Storefront.module.css";
 
@@ -11,6 +13,28 @@ export function ShopPageHeader({ title, description }: { title: string; descript
 }
 export function CatalogArtwork({ product }: { product?: PublicCatalogProduct }) {
   return <div className={`${styles.artwork} ${live.catalogArt}`} aria-hidden="true">{product?.image ? <img src={product.image.url} alt="" width={product.image.width} height={product.image.height} loading="lazy" referrerPolicy="no-referrer" /> : <Package size={42} strokeWidth={.85} />}</div>;
+}
+
+export function CartProductArtwork({ product, personalization, slug }: {
+  product?: PublicCatalogProduct;
+  personalization?: Pick<PersonalizationSummary, "color" | "details">;
+  slug?: string;
+}) {
+  const details = personalization?.details;
+  const productSlug = product?.slug ?? slug;
+  const slugKind = productSlug === "e-linker" || productSlug === "e-led" ||
+    productSlug === "e-disk" || productSlug === "e-disk-disc" || productSlug === "e-disk-bundle"
+    ? productSlug : undefined;
+  const mark = details?.kind ?? product?.configurator ?? slugKind;
+  if (!mark) return <CatalogArtwork product={product} />;
+
+  return <div className={`${styles.artwork} ${styles.cartProductMark}`} aria-hidden="true">
+    <ProductMark
+      product={mark}
+      primary={personalization?.color}
+      secondary={details && "secondaryColor" in details ? details.secondaryColor : undefined}
+    />
+  </div>;
 }
 export function ResourceFeedback({ error, busy = false, reload, next = "/account" }: { error: unknown; busy?: boolean; reload?: () => void; next?: string }) {
   if (busy) return <p className={live.loading} role="status"><i />Caricamento…</p>;

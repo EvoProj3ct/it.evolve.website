@@ -59,6 +59,7 @@
 .cartList { margin: 0; padding: 0; list-style: none; }
 .cartItem { display: grid; grid-template-columns: minmax(140px,31%) minmax(0,1fr); align-items: center; gap: 26px; padding: 26px 0; border-bottom: 1px solid var(--preview-line); }
 .cartArtLink { display: block; border-radius: 14px; }
+.cartProductMark > svg { display: block; width: 78%; height: 78%; transform: none; }
 .cartArtLink:hover .artwork > svg { transform: scale(1.12) rotate(-2deg); }
 .cartArtLink:hover .artwork[data-product="e-linker"] > svg { transform: scale(1.28) rotate(-2deg); }
 .itemContent { min-width: 0; padding-block: 4px; }
