@@ -43,8 +43,9 @@ export async function addCatalogProduct(
   product: PublicCatalogProduct,
   personalization: PersonalizationInput | undefined,
   signal?: AbortSignal,
+  quantity = 1,
 ) {
-  const line = { productPublicId: product.id, listingRevision: product.revision, quantity: 1, personalization };
+  const line = { productPublicId: product.id, listingRevision: product.revision, quantity, personalization };
   let current: Cart;
   try {
     current = await shopReads.cart(store);

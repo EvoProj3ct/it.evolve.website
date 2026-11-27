@@ -108,7 +108,7 @@
 .profileOverview { display: grid; gap: 34px; max-width: 610px; }
 .overviewRank {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 15px;
   padding: 14px 18px;
@@ -118,10 +118,19 @@
   color: #31583a;
 }
 .overviewRank:hover { border-color: #8ead80; }
-.overviewRankGhost { width: 57px; height: 55px; }
-.overviewRank div { display: grid; gap: 3px; }
-.overviewRank span { font-size: 12px; font-weight: 600; }
-.overviewRank strong { font-size: clamp(22px, 4vw, 29px); line-height: 1.12; }
+.overviewRankIdentity { display: flex; align-items: center; gap: 15px; min-width: 0; }
+.overviewRankGhost { flex: none; width: 57px; height: 55px; }
+.overviewRankIdentity div { display: grid; gap: 3px; }
+.overviewRankIdentity span { font-size: 12px; font-weight: 600; }
+.overviewRankIdentity strong { font-size: clamp(22px, 4vw, 29px); line-height: 1.12; }
+.overviewRankProgress { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, max-content); align-items: center; gap: 12px; padding-top: 10px; border-top: 1px solid #d7e6cf; }
+.overviewRankTrack { display: grid; gap: 6px; font-size: 11px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.overviewRankTrack progress { display: block; width: 100%; height: 8px; appearance: none; border: 0; border-radius: 999px; background: #d6e6cd; color: #638d50; }
+.overviewRankTrack progress::-webkit-progress-bar { border-radius: 999px; background: #d6e6cd; }
+.overviewRankTrack progress::-webkit-progress-value { border-radius: 999px; background: #638d50; }
+.overviewRankTrack progress::-moz-progress-bar { border-radius: 999px; background: #638d50; }
+.overviewRankNext { display: flex; align-items: center; gap: 5px; max-width: 116px; color: #5e755e; font-size: 11px; font-weight: 600; line-height: 1.2; }
+.overviewRankNext svg { flex: none; width: 36px; height: 35px; opacity: .48; }
 .orderCounts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; }
 .orderCount {
   display: grid;
@@ -379,6 +388,9 @@
 .configuredPurchase { display: grid; justify-items: start; gap: 10px; }
 .configuredPurchase select { display: block; max-width: 100%; padding: 8px; border: 1px solid #a9b6a3; border-radius: 6px; background: #fcfdfb; color: #253722; }
 .configuredPurchase button:disabled { opacity: .6; cursor: not-allowed; }
+.configuredQuantity { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; color: #314e36; font-size: 13px; }
+.configuredQuantityTotal { font-weight: 600; font-variant-numeric: tabular-nums; }
+.cartMultiplier { display: inline-block; margin-inline-end: .38em; color: #416346; font-size: .65em; font-weight: 650; letter-spacing: 0; vertical-align: .12em; }
 .checkoutAdded { display: grid; justify-items: start; gap: 10px; }
 .checkoutAdded > p { display: flex; align-items: center; gap: 7px; color: #2d6839; font-size: 13px; font-weight: 600; }
 .orderFilters { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 16px; }

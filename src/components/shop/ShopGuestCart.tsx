@@ -40,10 +40,10 @@ export function ShopGuestCart({ importError, retry }: { importError?: unknown; r
           <CartProductArtwork slug={line.slug} personalization={line.personalization} />
           <div className={styles.itemContent}>
             <div className={styles.itemTitle}>
-              <h2><Link href={`/negozio/${line.slug}`}>{line.title}</Link></h2>
+              <h2><Link href={`/negozio/${line.slug}`}>{line.quantity > 1 && <strong className={live.cartMultiplier}>{line.quantity}×</strong>}{line.title}</Link></h2>
               <span className={styles.itemPrice}>{money(line.unitGrossCents)} cad.</span>
             </div>
-            {line.personalization && <PersonalizationText value={{
+            {line.personalization && <PersonalizationText quantity={line.quantity} value={{
               color: line.personalization.color,
               inscription: line.personalization.inscription,
               details: line.personalization.details,

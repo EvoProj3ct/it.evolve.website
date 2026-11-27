@@ -10,7 +10,7 @@ import { announceShopPreference, cacheShopEntries, orderCacheAge, shopApi, shopQ
 import { OrderStatusGhost } from "./OrderStatusGhost";
 import { ShopBillingProfile } from "./ShopBillingProfile";
 import { ResourceFeedback, ShopPageHeader } from "./ShopPreviewShared";
-import { previewShopRank, ShopRankGhost } from "./ShopRankGhost";
+import { previewShopRank, shopRanks, ShopRankGhost } from "./ShopRankGhost";
 import styles from "./CommercePreview.module.css";
 import live from "./Storefront.module.css";
 
@@ -105,17 +105,34 @@ function PersonalDetails({ account }: { account: Account }) {
 }
 
 const sectionLabels = { overview: "Panoramica", profile: "Dati personali", billing: "Fatturazione" };
+const previewExperience = 0;
+const nextRankExperience = 500;
 
 function AccountOverview() {
   const { data: counts, error, busy, reload } = useShopQueryView(
     shopApi.useOrderStatusCountsQuery(undefined, { refetchOnMountOrArgChange: orderCacheAge }),
   );
+  const orderStates = counts ? (Object.keys(orderGroups) as OrderStatusKind[]).filter(kind => counts[kind] > 0) : [];
+  const nextRank = shopRanks.find(rank => rank.level === previewShopRank.level + 1);
 
   return <div className={live.profileOverview}>
     <Link href="/account/livelli" className={live.overviewRank}>
-      <ShopRankGhost rank={previewShopRank} className={live.overviewRankGhost} />
-      <div><span>Livello IA {previewShopRank.level}</span><strong>{previewShopRank.name}</strong></div>
+      <div className={live.overviewRankIdentity}>
+        <ShopRankGhost rank={previewShopRank} className={live.overviewRankGhost} />
+        <div><span>Livello IA {previewShopRank.level}</span><strong>{previewShopRank.name}</strong></div>
+      </div>
       <ArrowUpRight size={18} aria-hidden="true" />
+      {nextRank && <div className={live.overviewRankProgress}>
+        <div className={live.overviewRankTrack}>
+          <span aria-hidden="true">{previewExperience}/{nextRankExperience} EXP</span>
+          <progress value={previewExperience} max={nextRankExperience}
+            aria-label={`Esperienza verso ${nextRank.name}`} aria-valuetext={`${previewExperience} su ${nextRankExperience} EXP`} />
+        </div>
+        <div className={live.overviewRankNext}>
+          <ShopRankGhost rank={nextRank} />
+          <span>{nextRank.name}</span>
+        </div>
+      </div>}
     </Link>
     <section aria-labelledby="overview-orders-title">
       <div className={styles.panelHeading}>
@@ -123,14 +140,14 @@ function AccountOverview() {
         <Link href="/account/ordini" className={styles.textLink}>Tutti gli ordini <ArrowUpRight size={15} /></Link>
       </div>
       <ResourceFeedback busy={busy} error={error} reload={reload} />
-      {counts && <dl className={live.orderCounts}>
-        {(Object.keys(orderGroups) as OrderStatusKind[]).map(kind => (
+      {counts && (orderStates.length ? <dl className={live.orderCounts}>
+        {orderStates.map(kind => (
           <div key={kind} className={live.orderCount} data-section={kind}>
             <dt><OrderStatusGhost kind={kind} /><span>{orderGroups[kind]}</span></dt>
             <dd>{counts[kind].toLocaleString("it-IT")}</dd>
           </div>
         ))}
-      </dl>}
+      </dl> : <p className={live.notice}>Non ci sono ancora ordini.</p>)}
     </section>
   </div>;
 }

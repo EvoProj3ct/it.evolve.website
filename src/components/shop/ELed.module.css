@@ -13,12 +13,19 @@
 .cta:hover { transform: translateY(-2px); background: #d6ffcc; box-shadow: 0 8px 40px #72ff6320; }
 .textLink { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: #b1c6bb; font-size: 12px; }
 .textLink:hover { color: #b5ffa4; }
-.heroStage { position: relative; min-width: 0; width: 100%; aspect-ratio: 18 / 13; }
+.heroStage {
+  --sign-drift-x: clamp(3px, .6vw, 9px);
+  --sign-drift-y: clamp(6px, 1vw, 13px);
+  position: relative;
+  min-width: 0;
+  width: 100%;
+  aspect-ratio: 18 / 13;
+}
 .floatingSign { position: absolute; transform: translate(-50%, -50%) rotate(var(--tilt)); }
 .floatingSign > svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 0 17px color-mix(in srgb, var(--light) 27%, transparent)); animation: signDrift var(--period) ease-in-out var(--phase) infinite alternate; }
 @keyframes signDrift {
-  from { transform: translate3d(-1px, -3px, 0) rotate(-.35deg); }
-  to { transform: translate3d(2px, 4px, 0) rotate(.35deg); }
+  from { transform: translate3d(calc(-1 * var(--sign-drift-x)), calc(-1 * var(--sign-drift-y)), 0) rotate(-.5deg); }
+  to { transform: translate3d(var(--sign-drift-x), var(--sign-drift-y), 0) rotate(.5deg); }
 }
 .configStage::after { position: absolute; z-index: 2; inset: 0; border-radius: inherit; background-image: linear-gradient(#a8ffbd09 1px, transparent 1px), linear-gradient(90deg,#a8ffbd09 1px,transparent 1px); background-size: 48px 48px; mask-image: linear-gradient(transparent 45%,#0009); pointer-events: none; content: ""; }
 .viewerLabel > span:first-child { display: inline-flex; align-items: center; gap: 8px; }
