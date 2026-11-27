@@ -25,6 +25,12 @@ const journey = {
   shipping: { step: "handoff", label: "Spedito" },
 } as const;
 
+type OrderProgressState = {
+  kind: OrderGhostKind;
+  step: (typeof journey)[keyof typeof journey]["step"] | "received";
+  label: string;
+};
+
 const refundLabels = {
   refund_pending: "In corso",
   partially_refunded: "Parziale",
@@ -43,7 +49,7 @@ function receiptLabel(mode: OrderSummary["deliveryMode"]) {
   return "Consegnato";
 }
 
-export function orderProgressFor(order: OrderSummary) {
+export function orderProgressFor(order: OrderSummary): OrderProgressState {
   const { operationalStatus, paymentStatus, fulfillmentStatus, deliveryPhase } = order;
   const confirmed = paymentStatus === "paid" ||
     (["partially_refunded", "refund_pending"].includes(paymentStatus) && (order.payment?.paidMinor ?? 0) > 0);
@@ -56,15 +62,15 @@ export function orderProgressFor(order: OrderSummary) {
     : operationalStatus === "in_progress" || fulfillmentStatus === "in_progress" || fulfillmentStatus === "partial" ? "progress"
     : confirmed ? "confirmed"
     : "payable";
-  const stage = kind === "received" ? { step: "received", label: receiptLabel(deliveryMode(order)) }
+  const stage: Omit<OrderProgressState, "kind"> = kind === "received" ? { step: "received", label: receiptLabel(deliveryMode(order)) }
     : kind === "service_pending" ? { step: "handoff", label: `${receiptLabel(deliveryMode(order))} · servizio da completare` }
     : journey[kind];
-  if (operationalStatus === "cancelled") return { ...stage, kind: "closed" as const, label: "Annullato" };
-  if (operationalStatus === "on_hold") return { ...stage, kind: "blocked" as const, label: "Sospeso" };
+  if (operationalStatus === "cancelled") return { ...stage, kind: "closed", label: "Annullato" };
+  if (operationalStatus === "on_hold") return { ...stage, kind: "blocked", label: "Sospeso" };
   if (kind === "received" || kind === "shipping" || kind === "pickup" || kind === "service_pending") return { ...stage, kind };
-  if (paymentStatus === "refunded") return { ...stage, kind: "blocked" as const, label: "Sospeso" };
+  if (paymentStatus === "refunded") return { ...stage, kind: "blocked", label: "Sospeso" };
   if (order.payment?.requiresReview || ["under_review", "disputed"].includes(paymentStatus))
-    return { ...stage, kind: "blocked" as const, label: "Ordine in verifica" };
+    return { ...stage, kind: "blocked", label: "Ordine in verifica" };
   return { ...stage, kind };
 }
 
