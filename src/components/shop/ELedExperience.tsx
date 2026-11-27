@@ -17,9 +17,6 @@ const lightStyle = (color: string) => ({ "--light": color } as CSSProperties);
 export function ELedExperience() {
   const [configuration, setConfiguration] = useState<LedConfiguration>(defaultLedConfiguration);
   const preview = useDeferredValue(configuration);
-  const [hero] = useState<LedConfiguration>(defaultLedConfiguration);
-  const [heroPower, setHeroPower] = useState(true);
-  const [heroPlaying, setHeroPlaying] = useState(true);
   const [power, setPower] = useState(true);
   const [playing, setPlaying] = useState(true);
   const [reset, setReset] = useState(0);
@@ -60,11 +57,16 @@ export function ELedExperience() {
         <p className={styles.heroDescription}>{PRODUCTS["e-led"].description}</p>
         <div className={styles.heroActions}><a href="#configura" className={styles.cta}>Accendi la tua idea <ArrowUpRight size={19} /></a><a href="#scopri" className={styles.textLink}>Scopri e-led <ArrowUpRight size={16} /></a></div>
       </div>
-      <div className={styles.heroStage} data-power={heroPower}>
-        <div className={styles.stageTop}><span><i /> La tua identità, accesa</span><span>Color flow</span></div>
-        <LedScene configuration={hero} playing={heroPlaying} power={heroPower} />
-        <div className={styles.stageBottom}><span>Scocca stampata. Carattere luminoso.</span><div><button type="button" onClick={() => setHeroPlaying(value => !value)} aria-label={heroPlaying ? "Pausa degli effetti luminosi" : "Riprendi gli effetti luminosi"}>{heroPlaying ? <Pause size={15} /> : <Play size={15} />}</button><button type="button" aria-pressed={heroPower} onClick={() => setHeroPower(value => !value)} aria-label={heroPower ? "Spegni e-led" : "Accendi e-led"}><Power size={17} /></button></div></div>
-      </div>
+      <picture className={styles.heroStage}>
+        <source media="(min-width: 601px)" srcSet="/shop/e-led-insegne-desktop.webp" />
+        <img
+          src="/shop/e-led-insegne.webp"
+          alt="Nove insegne e-led accese in colori diversi su sfondo nero"
+          width={1080}
+          height={1920}
+          fetchPriority="high"
+        />
+      </picture>
       <div className={styles.heroFoot}><span>Il tuo nome. Il tuo logo. La tua luce.</span><span>Think to Evolve <i /></span></div>
     </section>
 
