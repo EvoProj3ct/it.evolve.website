@@ -36,7 +36,7 @@ export function LinkerPile() {
   }, []);
 
   return <div className={styles.carpet}>
-    <button type="button" className={styles.surface} ref={surface} disabled={unavailable} aria-label="Mescola i portachiavi e-linker">
+    <button type="button" className={styles.surface} ref={surface} disabled={unavailable} aria-label="Afferra e sposta i portachiavi e-linker">
       <canvas className={styles.artwork} ref={canvas} aria-hidden="true" />
       <span className={styles.hand} aria-hidden="true"><Hand size={29} /><HandGrab size={29} /></span>
     </button>
