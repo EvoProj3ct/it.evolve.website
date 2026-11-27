@@ -1,12 +1,13 @@
 import type { PublicCatalogProduct } from "@evolve/ecommerce-server/catalog";
 import { cartSchema, type Cart, type PersonalizationInput, type SaveCart } from "./contracts";
-import { StorefrontError, storefrontGet, storefrontMutate } from "./browser";
+import { StorefrontError, storefrontMutate } from "./browser";
 import { addGuestLine, readGuestCart, removeGuestLine } from "./guest-cart";
+import { shopApi, shopReads, type ShopStore } from "./shop-store";
 
 const cartEvent = "evolve:storefront-cart";
 
-export function subscribeCartChanges(callback: (quantity?: number) => void) {
-  const local = (event: Event) => callback((event as CustomEvent<number | undefined>).detail);
+export function subscribeCartChanges(callback: (cart?: Cart) => void) {
+  const local = (event: Event) => callback((event as CustomEvent<Cart | undefined>).detail);
   window.addEventListener(cartEvent, local);
   const channel = typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel(cartEvent);
   if (channel) channel.onmessage = () => callback();
@@ -16,8 +17,8 @@ export function subscribeCartChanges(callback: (quantity?: number) => void) {
   };
 }
 
-export function cartChanged(quantity?: number) {
-  window.dispatchEvent(new CustomEvent(cartEvent, { detail: quantity }));
+export function cartChanged(cart?: Cart) {
+  window.dispatchEvent(new CustomEvent(cartEvent, { detail: cart }));
   if (typeof BroadcastChannel !== "undefined") {
     const channel = new BroadcastChannel(cartEvent);
     channel.postMessage("changed");
@@ -25,17 +26,20 @@ export function cartChanged(quantity?: number) {
   }
 }
 
-function cartQuantity(cart: Cart) {
-  return cart.items.reduce((total, line) => total + line.quantity, 0);
-}
-
 export async function saveAccountCart(input: SaveCart, notify = true) {
-  const cart = await storefrontMutate("/cart/items", "PUT", input, cartSchema);
-  if (notify) cartChanged(cartQuantity(cart));
-  return cart;
+  try {
+    const cart = await storefrontMutate("/cart/items", "PUT", input, cartSchema);
+    if (notify) cartChanged(cart);
+    return cart;
+  } catch (error) {
+    if (error instanceof StorefrontError &&
+        (error.status === 0 || error.status >= 500 || ["CART_CHANGED", "CATALOG_CHANGED", "PERSONALIZATION_CHANGED"].includes(error.code))) cartChanged();
+    throw error;
+  }
 }
 
 export async function addCatalogProduct(
+  store: ShopStore,
   product: PublicCatalogProduct,
   personalization: PersonalizationInput | undefined,
   signal?: AbortSignal,
@@ -43,7 +47,7 @@ export async function addCatalogProduct(
   const line = { productPublicId: product.id, listingRevision: product.revision, quantity: 1, personalization };
   let current: Cart;
   try {
-    current = await storefrontGet("/cart", cartSchema, signal);
+    current = await shopReads.cart(store);
   } catch (error) {
     if (!(error instanceof StorefrontError) || error.code !== "LOGIN_REQUIRED") throw error;
     signal?.throwIfAborted();
@@ -51,7 +55,13 @@ export async function addCatalogProduct(
     return;
   }
   signal?.throwIfAborted();
-  return addToAccountCart(current, line);
+  try {
+    return await addToAccountCart(current, line);
+  } catch (error) {
+    if (error instanceof StorefrontError && ["CATALOG_CHANGED", "PERSONALIZATION_CHANGED", "PRODUCT_NOT_FOUND"].includes(error.code))
+      store.dispatch(shopApi.util.invalidateTags(["Catalog"]));
+    throw error;
+  }
 }
 
 function addToAccountCart(current: Cart, line: SaveCart["items"][number]) {
@@ -97,6 +107,6 @@ export async function importGuestCart(cart: Cart, signal: AbortSignal) {
     signal.throwIfAborted();
     return { cart: current, importError };
   } finally {
-    if (imported) cartChanged(cartQuantity(current));
+    if (imported) cartChanged(signal.aborted ? undefined : current);
   }
 }

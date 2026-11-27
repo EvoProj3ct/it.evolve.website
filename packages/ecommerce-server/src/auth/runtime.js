@@ -158,12 +158,12 @@ export async function activeAccess(runtime, accountId, session) {
     .lean();
   return row?.status === "active" ? row : null;
 }
-export async function accountContext(runtime, request, session, touch = false) {
+export async function accountContext(runtime, request, session, touch = false, { includeBilling = false } = {}) {
   // Keep the opaque session and its hash-free access projection in one commit,
   // including standalone profile/authentication calls outside an existing TX.
   if (touch && !session)
     return tx(runtime, (activeSession) =>
-      accountContext(runtime, request, activeSession, true),
+      accountContext(runtime, request, activeSession, true, { includeBilling }),
     );
   const raw = cookie(request, SESSION_COOKIE);
   if (!raw || !/^[A-Za-z0-9_-]{43}$/.test(raw))
@@ -181,15 +181,15 @@ export async function accountContext(runtime, request, session, touch = false) {
     .lean();
   if (!stored)
     authError(401, "SESSION_INVALID", "Accedi nuovamente al negozio.");
-  const account = await runtime.models.accounts
+  const accountQuery = runtime.models.accounts
     .findOne({
       _id: stored.accountId,
       shopId: runtime.shopId,
       status: "active",
       verifiedAt: { $exists: true },
-    })
-    .session(session || null)
-    .lean();
+    }).session(session || null);
+  if (includeBilling) accountQuery.select("+billingProfile");
+  const account = await accountQuery.lean();
   const access = account
     ? await activeAccess(runtime, account._id, session)
     : null;

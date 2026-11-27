@@ -8,6 +8,7 @@ export class StorefrontError extends Error {
 const API = "/api/ecommerce/v1";
 const SESSION_EVENT = "evolve:storefront-session";
 let generation = 0;
+export const storefrontSessionGeneration = () => generation;
 let retryUntil = 0;
 let mutationQueue: Promise<unknown> = Promise.resolve();
 type SessionChange = "changed" | "invalid";

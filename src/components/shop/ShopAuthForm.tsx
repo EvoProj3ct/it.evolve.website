@@ -6,6 +6,7 @@ import { ArrowRight, ArrowUpRight, Eye, EyeOff } from "lucide-react";
 import { z } from "zod";
 import { accountSchema } from "@/lib/ecommerce/contracts";
 import { errorText, safeReturnTo, sessionChanged, storefrontMutate } from "@/lib/ecommerce/browser";
+import { shopApi, useShopStore } from "@/lib/ecommerce/shop-store";
 import styles from "./Storefront.module.css";
 
 export const AUTH_ACTIONS = {
@@ -28,6 +29,7 @@ const loginSchema = z.object({ account: accountSchema, csrfToken: z.string() }).
 
 export function ShopAuthForm({ action, legal, nextPath }: { action: AuthAction; legal: Legal; nextPath?: string }) {
   const router = useRouter();
+  const store = useShopStore();
   const next = safeReturnTo(nextPath);
   const returnQuery = next === "/account" ? "" : `?next=${encodeURIComponent(next)}`;
   const info = AUTH_ACTIONS[action];
@@ -70,8 +72,10 @@ export function ShopAuthForm({ action, legal, nextPath }: { action: AuthAction; 
     submitting.current = true; setBusy(true); setError(""); setMessage("");
     try {
       if (action === "login") {
-        await storefrontMutate(`/auth/${action}`, "POST", body, loginSchema);
-        sessionChanged(); router.replace(next); router.refresh();
+        const { account } = await storefrontMutate(`/auth/${action}`, "POST", body, loginSchema);
+        sessionChanged();
+        store.dispatch(shopApi.util.upsertQueryEntries([{ endpointName: "profile", arg: undefined, value: { account } }]));
+        router.replace(next);
       } else {
         const result = await storefrontMutate(`/auth/${action}`, "POST", body, messageSchema);
         if (["logout", "logout-all", "reset-password", "change-password", "confirm-email"].includes(action)) sessionChanged();

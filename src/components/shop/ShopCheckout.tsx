@@ -1,40 +1,55 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowRight } from "lucide-react";
-import { cartSchema, checkoutOptionsSchema, customerLinkSchema, money, placedOrderSchema, profileSchema, quoteSchema, type Address, type Quote, type QuoteInput } from "@/lib/ecommerce/contracts";
-import { errorText, StorefrontError, storefrontGet, storefrontMutate } from "@/lib/ecommerce/browser";
+import { money, placedOrderSchema, quoteSchema, type Quote, type QuoteInput } from "@/lib/ecommerce/contracts";
+import { errorText, StorefrontError, storefrontMutate, subscribeSession } from "@/lib/ecommerce/browser";
 import { cartChanged } from "@/lib/ecommerce/cart";
 import { useGuestCart } from "@/lib/ecommerce/guest-cart";
+import { shopApi, shopReads, useShopStore, type ShopStore } from "@/lib/ecommerce/shop-store";
 import { PersonalizationText } from "./ShopPersonalization";
 import { AddressText, BillingText } from "./ShopAddress";
+import { AddressFields, BillingFields, readAddressFields, readBillingFields } from "./ShopBillingFields";
 import { CartProductArtwork, ResourceFeedback, ShopPageHeader } from "./ShopPreviewShared";
 import { useStorefrontResource } from "./useStorefrontResource";
 import common from "./CommercePreview.module.css";
 import styles from "./Storefront.module.css";
 
-async function loadCheckout(signal: AbortSignal) {
-  const [profile, cart, policy, link] = await Promise.all([storefrontGet("/me", profileSchema, signal), storefrontGet("/cart", cartSchema, signal), storefrontGet("/checkout-options", checkoutOptionsSchema, signal), storefrontGet("/me/customer-link", customerLinkSchema, signal)]);
-  return { account: profile.account, cart, policy, link };
-}
-function AddressFields({ prefix, name, countries, country, onCountry }: { prefix: string; name: string; countries: string[]; country: string; onCountry: (value: string) => void }) {
-  return <div className={styles.fieldGrid}><label>Destinatario<input name={`${prefix}-name`} defaultValue={name} required maxLength={200} autoComplete={`${prefix === "billing" ? "billing" : "shipping"} name`} /></label><label className={styles.wideField}>Via e numero civico<input name={`${prefix}-line1`} required maxLength={200} autoComplete={`${prefix === "billing" ? "billing" : "shipping"} address-line1`} /></label><label className={styles.wideField}>Seconda riga, facoltativa<input name={`${prefix}-line2`} maxLength={200} autoComplete={`${prefix === "billing" ? "billing" : "shipping"} address-line2`} /></label><label>Città<input name={`${prefix}-city`} required maxLength={100} autoComplete={`${prefix === "billing" ? "billing" : "shipping"} address-level2`} /></label><label>CAP<input name={`${prefix}-postalCode`} required maxLength={20} autoComplete={`${prefix === "billing" ? "billing" : "shipping"} postal-code`} /></label><label>Provincia o regione, facoltativa<input name={`${prefix}-region`} maxLength={100} autoComplete={`${prefix === "billing" ? "billing" : "shipping"} address-level1`} /></label><label>Paese<select name={`${prefix}-country`} required value={country} onChange={event => onCountry(event.target.value)} autoComplete={`${prefix === "billing" ? "billing" : "shipping"} country`}><option value="">Scegli un paese</option>{countries.map(code => <option key={code} value={code}>{code}</option>)}</select></label></div>;
-}
-function address(data: FormData, prefix: string): Address {
-  const get = (key: string) => String(data.get(`${prefix}-${key}`) || "").trim();
-  return { name: get("name"), line1: get("line1"), city: get("city"), postalCode: get("postalCode"), country: get("country"), ...(get("line2") ? { line2: get("line2") } : {}), ...(get("region") ? { region: get("region") } : {}) };
+async function loadCheckout(store: ShopStore, signal: AbortSignal, refresh: boolean) {
+  const [profile, cart, policy, link, savedBilling] = await Promise.all([
+    shopReads.profile(store, refresh),
+    shopReads.cart(store, refresh),
+    shopReads.checkoutOptions(store, refresh),
+    shopReads.customerLink(store, refresh),
+    shopReads.billing(store, refresh).catch(error => {
+      if (error instanceof StorefrontError && error.status === 401) throw error;
+      return null;
+    }),
+  ]);
+  signal.throwIfAborted();
+  return { account: profile.account, cart, policy, link, billing: savedBilling?.billing, billingUnavailable: savedBilling === null };
 }
 export function ShopCheckout({ termsPath, termsVersion }: { termsPath: string; termsVersion: string }) {
-  const resource = useStorefrontResource(loadCheckout), router = useRouter();
+  const store = useShopStore();
+  const load = useCallback((signal: AbortSignal, refresh: boolean) => loadCheckout(store, signal, refresh), [store]);
+  const resource = useStorefrontResource(load), router = useRouter();
   const guestCart = useGuestCart();
   const [physical, setPhysical] = useState(""), [service, setService] = useState("");
-  const [billingCountry, setBillingCountry] = useState(""), [shippingCountry, setShippingCountry] = useState("");
+  const [selectedBillingCountry, setBillingCountry] = useState<string | null>(null), [shippingCountry, setShippingCountry] = useState("");
   const [sameAddress, setSameAddress] = useState(true), [accepted, setAccepted] = useState(false);
   const [quote, setQuote] = useState<Quote | null>(null), [now, setNow] = useState(Date.now());
   const [busy, setBusy] = useState(false), [error, setError] = useState(""), [uncertain, setUncertain] = useState(false);
   const lock = useRef(false), quoteIntent = useRef<{ signature: string; key: string } | null>(null), orderIntent = useRef<{ quoteId: string; key: string } | null>(null);
   const data = resource.data;
+  const savedCountry = data?.billing?.address.country;
+  const billingCountry = selectedBillingCountry ?? (savedCountry && data?.policy.countries.includes(savedCountry) ? savedCountry : "");
+  useEffect(() => subscribeSession(() => {
+    setBillingCountry(null);
+    setShippingCountry("");
+    setPhysical("");
+    setService("");
+  }), []);
   useEffect(() => { setQuote(null); setAccepted(false); quoteIntent.current = null; orderIntent.current = null; setUncertain(false); }, [data]);
   useEffect(() => { if (!quote) return; const timer = window.setInterval(() => setNow(Date.now()), 1000); return () => window.clearInterval(timer); }, [quote]);
   const selection = data?.policy.options.find(option => option.publicId === physical);
@@ -48,23 +63,27 @@ export function ShopCheckout({ termsPath, termsVersion }: { termsPath: string; t
   const termsReady = !!termsPath && !!quote && termsVersion === quote.termsVersion;
   async function prepare(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); if (!data || !cartReady || !data.link.checkoutReady || lock.current) return;
-    const form = new FormData(event.currentTarget), billing = address(form, "billing");
+    const form = new FormData(event.currentTarget);
+    const billing = readBillingFields(form);
     const physicalOption = physicalOptions.find(option => option.publicId === physical);
     const serviceOption = serviceOptions.find(option => option.publicId === service);
     if (hasPhysical && !physicalOption || hasService && !serviceOption) { setError("Scegli le modalità di consegna o servizio."); return; }
     const selections = [hasPhysical ? physicalOption : undefined, hasService ? serviceOption : undefined]
       .flatMap(option => option ? [{ mode: option.mode, optionPublicId: option.publicId }] : []);
-    const billingInput: QuoteInput["billing"] = { kind: data.account.kind, name: String(form.get("billingName") || "").trim(), email: data.account.email, address: billing };
-    for (const key of ["taxCode", "vatNumber", "recipientCode", "certifiedEmail"] as const) { const value = String(form.get(key) || "").trim(); if (value) billingInput[key] = value; }
+    const billingInput: QuoteInput["billing"] = { ...billing, kind: data.account.kind, email: data.account.email };
     const discountCode = String(form.get("discountCode") ?? "").trim().toUpperCase();
-    const input = { ...(discountCode && { discountCode }), cartPublicId: data.cart.id!, cartRevision: data.cart.revision, policyRevision: data.policy.revision, termsVersion: data.policy.termsVersion, billing: billingInput, ...(shipping ? { shipping: sameAddress ? billing : address(form, "shipping") } : {}), fulfillmentSelections: selections };
+    const input = { ...(discountCode && { discountCode }), cartPublicId: data.cart.id!, cartRevision: data.cart.revision, policyRevision: data.policy.revision, termsVersion: data.policy.termsVersion, billing: billingInput, ...(shipping ? { shipping: sameAddress ? billing.address : readAddressFields(form, "shipping") } : {}), fulfillmentSelections: selections };
     const signature = JSON.stringify(input);
     if (quoteIntent.current?.signature !== signature) quoteIntent.current = { signature, key: crypto.randomUUID() };
     lock.current = true; setBusy(true); setError("");
     try { const result = await storefrontMutate("/quotes", "POST", { ...input, idempotencyKey: quoteIntent.current!.key }, quoteSchema); setQuote(result); setNow(Date.now()); setAccepted(false); orderIntent.current = null; }
     catch (reason) {
       if (reason instanceof StorefrontError && reason.code === "QUOTE_EXPIRED_OR_CHANGED") quoteIntent.current = null;
-      if (reason instanceof StorefrontError && ["CART_CHANGED", "CATALOG_CHANGED", "POLICY_CHANGED", "DELIVERY_CHANGED", "PERSONALIZATION_CHANGED"].includes(reason.code)) resource.reload();
+      if (reason instanceof StorefrontError && ["CART_CHANGED", "CATALOG_CHANGED", "POLICY_CHANGED", "DELIVERY_CHANGED", "PERSONALIZATION_CHANGED"].includes(reason.code)) {
+        if (["CATALOG_CHANGED", "PERSONALIZATION_CHANGED"].includes(reason.code))
+          store.dispatch(shopApi.util.invalidateTags(["Catalog"]));
+        resource.reload();
+      }
       setError(errorText(reason));
     }
     finally { lock.current = false; setBusy(false); }
@@ -87,7 +106,15 @@ export function ShopCheckout({ termsPath, termsVersion }: { termsPath: string; t
   }
   return <main id="shop-content" className={common.page}><ShopPageHeader title="Dai forma alle tue scelte" description="Dati, consegna e riepilogo. Il pagamento si apre dopo la conferma dell’ordine." /><ResourceFeedback busy={resource.busy} error={resource.error} reload={resource.reload} next="/checkout" />{data && <>{!cartReady ? <p className={styles.notice}>Controlla il carrello prima di continuare.<Link href="/carrello">Apri il carrello <ArrowRight size={15} /></Link></p> : !data.link.checkoutReady ? <p className={styles.notice}>{data.link.message}<Link href="/account">Vai al tuo profilo <ArrowRight size={15} /></Link></p> : <>
       {error && <p className={styles.error} role="alert">{error}</p>}
-      <form method="post" onSubmit={prepare} hidden={!!quote} className={styles.checkoutForm}><fieldset disabled={busy || !!quote}><legend>Fatturazione</legend><p className={styles.help}>{data.account.email} · Account {data.account.kind === "company" ? "azienda" : "privato"}</p><div className={styles.fieldGrid}><label className={styles.wideField}>{data.account.kind === "company" ? "Ragione sociale" : "Nome e cognome"}<input name="billingName" defaultValue={data.account.name} required maxLength={200} /></label>{data.account.kind === "individual" ? <label>Codice fiscale{!data.policy.requireIndividualTaxCode && ", facoltativo"}<input name="taxCode" required={data.policy.requireIndividualTaxCode} maxLength={40} /></label> : <><label>Partita IVA{!data.policy.requireCompanyVat && ", facoltativa"}<input name="vatNumber" required={data.policy.requireCompanyVat} maxLength={40} /></label><label>Codice fiscale, facoltativo<input name="taxCode" maxLength={40} /></label><label>Codice destinatario, facoltativo<input name="recipientCode" maxLength={20} /></label><label>PEC, facoltativa<input name="certifiedEmail" type="email" maxLength={254} /></label></>}</div><AddressFields prefix="billing" name={data.account.name} countries={data.policy.countries} country={billingCountry} onCountry={setBillingCountry} /></fieldset>
+      <form method="post" onSubmit={prepare} hidden={!!quote} className={styles.checkoutForm}>
+        <fieldset disabled={busy || !!quote}>
+          <legend>Fatturazione</legend>
+          {data.billingUnavailable && <p className={styles.notice}>I dati di fatturazione salvati sono temporaneamente indisponibili. Puoi compilare i campi qui.</p>}
+          <BillingFields account={data.account} billing={data.billing} countries={data.policy.countries}
+            country={billingCountry} onCountry={setBillingCountry}
+            requireTaxCode={data.account.kind === "individual" && data.policy.requireIndividualTaxCode}
+            requireVat={data.policy.requireCompanyVat} />
+        </fieldset>
       <fieldset disabled={busy || !!quote}><legend>Consegna e servizi</legend>{hasPhysical && <div className={styles.deliveryOptions}><h3>Per i tuoi oggetti</h3>{physicalOptions.map(option => <label key={option.publicId} data-selected={physical === option.publicId}><input type="radio" name="physical-option" required value={option.publicId} checked={physical === option.publicId} onChange={() => setPhysical(option.publicId)} /><span><strong>{option.label}</strong><small>{option.details}</small></span><span>{money(option.totals.grossMinor)}</span></label>)}{!physicalOptions.length && <p className={styles.notice}>Non ci sono modalità compatibili con tutti gli oggetti del carrello.</p>}</div>}{hasService && <div className={styles.deliveryOptions}><h3>Per i tuoi servizi</h3>{serviceOptions.map(option => <label key={option.publicId} data-selected={service === option.publicId}><input type="radio" name="service-option" required value={option.publicId} checked={service === option.publicId} onChange={() => setService(option.publicId)} /><span><strong>{option.label}</strong><small>{option.details}</small></span><span>{money(option.totals.grossMinor)}</span></label>)}{!serviceOptions.length && <p className={styles.notice}>Non ci sono modalità compatibili con i servizi scelti.</p>}</div>}{shipping && <><label className={styles.check}><input type="checkbox" checked={sameAddress} onChange={event => setSameAddress(event.target.checked)} />Usa l’indirizzo di fatturazione per la spedizione.</label>{!sameAddress && <AddressFields prefix="shipping" name={data.account.name} countries={data.policy.countries.filter(code => (selection?.countries || []).includes(code))} country={shippingCountry} onCountry={setShippingCountry} />}</>}</fieldset>
       <fieldset disabled={busy || !!quote}><legend>Sconto</legend><div className={styles.fieldGrid}><label>Codice sconto, facoltativo<input name="discountCode" maxLength={32} pattern={"[A-Za-z0-9][A-Za-z0-9_\\x2D]{2,31}"} autoComplete="off" /></label></div></fieldset>
       <button className={styles.primary} type="submit" disabled={busy || hasPhysical && !physicalOptions.length || hasService && !serviceOptions.length}>{busy ? "Preparazione…" : "Prepara il riepilogo"}<ArrowRight size={17} /></button></form>

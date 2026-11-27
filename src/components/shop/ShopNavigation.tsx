@@ -5,10 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, LogIn, ShoppingCart, UserRound } from "lucide-react";
-import { storefrontGet, subscribeSession } from "@/lib/ecommerce/browser";
-import { cartCountSchema, profileSchema, type Account } from "@/lib/ecommerce/contracts";
-import { subscribeCartChanges } from "@/lib/ecommerce/cart";
 import { useGuestCart } from "@/lib/ecommerce/guest-cart";
+import { shopApi } from "@/lib/ecommerce/shop-store";
 import { PRODUCTS, type ProductId } from "./products";
 import { ProductMark } from "./ProductMark";
 import { NavInk, type NavInkPress } from "./NavInk";
@@ -19,58 +17,14 @@ export function ShopNavigation() {
   const navRef = useRef<HTMLElement>(null);
   const [pressed, setPressed] = useState<NavInkPress | null>(null);
   const [hovered, setHovered] = useState<ProductId | null>(null);
-  const [account, setAccount] = useState<Account | null>(null);
-  const [accountQuantity, setAccountQuantity] = useState(0);
+  const { currentData: profile } = shopApi.useProfileQuery();
+  const account = profile?.account;
+  const { currentData: cart } = shopApi.useCartCountQuery(undefined, { skip: !account });
   const guestCart = useGuestCart();
-  const accountId = account?.id;
-  const quantity = accountQuantity + guestCart.reduce((total, line) => total + line.quantity, 0);
+  const quantity = (account ? cart?.quantity ?? 0 : 0) + guestCart.reduce((total, line) => total + line.quantity, 0);
   const current = (Object.keys(PRODUCTS) as ProductId[]).find(id => pathname.startsWith(`/shop/${id}`));
   const highlighted = hovered ?? current;
 
-  useEffect(() => {
-    let pending: AbortController | undefined;
-    function clearProfile() {
-      pending?.abort();
-      setAccount(null);
-      setAccountQuantity(0);
-    }
-    function loadProfile() {
-      clearProfile();
-      pending = new AbortController();
-      const { signal } = pending;
-      void storefrontGet("/me", profileSchema, signal).then(profile => {
-        if (!signal.aborted) setAccount(profile.account);
-      }).catch(() => {});
-    }
-    loadProfile();
-    const unsubscribe = subscribeSession(reason => {
-      if (reason === "invalid") clearProfile();
-      else loadProfile();
-    });
-    return () => { unsubscribe(); pending?.abort(); };
-  }, []);
-
-  useEffect(() => {
-    if (!accountId) return;
-    let pending: AbortController | undefined;
-    function loadCart() {
-      pending?.abort();
-      pending = new AbortController();
-      const { signal } = pending;
-      void storefrontGet("/cart/count", cartCountSchema, signal).then(cart => {
-        if (!signal.aborted) setAccountQuantity(cart.quantity);
-      }).catch(() => {});
-    }
-    loadCart();
-    const unsubscribe = subscribeCartChanges((updatedQuantity) => {
-      if (updatedQuantity === undefined) loadCart();
-      else {
-        pending?.abort();
-        setAccountQuantity(updatedQuantity);
-      }
-    });
-    return () => { unsubscribe(); pending?.abort(); };
-  }, [accountId]);
   return (
     <header className={styles.globalHeader}>
       <div className={styles.logoLink}><Link href="/" aria-label="Evolve, torna al sito"><Image src="/logoEvolve.png" alt="Evolve" width={61} height={49} priority /></Link><Link href="/negozio" className={styles.shopWord}>shop</Link></div>

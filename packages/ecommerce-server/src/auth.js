@@ -31,6 +31,7 @@ import {
   mailTransportConfig,
 } from "./auth/mail.js";
 import * as actions from "./auth/service.js";
+import { readBillingProfile, updateBillingProfile } from "./auth/billing-profile.js";
 import { signCommerceAssertion } from "./assertions.js";
 import { requireHttpsOrigin } from "./config.js";
 
@@ -85,6 +86,14 @@ async function jsonBody(request) {
       "currentPassword",
       "phone",
     ]);
+  } catch (error) {
+    if (error instanceof CommerceServiceError) throw error;
+    authError(400, "INVALID_INPUT", "Contenuto JSON non valido.");
+  }
+}
+async function billingBody(request) {
+  try {
+    return JSON.parse(await boundedBody(request, 8192));
   } catch (error) {
     if (error instanceof CommerceServiceError) throw error;
     authError(400, "INVALID_INPUT", "Contenuto JSON non valido.");
@@ -295,6 +304,29 @@ export function createStorefrontAuth({ mongoose, env = process.env }) {
           },
           { requestId },
         );
+      } catch (error) {
+        return failure(error, requestId);
+      }
+    },
+    async handleBillingProfile(request) {
+      const requestId = commerceRequestId();
+      try {
+        if (request.method !== "GET" && request.method !== "PUT")
+          authError(405, "METHOD_NOT_ALLOWED", "Metodo non consentito.");
+        const session = cookie(request, SESSION_COOKIE);
+        if (!session)
+          authError(401, "LOGIN_REQUIRED", "Accedi al negozio per continuare.");
+        const config = authConfig(env);
+        const writing = request.method === "PUT";
+        if (writing) checkMutation(request, config);
+        else readGuard(request, config);
+        const body = writing ? await billingBody(request) : undefined;
+        const store = await runtime();
+        await throttle(store, request, writing ? "profile" : "read", session);
+        const billing = writing
+          ? await updateBillingProfile(store, request, body, requestId)
+          : await readBillingProfile(store, request);
+        return commerceJson({ billing }, { requestId });
       } catch (error) {
         return failure(error, requestId);
       }

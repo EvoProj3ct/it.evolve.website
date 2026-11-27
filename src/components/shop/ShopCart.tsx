@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, Minus, Plus, Save, ShoppingBag, Trash2 } from "lucide-react";
 import type { PublicCatalogList } from "@evolve/ecommerce-server/catalog";
-import { cartLineKey, cartSchema, checkoutOptionsSchema, money, type Cart, type CheckoutOptions } from "@/lib/ecommerce/contracts";
-import { errorText, StorefrontError, storefrontGet, storefrontRead, subscribeSession } from "@/lib/ecommerce/browser";
+import { cartLineKey, money, type Cart, type CheckoutOptions } from "@/lib/ecommerce/contracts";
+import { errorText, StorefrontError, subscribeSession } from "@/lib/ecommerce/browser";
 import { importGuestCart, saveAccountCart } from "@/lib/ecommerce/cart";
 import { useGuestCart } from "@/lib/ecommerce/guest-cart";
+import { shopReads, useShopStore, type ShopStore } from "@/lib/ecommerce/shop-store";
 import { useStorefrontResource } from "./useStorefrontResource";
 import { CartProductArtwork, ResourceFeedback, ShopPageHeader } from "./ShopPreviewShared";
 import { PersonalizationText } from "./ShopPersonalization";
@@ -14,20 +15,21 @@ import { ShopGuestCart } from "./ShopGuestCart";
 import styles from "./CommercePreview.module.css";
 import live from "./Storefront.module.css";
 
-async function readCart(signal: AbortSignal) {
+async function readCart(store: ShopStore, signal: AbortSignal, refresh: boolean) {
   let accountCart: Cart;
   try {
-    accountCart = await storefrontGet("/cart", cartSchema, signal);
+    accountCart = await shopReads.cart(store, refresh);
   } catch (error) {
     if (!(error instanceof StorefrontError) || error.code !== "LOGIN_REQUIRED") throw error;
     return { cart: null, policy: null, policyError: "", importError: null };
   }
+  signal.throwIfAborted();
   const { cart, importError } = await importGuestCart(accountCart, signal);
   let policy: CheckoutOptions | null = null;
   let policyError = "";
   if (cart.items.length) {
     try {
-      policy = await storefrontGet("/checkout-options", checkoutOptionsSchema, signal);
+      policy = await shopReads.checkoutOptions(store, refresh);
     } catch (error) {
       signal.throwIfAborted();
       policyError = errorText(error);
@@ -38,7 +40,9 @@ async function readCart(signal: AbortSignal) {
 type DraftLine = { id: string; quantity: number };
 
 export function ShopCart() {
-  const resource = useStorefrontResource(readCart);
+  const store = useShopStore();
+  const load = useCallback((signal: AbortSignal, refresh: boolean) => readCart(store, signal, refresh), [store]);
+  const resource = useStorefrontResource(load);
   const { reload } = resource;
   const guestLines = useGuestCart();
   const [edit, setEdit] = useState<{ cart: Cart; draft: DraftLine[]; reviewed: boolean }>();
@@ -56,11 +60,11 @@ export function ShopCart() {
     }
     const controller = new AbortController();
     const { signal } = controller;
-    void storefrontRead<PublicCatalogList>("/catalog?limit=50", signal)
+    void shopReads.catalog(store, "limit=50")
       .then(({ items }) => { if (!signal.aborted) setProducts(items); })
       .catch(() => {});
     return () => controller.abort();
-  }, [hasItems]);
+  }, [hasItems, store]);
   useEffect(() => { setEdit(undefined); }, [cart]);
   useEffect(() => subscribeSession(reason => { if (reason === "changed") reload(); }), [reload]);
   const items = new Map(cart?.items.map(item => [cartLineKey(item), item]));

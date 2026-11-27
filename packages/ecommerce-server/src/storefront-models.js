@@ -82,6 +82,14 @@ export function buildStorefrontModels(connection) {
       publicId: { ...publicId(), ...opt },
       emailNormalized: f.text(254),
       passwordHash: f.text(512, { secret: true }),
+      billingProfile: f.object({
+        name: f.text(200),
+        taxCode: f.text(40, opt),
+        vatNumber: f.text(40, opt),
+        recipientCode: f.text(20, opt),
+        certifiedEmail: f.text(254, opt),
+        address: address(),
+      }, { ...opt, secret: true }),
       status: f.choice(
         ["pending_verification", "active", "suspended", "closed"],
         { default: "pending_verification" },

@@ -28,6 +28,7 @@ export function createStorefrontAuth(options: {
 }): Readonly<{
   handleAuth(request: Request, action: string): Promise<Response>;
   handleProfile(request: Request): Promise<Response>;
+  handleBillingProfile(request: Request): Promise<Response>;
   authenticate(
     request: Request,
     options?: { rateLimit?: "read" | "customer-link" },

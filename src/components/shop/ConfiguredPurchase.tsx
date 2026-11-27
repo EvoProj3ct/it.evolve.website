@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ShoppingCart } from "lucide-react";
-import type { ConfiguratorKind, PublicCatalogList, PublicCatalogProduct } from "@evolve/ecommerce-server/catalog";
+import type { ConfiguratorKind, PublicCatalogProduct } from "@evolve/ecommerce-server/catalog";
 import { money, publicIdSchema, type PersonalizationInput } from "@/lib/ecommerce/contracts";
 import { addCatalogProduct } from "@/lib/ecommerce/cart";
-import { errorText, StorefrontError, storefrontRead, subscribeSession } from "@/lib/ecommerce/browser";
+import { errorText, StorefrontError, subscribeSession } from "@/lib/ecommerce/browser";
+import { shopReads, useShopStore } from "@/lib/ecommerce/shop-store";
 import type { LogoAsset } from "./products";
 import styles from "./Storefront.module.css";
 
@@ -48,12 +49,14 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
   disabled?: boolean;
   buttonClass: string;
 }) {
+  const store = useShopStore();
   const [products, setProducts] = useState<PublicCatalogProduct[]>([]);
   const [selected, setSelected] = useState("");
   const [cursor, setCursor] = useState("");
   const [next, setNext] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [retry, setRetry] = useState(0);
+  const lastRetry = useRef(0);
   const [catalogError, setCatalogError] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -70,23 +73,24 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
   useEffect(() => {
     const controller = new AbortController();
     const { signal } = controller;
-    const query = new URLSearchParams({ configurator: kind, limit: "20" });
+    const query = new URLSearchParams({ limit: "20", configurator: kind });
     if (cursor) query.set("cursor", cursor);
     const location = new URLSearchParams(window.location.search);
     const id = publicIdSchema.safeParse(location.get("tipo") === kind ? location.get("articolo") : null);
     setLoading(true);
     setCatalogError("");
+    const refresh = lastRetry.current !== retry;
+    lastRetry.current = retry;
     let retryTimer: number | undefined;
-    async function load(canRetry: boolean) {
+    async function load(canRetry: boolean, force: boolean) {
       try {
-        const [page, requested] = await Promise.all([
-          storefrontRead<PublicCatalogList>(`/catalog?${query}`, signal),
-          !cursor && id.success
-            ? storefrontRead<PublicCatalogProduct>(`/catalog/${id.data}`, signal).catch(() => null)
-            : null,
-        ]);
+        const page = await shopReads.catalog(store, query.toString(), force);
         if (signal.aborted) return;
         const items = page.items.filter(item => item.configurator === kind);
+        const requested = !cursor && id.success && !items.some(item => item.id === id.data)
+          ? await shopReads.catalogProduct(store, id.data, force).catch(() => null)
+          : null;
+        if (signal.aborted) return;
         if (requested?.configurator === kind && !items.some(item => item.id === requested.id)) items.unshift(requested);
         setProducts(current => cursor ? [...current, ...items.filter(item => !current.some(old => old.id === item.id))] : items);
         if (!cursor && id.success) setSelected(current => current || (items.some(item => item.id === id.data) ? id.data : ""));
@@ -98,19 +102,19 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
               ["ATLAS_UNAVAILABLE", "ATLAS_SERVICE_REJECTED"].includes(reason.code))) {
           retryTimer = window.setTimeout(() => {
             retryTimer = undefined;
-            void load(false);
+            void load(false, true);
           }, 600);
         } else setCatalogError(errorText(reason));
       } finally {
         if (!signal.aborted && retryTimer === undefined) setLoading(false);
       }
     }
-    void load(true);
+    void load(true, refresh);
     return () => {
       controller.abort();
       window.clearTimeout(retryTimer);
     };
-  }, [kind, cursor, retry]);
+  }, [kind, cursor, retry, store]);
 
   async function add() {
     if (!product || pending.current) return;
@@ -123,7 +127,7 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
       const { logoAsset, ...options } = prepare();
       const logo = logoAsset ? await rasterLogo(logoAsset) : undefined;
       controller.signal.throwIfAborted();
-      await addCatalogProduct(product, { ...options, logo }, controller.signal);
+      await addCatalogProduct(store, product, { ...options, logo }, controller.signal);
       if (!controller.signal.aborted) setOutcome("added");
     } catch (reason) {
       if (reason instanceof StorefrontError && reason.status === 401) setError("La sessione è scaduta. Premi di nuovo per aggiungere al carrello.");
