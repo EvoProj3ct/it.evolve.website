@@ -1,62 +1,63 @@
 .loading {
-  display: flex;
-  align-items: center;
-  gap: .65rem;
-  min-block-size: 3rem;
-  color: inherit;
-  font-size: .8rem;
-}
-
-.loading[data-page="true"] {
   display: grid;
   align-content: center;
   justify-items: center;
-  min-block-size: 66svh;
+  gap: .5rem;
+  min-block-size: 7rem;
+  color: inherit;
+  font-size: .875rem;
+  text-align: center;
+}
+
+.loading[data-page="true"] {
+  min-block-size: 84svh;
 }
 
 .runway {
+  --ghost-size: 1.45rem;
   position: relative;
-  inline-size: 4.5rem;
-  block-size: 1.5rem;
+  inline-size: min(100%, 12rem);
+  block-size: 2.75rem;
   overflow: hidden;
   pointer-events: none;
+  contain: layout paint;
 }
 
 .loading[data-page="true"] .runway {
-  inline-size: min(76vw, 28rem);
-  block-size: 3rem;
+  --ghost-size: clamp(1.85rem, 4.8vw, 2.45rem);
+  inline-size: min(76vw, 26rem);
+  block-size: 4.5rem;
 }
 
 .ghost {
   position: absolute;
-  inset-block-start: 20%;
-  left: 0;
-  width: .85rem;
-  opacity: .48;
-  animation: escape 3.4s linear both;
+  inset-block-start: 45%;
+  left: 50%;
+  width: var(--ghost-size);
+  opacity: .63;
+  transform: translate(-50%, -50%);
+  animation: run-back-and-forth 4.4s linear var(--delay, 0s) infinite;
 }
 
-.loading[data-page="true"] .ghost { width: 1.5rem; }
-.ghost:nth-child(2) { inset-block-start: 43%; animation-delay: .32s; }
-.ghost:nth-child(3) { inset-block-start: 11%; animation-delay: .68s; }
-.body { fill: #171b19; animation: ghost-blink 3.4s linear both; }
-.ghost:nth-child(2) .body { animation-delay: .32s; }
-.ghost:nth-child(3) .body { animation-delay: .68s; }
+.ghost:nth-child(1) { --delay: -.86s; }
+.ghost:nth-child(2) { --delay: -.52s; inset-block-start: 64%; }
+.ghost:nth-child(3) { --delay: -.18s; inset-block-start: 37%; }
+.body { fill: #171b19; animation: ghost-blink 4.4s linear var(--delay, 0s) infinite; }
 
-@keyframes escape {
-  0% { left: -20%; opacity: 0; }
-  14% { opacity: .48; }
-  80% { opacity: .48; }
-  100% { left: 100%; opacity: 0; }
+@keyframes run-back-and-forth {
+  0% { left: var(--ghost-size); transform: translate(-50%, -50%) scaleX(1); }
+  50% { left: calc(100% - var(--ghost-size)); transform: translate(-50%, -50%) scaleX(1); }
+  50.01% { left: calc(100% - var(--ghost-size)); transform: translate(-50%, -50%) scaleX(-1); }
+  100% { left: var(--ghost-size); transform: translate(-50%, -50%) scaleX(-1); }
 }
 
 @keyframes ghost-blink {
-  0%, 54%, 63%, 75%, 100% { opacity: 1; }
-  59%, 69%, 83% { opacity: .15; }
+  0%, 23%, 32%, 42%, 73%, 82%, 92%, 100% { opacity: 1; }
+  28%, 37%, 78%, 87% { opacity: .38; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ghost, .body { animation: none; }
-  .ghost { left: calc(50% - .5rem); }
+  .ghost { left: 50%; inset-block-start: 50%; }
   .ghost:nth-child(n+2) { display: none; }
 }
