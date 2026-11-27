@@ -3,11 +3,12 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
-import { ArrowUpRight, BookOpen, Check, Download, Heart, MoveHorizontal, Package, Pause, Play, Plus, RotateCcw, Smartphone, Store, Upload, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowUpRight, BookOpen, Check, Download, MoveHorizontal, Pause, Play, Plus, RotateCcw, Smartphone, Upload, Volume2, VolumeX, X } from "lucide-react";
 import { isLinkerOfferKind, linkerBundleSize, linkerBundleSizes, linkerOfferKind, type LinkerOfferKind } from "@evolve/ecommerce-server/keyring-offers";
 import { ProductMark } from "./ProductMark";
 import { LinkerBundleArtwork } from "./LinkerBundleArtwork";
 import { LinkerPile } from "./LinkerPile";
+import { LinkerStoryArtwork } from "./LinkerStoryArtwork";
 import { ProductColorPicker } from "./ProductColorPicker";
 import { CartoonNotes } from "./CartoonNotes";
 import { BundleDiscFields, EDiskBundle, EDiskDiscStudio, EDiskGiftIdeas, EDiskRecordDemo, type BundleDisc, type DiscSource } from "./EDiskRecords";
@@ -251,7 +252,14 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
 
       {!isDisk && <section id="scopri" className={styles.story} aria-labelledby="story-title">
         <div className={styles.storyHeading}><h2 id="story-title">{info.punchline}<span>.</span></h2><p>Il tag NFC apre il collegamento che scegli, con uno smartphone compatibile.</p></div>
-        <div className={styles.steps}>{info.steps.map((step, index) => <article key={step.title} className={styles.step}><span className={styles.stepNumber}>0{index + 1}</span><div className={styles.stepGraphic} aria-hidden="true">{index === 0 ? <Store /> : index === 1 ? <Package /> : <Heart />}</div><h3>{step.title}</h3><p>{step.description}</p></article>)}</div>
+        <div className={styles.steps}>{PRODUCTS["e-linker"].steps.map((step, index) =>
+          <article key={step.scene} className={styles.step}>
+            <span className={styles.stepNumber}>0{index + 1}</span>
+            <div className={styles.stepGraphic}><LinkerStoryArtwork scene={step.scene} /></div>
+            <h3>{step.title}</h3>
+            <p>{step.description}</p>
+          </article>,
+        )}</div>
       </section>}
 
       {colorStudies}

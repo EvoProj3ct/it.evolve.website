@@ -11,8 +11,8 @@ import { ProductMark } from "./ProductMark";
 import styles from "./CommercePreview.module.css";
 import live from "./Storefront.module.css";
 
-export function ShopPageHeader({ title }: { title: string }) {
-  return <><div className={styles.topline}><Link href="/shop/e-linker" className={styles.backLink}><ArrowLeft size={15} /> Torna agli oggetti</Link><Link href="/account" className={styles.textLink}>Il tuo spazio <ArrowUpRight size={13} /></Link></div><header className={styles.pageHeading}><h1>{title}<span>.</span></h1></header></>;
+export function ShopPageHeader({ title, showAccountLink = true }: { title: string; showAccountLink?: boolean }) {
+  return <><div className={styles.topline}><Link href="/shop/e-linker" className={styles.backLink}><ArrowLeft size={15} /> Torna agli oggetti</Link>{showAccountLink && <Link href="/account" className={styles.textLink}>Il tuo spazio <ArrowUpRight size={13} /></Link>}</div><header className={styles.pageHeading}><h1>{title}<span>.</span></h1></header></>;
 }
 
 function catalogProductMark(product?: PublicCatalogProduct, slug = product?.slug): ConfiguratorKind | undefined {

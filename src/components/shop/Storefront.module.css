@@ -6,8 +6,8 @@
 .back { color: #7f8f74; font-size: 10px; }
 .form { display: grid; gap: 21px; max-width: 620px; margin-top: 24px; }
 .form > label, .passwordConfirmation, .fieldGrid > label { display: grid; gap: 10px; color: #5c7251; font-size: 11px; }
-.form input:not([type="checkbox"]):not([type="radio"]), .fieldGrid input, .fieldGrid select { width: 100%; min-width: 0; min-height: 49px; padding: 12px 14px; border: 1px solid #dce6d4; border-radius: 9px; background: #fcfdfb; color: #253722; font: inherit; font-size: 14px; transition: border-color .3s, box-shadow .3s; }
-.form input:focus, .fieldGrid input:focus, .fieldGrid select:focus { outline: none; border-color: #8bbc73; box-shadow: 0 0 0 3px #72c94f12; }
+.form input:not([type="checkbox"]):not([type="radio"]), .fieldGrid input, .fieldGrid select, .supportForm :is(select, textarea) { width: 100%; min-width: 0; min-height: 49px; padding: 12px 14px; border: 1px solid #dce6d4; border-radius: 9px; background: #fcfdfb; color: #253722; font: inherit; font-size: 14px; transition: border-color .3s, box-shadow .3s; }
+.form input:focus, .fieldGrid input:focus, .fieldGrid select:focus, .supportForm :is(select, textarea):focus { outline: none; border-color: #8bbc73; box-shadow: 0 0 0 3px #72c94f12; }
 .form input:disabled, .fieldGrid input:disabled, .fieldGrid select:disabled { opacity: .65; }
 .password { position: relative; display: block; }
 .password > input { padding-right: 47px !important; }
@@ -33,6 +33,16 @@
 .check a { color: #3c6430; text-decoration: underline; text-underline-offset: 3px; }
 .help { margin: 12px 0; color: #8c9b80; font-size: 11px; line-height: 1.75; }
 .form .help { margin: -8px 0 0; font-size: 10px; }
+.supportForm textarea { resize: vertical; line-height: 1.5; }
+.supportForm > .secondary { justify-self: start; margin-top: -10px; }
+.supportHistory { max-width: 620px; margin-top: 42px; padding-top: 24px; border-top: 1px solid #dce7d2; }
+.supportHistory ul { display: grid; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.supportHistory details { border: 1px solid #dce7d2; border-radius: 12px; background: #f5f8f0; }
+.supportHistory summary { padding: 14px 16px; color: #3b5930; cursor: pointer; }
+.supportHistory summary > span { display: inline-grid; gap: 4px; max-width: calc(100% - 20px); vertical-align: middle; overflow-wrap: anywhere; }
+.supportHistory summary strong { font-size: 14px; }
+.supportHistory summary small { color: #5c7251; font-size: 11px; }
+.supportHistory details > p { margin: 0 16px; padding: 14px 0; border-top: 1px solid #dce7d2; color: #253722; font-size: 14px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
 .inlineLink { justify-self: end; color: #7d936e; font-size: 11px; }
 .authLinks { display: grid; gap: 16px; margin-top: 28px; color: #8b9a7f; font-size: 11px; line-height: 1.6; }
 .authLinks a { display: inline-flex; align-items: center; gap: 9px; color: #55783f; }

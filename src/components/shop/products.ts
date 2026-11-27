@@ -130,9 +130,9 @@ export const PRODUCTS = {
     defaultSecondary: "#263C42",
     video: null as string | null,
     steps: [
-      { title: "Fatti conoscere.", description: "Il tuo sito, i social, il menu della tua attività. Il prossimo contatto comincia con un gesto." },
-      { title: "Dai spazio a un prodotto.", description: "Una scheda, un video, una novità. Un accesso diretto a ciò che vuoi far scoprire." },
-      { title: "Regala un ricordo.", description: "Un album, una dedica, un video per un amico. Un momento da portare sempre con sé." },
+      { scene: "profile", title: "Fatti conoscere.", description: "Il tuo sito, i social, il menu della tua attività. Il prossimo contatto comincia con un gesto." },
+      { scene: "product", title: "Dai spazio a un prodotto.", description: "Una scheda, un video, una novità. Un accesso diretto a ciò che vuoi far scoprire." },
+      { scene: "memory", title: "Regala un ricordo.", description: "Un album, una dedica, un video per un amico. Un momento da portare sempre con sé." },
     ],
     faq: [
       { question: "Che cosa contiene e-linker?", answer: "Un tag NFC all’interno del portachiavi stampato in 3D. Avvicinandolo a uno smartphone compatibile puoi aprire il collegamento scelto: la tua attività, un prodotto oppure un contenuto personale." },
