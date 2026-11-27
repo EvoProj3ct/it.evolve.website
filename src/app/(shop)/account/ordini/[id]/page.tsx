@@ -6,6 +6,7 @@ export default async function OrderPage({ params, searchParams }: {
 }) {
   const [{ id }, { pagamento }] = await Promise.all([params, searchParams]);
   if (!/^[A-Za-z0-9_-]{16,80}$/.test(id)) notFound();
-  return <ShopOrderDetail key={id} id={id} returnedFromStripe={pagamento === "ritorno"} />;
+  const paymentReturn = pagamento === "ritorno" ? "success" : pagamento === "interrotto" ? "cancelled" : undefined;
+  return <ShopOrderDetail key={id} id={id} paymentReturn={paymentReturn} />;
 }
 

@@ -4,6 +4,7 @@ import { linkerBundleSize } from "@evolve/ecommerce-server/keyring-offers";
 import { money, statusLabels, type CustomerOrderListItem, type OrderSummary } from "@/lib/ecommerce/contracts";
 import { ProductMark } from "./ProductMark";
 import { LinkerBundleArtwork } from "./LinkerBundleArtwork";
+import { OrderStatusGhost, type OrderGhostKind } from "./OrderStatusGhost";
 import styles from "./Storefront.module.css";
 
 const sections = {
@@ -12,9 +13,10 @@ const sections = {
   waiting: "In attesa",
   fulfillment: "Da evadere",
   progress: "In lavorazione",
+  shipping: "In spedizione",
   received: "Evasi",
   closed: "Chiusi",
-} as const;
+} as const satisfies Record<OrderGhostKind, string>;
 
 function sectionFor(order: OrderSummary): keyof typeof sections {
   const { operationalStatus, paymentStatus, fulfillmentStatus } = order;
@@ -23,6 +25,8 @@ function sectionFor(order: OrderSummary): keyof typeof sections {
   if (["awaiting", "expired", "failed"].includes(paymentStatus)) return "payable";
   if (["processing", "refund_pending"].includes(paymentStatus)) return "waiting";
   if (fulfillmentStatus === "fulfilled") return "received";
+  if (order.deliveryPhase === "shipped") return "shipping";
+  if (operationalStatus === "in_progress" || fulfillmentStatus === "in_progress" || fulfillmentStatus === "partial") return "progress";
   if (fulfillmentStatus === "unfulfilled") return "fulfillment";
   return "progress";
 }
@@ -31,7 +35,7 @@ export function OrderStateBadges({ order }: { order: OrderSummary }) {
   const states = [
     { label: "Ordine", value: order.operationalStatus },
     { label: "Pagamento", value: order.paymentStatus },
-    { label: "Evasione", value: order.fulfillmentStatus },
+    { label: "Evasione", value: order.deliveryPhase ?? order.fulfillmentStatus },
   ];
   return <div className={styles.orderStates}>{states.map(({ label, value }) =>
     <span key={label} data-state={value}><small>{label}</small>
@@ -65,14 +69,14 @@ export function ShopOrderCards({ items, formatDate }: {
       const orders = items.filter(order => sectionFor(order) === section);
       if (!orders.length) return null;
       return <section key={section} className={styles.orderGroup} data-section={section}>
-        <h3><i aria-hidden="true" />{sections[section]}</h3>
+      <h3><i aria-hidden="true" />{sections[section]}</h3>
         {orders.map(order => <Link href={`/account/ordini/${order.id}`} className={styles.realOrder} key={order.id}>
           <OrderProductMarks order={order} />
           <div className={styles.orderCardBody}>
             <strong>{order.number}</strong><time dateTime={order.placedAt}>{formatDate(order.placedAt)}</time>
             <OrderStateBadges order={order} />
           </div>
-          <span className={styles.orderCardTotal}>{money(order.totals.grossMinor)}<ArrowUpRight size={16} aria-hidden="true" /></span>
+          <span className={styles.orderCardTotal}><OrderStatusGhost kind={section} />{money(order.totals.grossMinor)}<ArrowUpRight size={16} aria-hidden="true" /></span>
         </Link>)}
       </section>;
     })}

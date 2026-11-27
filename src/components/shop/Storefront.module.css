@@ -118,6 +118,7 @@
 .orderGroup[data-section="waiting"] { --status-ink: #5d4885; --status-border: #bdafd6; --status-paper: #f7f3fc; }
 .orderGroup[data-section="fulfillment"] { --status-ink: #315a86; --status-border: #a4bedc; --status-paper: #eff5fc; }
 .orderGroup[data-section="progress"] { --status-ink: #2d695f; --status-border: #9dc4ba; --status-paper: #eef8f5; }
+.orderGroup[data-section="shipping"] { --status-ink: #2c5481; --status-border: #90b4dc; --status-paper: #eff6fd; }
 .orderGroup[data-section="closed"] { --status-ink: #58625d; --status-border: #bcc6c1; --status-paper: #f3f6f4; }
 .orderGroup h3 { display: flex; align-items: center; gap: 9px; margin: 0; color: var(--status-ink); font-size: 13px; font-weight: 600; }
 .orderGroup h3 > i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
@@ -154,6 +155,7 @@
 .orderCardBody > strong { display: block; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
 .orderCardBody > time { display: block; margin-top: 5px; color: #526459; font-size: 11px; }
 .orderCardTotal { display: inline-flex; align-items: center; gap: 10px; color: var(--status-ink); font-size: 15px; font-weight: 500; white-space: nowrap; }
+.orderStatusGhost { width: 48px; height: 48px; flex: none; }
 .orderStates { display: flex; flex-wrap: wrap; gap: 7px; margin-block: 18px; font-size: 12px; }
 .realOrder .orderStates { margin-block: 9px 0; }
 .orderStates > span { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border: 1px solid #d2ded1; border-radius: 999px; background: #f4f7f2; color: #3d5242; font-weight: 600; }
@@ -162,6 +164,7 @@
 .orderStates > :is([data-state="awaiting"], [data-state="failed"], [data-state="expired"]) { border-color: #dfc287; background: #fff4d9; color: #79520e; }
 .orderStates > :is([data-state="on_hold"], [data-state="under_review"], [data-state="disputed"]) { border-color: #dfaaa4; background: #fbe8e4; color: #873f3b; }
 .orderStates > [data-state="unfulfilled"] { border-color: #a7bddb; background: #e8f1ff; color: #315a86; }
+.orderStates > [data-state="shipped"] { border-color: #90b4dc; background: #e3effc; color: #2c5481; }
 .orderStates > :is([data-state="in_progress"], [data-state="partial"]) { border-color: #a8c9be; background: #e9f6ef; color: #2d695f; }
 .orderStates > :is([data-state="processing"], [data-state="refund_pending"], [data-state="partially_refunded"]) { border-color: #cbbddc; background: #f2ebf9; color: #5d4885; }
 .orderStates > :is([data-state="cancelled"], [data-state="refunded"]) { border-color: #c6cfca; background: #edf1ee; color: #56615d; }
@@ -179,10 +182,31 @@
 .totals > div { display: flex; justify-content: space-between; gap: 20px; color: #80946d; font-size: 12px; }
 .totals dd { margin: 0; color: #4b663c; }
 .totals > div:last-child { padding-top: 18px; border-top: 1px solid #dbe6d0; color: #36562a; font-size: 18px; }
-.addresses { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 25px; margin-top: 27px; }
-.addresses h3 { margin-bottom: 13px; color: #678351; font-size: 13px; font-weight: 400; }
-.addresses address { color: #8a9b7a; font-size: 12px; line-height: 1.9; font-style: normal; overflow-wrap: anywhere; }
+.addresses { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%, 19rem),1fr)); align-items: start; gap: 14px; margin-block: 28px 15px; }
+.addressCard { min-width: 0; padding: clamp(16px, 2.5vw, 25px); border: 1px solid #d5e1cf; border-radius: 18px; background: #f9fcf7; }
+.addressCard h3 { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding-bottom: 13px; border-bottom: 1px solid #e1eadc; color: #234632; font-size: 16px; font-weight: 600; }
+.addressCard h3 svg { flex: none; color: #507951; }
+.addressCard dl { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%, 8.5rem),1fr)); gap: 14px 18px; margin: 0; }
+.addressCard dt { margin-bottom: 4px; color: #50664e; font-size: 11px; font-weight: 600; }
+.addressCard dd { margin: 0; color: #23382b; font-size: 13px; line-height: 1.55; overflow-wrap: anywhere; }
+.addressWide { grid-column: 1 / -1; }
+.addressLines { display: grid; gap: 1px; }
+.addressLines small { color: #526459; font-size: 12px; }
 .paymentState { color: #5f8149; font-size: 20px; }
+.paymentSuccess {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0;
+  padding: 14px 16px;
+  border: 1px solid #c2d6ba;
+  border-radius: 12px;
+  background: #eef7e8;
+  color: #234e2b;
+  font-size: 15px;
+  font-weight: 600;
+}
+.paymentSuccess svg { flex: none; }
 .paymentOverlay {
   position: fixed;
   inset: 0;
@@ -289,6 +313,7 @@
   .orderCardBody { grid-column: 1 / -1; grid-row: 2; }
   .orderProductCircle { width: 32px; }
   .orderCardTotal { gap: 5px; font-size: 13px; }
+  .orderStatusGhost { width: 32px; height: 32px; }
   .orderStates { font-size: 11px; }
   .orderSection { margin-top: 26px; padding-top: 23px; }
   .orderSection h2 { font-size: 28px; }

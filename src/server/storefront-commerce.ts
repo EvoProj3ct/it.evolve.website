@@ -113,14 +113,25 @@ export async function handleCommerce(request: Request, operation: Operation, raw
     try {
       response = await measureCommercePhase(operation, "atlas_request", () =>
         fetch(new URL(path, origin), { method: "POST", cache: "no-store", redirect: "error", signal: AbortSignal.timeout(operation === "payment" || operation === "verifyPayment" ? 25000 : 15000), headers: { Authorization: `Bearer ${token}`, Accept: "application/json", "Content-Type": "application/json", "X-Commerce-Assertion": prepared.assertion, ...(bypass ? { "x-vercel-protection-bypass": bypass } : {}) }, body: JSON.stringify(prepared.payload) }));
-    } catch { throw new CommerceServiceError(503, "ATLAS_UNAVAILABLE", "Collegamento interrotto. L’esito dell’operazione potrebbe non essere ancora noto: aggiorna i dati prima di riprovare."); }
-    const value = await limitedJson(response, 1048576);
+    } catch (error) {
+      if (operation === "verifyPayment") console.warn("storefront.ecommerce.payment_verification_unavailable", {
+        errorName: error instanceof Error ? error.name : undefined,
+      });
+      throw new CommerceServiceError(503, "ATLAS_UNAVAILABLE", "Collegamento interrotto. L’esito dell’operazione potrebbe non essere ancora noto: aggiorna i dati prima di riprovare.");
+    }
+    const upstreamId = response.headers.get("x-request-id");
+    const atlasRequestId = upstreamId && /^[a-f0-9-]{36}$/i.test(upstreamId) ? upstreamId : undefined;
+    const value = await limitedJson(response, 1048576).catch(error => {
+      if (operation === "verifyPayment") console.warn("storefront.ecommerce.payment_verification_invalid_response", {
+        atlasStatus: response.status,
+        atlasRequestId,
+      });
+      throw error;
+    });
     if (!response.ok) {
       const parsedError = upstreamError.safeParse(value);
       const code = parsedError.success ? parsedError.data.error.code : "ATLAS_UNAVAILABLE";
-      const upstreamId = response.headers.get("x-request-id");
-      const atlasRequestId = upstreamId && /^[a-f0-9-]{36}$/i.test(upstreamId) ? upstreamId : undefined;
-      if (response.status >= 500) {
+      if (response.status >= 500 || operation === "verifyPayment") {
         console.warn("storefront.ecommerce.atlas_rejected", {
           operation,
           atlasStatus: response.status,

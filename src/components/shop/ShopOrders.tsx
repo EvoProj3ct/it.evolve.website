@@ -1,17 +1,18 @@
 "use client";
 import Link from "next/link";
 import { useRef, useState } from "react";
-import { ArrowRight, ArrowUpRight, RefreshCw } from "lucide-react";
-import { isStripeCheckoutUrl, money, paymentSchema, statusLabels, type Order } from "@/lib/ecommerce/contracts";
+import { ArrowRight, ArrowUpRight, CheckCircle2, RefreshCw } from "lucide-react";
+import { isStripeCheckoutUrl, money, paymentSchema, statusLabels, type Order, type Payment } from "@/lib/ecommerce/contracts";
 import { errorText, hidesPreviousData, StorefrontError, storefrontMutate } from "@/lib/ecommerce/browser";
 import { cacheShopEntries, orderCacheAge, shopApi, useShopQueryView, useShopStore } from "@/lib/ecommerce/shop-store";
 import { ResourceFeedback, ShopPageHeader } from "./ShopPreviewShared";
 import { PersonalizationText } from "./ShopPersonalization";
-import { AddressText, BillingText } from "./ShopAddress";
+import { OrderAddresses } from "./ShopAddress";
 import { ShopTracking } from "./ShopTracking";
 import { OrderStateBadges, ShopOrderCards } from "./ShopOrderCards";
 import { PaymentReturnFeedback } from "./PaymentReturnFeedback";
-import { paymentConfirmationPending, usePaymentReturn } from "./usePaymentReturn";
+import { forgetStripeCheckout, rememberStripeCheckout, type ShopPaymentReturn } from "./stripeCheckoutReturn";
+import { usePaymentReturn } from "./usePaymentReturn";
 import common from "./CommercePreview.module.css";
 import styles from "./Storefront.module.css";
 
@@ -57,34 +58,51 @@ export function ShopOrdersList({ compact = false }: { compact?: boolean }) {
   </section>;
 }
 
-function OrderPayment({ order, returnedFromStripe }: { order: Order; returnedFromStripe: boolean }) {
+function OrderPayment({ order, resource, confirmation, paymentReturn }: {
+  order: Order;
+  resource: ReturnType<typeof useShopQueryView<Payment>>;
+  confirmation: ReturnType<typeof usePaymentReturn>;
+  paymentReturn: ShopPaymentReturn;
+}) {
   const store = useShopStore();
-  const resource = useShopQueryView(shopApi.usePaymentStatusQuery(order.id, { refetchOnMountOrArgChange: orderCacheAge }));
   const [busy, setBusy] = useState(false), [error, setError] = useState("");
+  const [requestedPayment, setRequestedPayment] = useState(false);
   const intent = useRef<{ revision: number; key: string } | null>(null), lock = useRef(false);
   const payment = resource.data;
-  const confirmation = usePaymentReturn(order.id, returnedFromStripe);
-  const awaitingConfirmation = returnedFromStripe && paymentConfirmationPending(payment);
+  const amounts = payment && payment.orderRevision >= order.revision ? payment : order.payment;
+  const paid = order.paymentStatus === "paid";
+  const awaitingConfirmation = confirmation.returned && ["awaiting", "processing"].includes(order.paymentStatus);
   const needsConfirmation = awaitingConfirmation && !hidesPreviousData(resource.error);
   const checkingConfirmation = needsConfirmation && confirmation.checking;
-  const allowed = !!payment && !awaitingConfirmation && order.operationalStatus !== "cancelled" && !order.payment?.requiresReview && ["awaiting", "failed", "expired"].includes(payment.paymentStatus) && (!payment.attempt || ["ready", "failed", "expired", "cancelled"].includes(payment.attempt.state));
+  const canResumeAfterBrowserBack = paymentReturn === undefined && !confirmation.checking && !confirmation.failure
+    && payment?.attempt?.state === "ready" && order.paymentStatus === "awaiting";
+  const allowed = confirmation.initialized && !!payment && (!awaitingConfirmation || canResumeAfterBrowserBack)
+    && order.operationalStatus !== "cancelled" && !order.payment?.requiresReview
+    && ["awaiting", "failed", "expired"].includes(order.paymentStatus)
+    && order.paymentStatus === payment.paymentStatus
+    && (!payment.attempt || ["ready", "failed", "expired", "cancelled"].includes(payment.attempt.state));
   const refresh = awaitingConfirmation ? confirmation.recheck : resource.reload;
   async function pay() {
-    if (lock.current || !allowed || resource.refreshing) return;
+    if (lock.current || !payment || !allowed || resource.refreshing) return;
     lock.current = true; setBusy(true); setError("");
-    if (!intent.current) intent.current = { revision: payment!.orderRevision, key: crypto.randomUUID() };
+    setRequestedPayment(true);
+    if (!intent.current) intent.current = { revision: payment.orderRevision, key: crypto.randomUUID() };
     try {
       const result = await storefrontMutate(`/orders/${order.id}/payment-session`, "POST", { expectedRevision: intent.current.revision, idempotencyKey: intent.current.key }, paymentSchema);
       intent.current = null;
       if (result.checkoutUrl && isStripeCheckoutUrl(result.checkoutUrl)) {
+        rememberStripeCheckout(order.id);
         window.location.assign(result.checkoutUrl);
       } else {
         await cacheShopEntries(store, [{ endpointName: "paymentStatus", arg: order.id, value: { ...result, checkoutUrl: null } }]);
+        if (order.paymentStatus !== result.paymentStatus) store.dispatch(shopApi.util.invalidateTags(["Orders"]));
+        if (result.paymentStatus === "paid") forgetStripeCheckout(order.id);
       }
     } catch (reason) {
-      if (reason instanceof StorefrontError && reason.code === "ORDER_CHANGED") {
+      if (reason instanceof StorefrontError && ["ORDER_CHANGED", "ORDER_NOT_PAYABLE"].includes(reason.code)) {
         intent.current = null;
         resource.reload();
+        store.dispatch(shopApi.util.invalidateTags(["Orders"]));
       }
       setError(errorText(reason));
     }
@@ -93,7 +111,7 @@ function OrderPayment({ order, returnedFromStripe }: { order: Order; returnedFro
   return <section className={styles.orderSection}>
     <PaymentReturnFeedback
       checking={checkingConfirmation}
-      confirmed={returnedFromStripe && payment?.paymentStatus === "paid"}
+      confirmed={(confirmation.returned || requestedPayment) && paid}
     />
     <div className={common.panelHeading}>
       <h2>Pagamento<span>.</span></h2>
@@ -101,33 +119,62 @@ function OrderPayment({ order, returnedFromStripe }: { order: Order; returnedFro
         disabled={busy || resource.busy || resource.refreshing || confirmation.checking}
         onClick={refresh} aria-label="Aggiorna lo stato del pagamento"><RefreshCw size={17} /></button>
     </div>
-    <ResourceFeedback busy={resource.busy && !awaitingConfirmation} error={checkingConfirmation ? null : resource.error}
+    <ResourceFeedback busy={resource.busy && !awaitingConfirmation} error={checkingConfirmation ? null : resource.error ?? (needsConfirmation && hidesPreviousData(confirmation.failure) ? confirmation.failure : null)}
       reload={refresh} next={`/account/ordini/${order.id}`} />
-    {payment && <>
-      <p className={styles.paymentState}>{awaitingConfirmation ? "In attesa della conferma" : statusLabels[payment.paymentStatus]}</p>
-      <div className={styles.moneyPair}>
-        <span>Incassato <strong>{money(payment.paidMinor)}</strong></span>
-        <span>Rimborsato <strong>{money(payment.refundedMinor)}</strong></span>
-      </div>
-      {!awaitingConfirmation && ["processing", "refund_pending", "under_review", "disputed"].includes(payment.paymentStatus) &&
-        <p className={styles.notice}>Lo stato è in aggiornamento. Puoi rileggerlo senza avviare un altro pagamento.</p>}
-      {allowed && <button className={styles.primary} type="button" disabled={busy || resource.refreshing} onClick={() => void pay()}>
-        {busy ? "Preparazione…" : payment.attempt?.state === "ready" ? "Riprendi il pagamento" : "Vai al pagamento"}<ArrowUpRight size={18} />
-      </button>}
-    </>}
-    {needsConfirmation && !confirmation.checking && !resource.error && <div className={styles.notice} role="status">
-      <p>La conferma del pagamento richiede ancora qualche istante.</p>
+    {paid && <p className={styles.paymentSuccess} role="status"><CheckCircle2 size={22} aria-hidden="true" /> Pagamento effettuato con successo</p>}
+    {!paid && <p className={styles.paymentState}>{awaitingConfirmation ? "In attesa della conferma" : statusLabels[order.paymentStatus]}</p>}
+    {amounts && <div className={styles.moneyPair}>
+      <span>Incassato <strong>{money(amounts.paidMinor)}</strong></span>
+      <span>Rimborsato <strong>{money(amounts.refundedMinor)}</strong></span>
+    </div>}
+    {!awaitingConfirmation && ["processing", "refund_pending", "under_review", "disputed"].includes(order.paymentStatus) &&
+      <p className={styles.notice}>Lo stato è in aggiornamento. Puoi rileggerlo senza avviare un altro pagamento.</p>}
+    {allowed && <button className={styles.primary} type="button" disabled={busy || resource.refreshing} onClick={() => void pay()}>
+      {busy ? "Preparazione…" : payment?.attempt?.state === "ready" ? "Riprendi il pagamento" : "Vai al pagamento"}<ArrowUpRight size={18} />
+    </button>}
+    {needsConfirmation && !confirmation.checking && !resource.error && !hidesPreviousData(confirmation.failure) && <div className={styles.notice} role="status">
+      <p>{confirmation.failure ? errorText(confirmation.failure) : "La conferma del pagamento richiede ancora qualche istante."}</p>
       <button type="button" className={styles.secondary} disabled={resource.refreshing} onClick={confirmation.recheck}>Verifica di nuovo</button>
     </div>}
     {error && <p className={styles.error} role="alert">{error} Puoi aggiornare lo stato o ripetere lo stesso tentativo.</p>}
   </section>;
 }
 
-export function ShopOrderDetail({ id, returnedFromStripe }: { id: string; returnedFromStripe: boolean }) {
+export function ShopOrderDetail({ id, paymentReturn }: { id: string; paymentReturn: ShopPaymentReturn }) {
   const resource = useShopQueryView(shopApi.useOrderQuery(id, { refetchOnMountOrArgChange: orderCacheAge }));
-  const order = resource.data;
+  const payment = useShopQueryView(shopApi.usePaymentStatusQuery(id, { skip: !resource.data, refetchOnMountOrArgChange: orderCacheAge }));
+  const confirmation = usePaymentReturn(id, paymentReturn);
+  const currentOrder = resource.data;
+  const currentPayment = payment.data;
+  const order = currentOrder && currentPayment && currentPayment.orderRevision >= currentOrder.revision
+    ? { ...currentOrder, paymentStatus: currentPayment.paymentStatus }
+    : currentOrder;
   const fulfillment = new Map(order?.fulfillment.map(item => [item.lineId, item]));
-  return <main id="shop-content" className={common.page}><ShopPageHeader title={order?.number || "Il tuo ordine"} description={order ? `Confermato il ${date(order.placedAt)}.` : "Dettagli, pagamento e aggiornamenti della fornitura."} />{returnedFromStripe && !order && resource.busy && <PaymentReturnFeedback checking confirmed={false} />}<ResourceFeedback busy={resource.busy && !returnedFromStripe} error={resource.error} reload={resource.reload} next={`/account/ordini/${id}`} />{order && <><div className={common.panelHeading}><Link href="/account/ordini" className={common.textLink}>Tutti gli ordini <ArrowRight size={14} /></Link><button type="button" className={styles.secondary} disabled={resource.refreshing} onClick={resource.reload}><RefreshCw size={15} /> Aggiorna lo stato</button></div><OrderStateBadges order={order} /><div className={styles.detailGrid}><section className={styles.orderSection}><h2>Le tue scelte<span>.</span></h2><div className={styles.quoteLines}>{order.lines.map(line => <div key={line.lineId}><span>{line.title}<small>{line.quantity} × {money(line.price.unitMinor)} · {line.price.taxMode === "inclusive" ? "IVA inclusa" : "IVA esclusa"}</small>{line.personalization && <PersonalizationText value={line.personalization} />}{fulfillment.has(line.lineId) && <LineFulfillment data={fulfillment.get(line.lineId)!} quantity={line.quantity} />}</span><strong>{money(line.totals.grossMinor)}</strong></div>)}</div><dl className={styles.totals}><div><dt>Imponibile</dt><dd>{money(order.totals.netMinor)}</dd></div><div><dt>IVA</dt><dd>{money(order.totals.taxMinor)}</dd></div>{order.discount && <div><dt>Sconto incluso · {order.discount.code} ({order.discount.percent}%)</dt><dd>−{money(order.discount.amountMinor)}</dd></div>}<div><dt>Totale</dt><dd>{money(order.totals.grossMinor)}</dd></div></dl><div className={styles.addresses}><div><h3>Fatturazione</h3><address><BillingText billing={order.billing} /></address></div>{order.shipping && <div><h3>Spedizione</h3><address><AddressText address={order.shipping} /></address></div>}</div>{order.fulfillmentSelections.map(selection => <p className={styles.notice} key={selection.optionPublicId}><strong>{selection.label}</strong><br />{selection.details}</p>)}</section><OrderPayment key={order.id} order={order} returnedFromStripe={returnedFromStripe} /></div><ShopTracking orderId={order.id} /></>}</main>;
+  return <main id="shop-content" className={common.page}>
+    <ShopPageHeader title={order?.number || "Il tuo ordine"} description={order ? `Confermato il ${date(order.placedAt)}.` : "Dettagli, pagamento e aggiornamenti della fornitura."} />
+    {confirmation.checking && !order && !hidesPreviousData(resource.error) && <PaymentReturnFeedback checking confirmed={false} />}
+    <ResourceFeedback busy={resource.busy && !confirmation.returned} error={resource.error} reload={resource.reload} next={`/account/ordini/${id}`} />
+    {order && <>
+      <div className={common.panelHeading}>
+        <Link href="/account/ordini" className={common.textLink}>Tutti gli ordini <ArrowRight size={14} /></Link>
+        <button type="button" className={styles.secondary} disabled={resource.refreshing} onClick={resource.reload}>
+          <RefreshCw size={15} /> Aggiorna lo stato
+        </button>
+      </div>
+      <OrderStateBadges order={order} />
+      <div className={styles.detailGrid}>
+        <section className={styles.orderSection}>
+          <h2>Le tue scelte<span>.</span></h2>
+          <div className={styles.quoteLines}>{order.lines.map(line => <div key={line.lineId}><span>{line.title}<small>{line.quantity} × {money(line.price.unitMinor)} · {line.price.taxMode === "inclusive" ? "IVA inclusa" : "IVA esclusa"}</small>{line.personalization && <PersonalizationText value={line.personalization} />}{fulfillment.has(line.lineId) && <LineFulfillment data={fulfillment.get(line.lineId)!} quantity={line.quantity} />}</span><strong>{money(line.totals.grossMinor)}</strong></div>)}</div>
+          <dl className={styles.totals}><div><dt>Imponibile</dt><dd>{money(order.totals.netMinor)}</dd></div><div><dt>IVA</dt><dd>{money(order.totals.taxMinor)}</dd></div>{order.discount && <div><dt>Sconto incluso · {order.discount.code} ({order.discount.percent}%)</dt><dd>−{money(order.discount.amountMinor)}</dd></div>}<div><dt>Totale</dt><dd>{money(order.totals.grossMinor)}</dd></div></dl>
+          <OrderAddresses billing={order.billing} shipping={order.shipping} />
+          {order.fulfillmentSelections.map(selection => <p className={styles.notice} key={selection.optionPublicId}><strong>{selection.label}</strong><br />{selection.details}</p>)}
+        </section>
+        <OrderPayment key={order.id} order={order} resource={payment} confirmation={confirmation} paymentReturn={paymentReturn} />
+      </div>
+      <ShopTracking orderId={order.id} />
+    </>}
+  </main>;
 }
 
 function LineFulfillment({ data, quantity }: { data: Order["fulfillment"][number]; quantity: number }) {
