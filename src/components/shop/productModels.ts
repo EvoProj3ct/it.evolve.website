@@ -101,7 +101,7 @@ function roundedRectangle(width: number, height: number, radius: number) {
   return shape;
 }
 
-function keyringOutline(kind: KeyringShape) {
+export function keyringOutline(kind: KeyringShape) {
   let shape: THREE.Shape;
   if (kind === "circle") {
     shape = new THREE.Shape();

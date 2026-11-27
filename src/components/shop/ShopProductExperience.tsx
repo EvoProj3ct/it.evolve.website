@@ -7,6 +7,7 @@ import { ArrowUpRight, BookOpen, Check, Download, Heart, MoveHorizontal, Package
 import { isLinkerOfferKind, linkerBundleSize, linkerBundleSizes, linkerOfferKind, type LinkerOfferKind } from "@evolve/ecommerce-server/keyring-offers";
 import { ProductMark } from "./ProductMark";
 import { LinkerBundleArtwork } from "./LinkerBundleArtwork";
+import { LinkerPile } from "./LinkerPile";
 import { ProductColorPicker } from "./ProductColorPicker";
 import { CartoonNotes } from "./CartoonNotes";
 import { BundleDiscFields, EDiskBundle, EDiskDiscStudio, EDiskGiftIdeas, EDiskRecordDemo, type BundleDisc, type DiscSource } from "./EDiskRecords";
@@ -327,6 +328,8 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
           </div>
         </div>
       </section>
+
+      {!isDisk && <LinkerPile />}
 
       <section className={styles.resources} aria-labelledby="resources-title"><div className={styles.resourceCopy}><h2 id="resources-title">L’oggetto è solo<br />l’inizio<span>.</span></h2><p>{isDisk ? "Dietro ogni disco c’è la tua collezione. Apri l’app, organizza i brani e scopri come dare vita al tuo e-disk." : "Forme, logo e collegamento NFC: prepara la tua idea."}</p></div><div className={styles.resourceLinks}>{isDisk && <Link href="/shop/e-disk/app"><Smartphone size={26} /><div><span>La tua collezione, online</span><h3>App e-disk</h3><p>Dischi, brani e giradischi. Tutto in un posto.</p></div><ArrowUpRight size={25} /></Link>}<Link href={`/shop/${product}/documentazione`}><BookOpen size={26} /><div><span>Da dove si comincia?</span><h3>Dentro {product}</h3><p>{isDisk ? "Primi passi, NFC e collegamenti." : "Forme, file del logo e personalizzazione."}</p></div><ArrowUpRight size={25} /></Link></div></section>
 
