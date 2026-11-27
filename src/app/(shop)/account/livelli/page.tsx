@@ -17,7 +17,7 @@ export default async function ShopRanksPage() {
     <p className={styles.rankIntro}>Scopri i cinque gradi del futuro sistema a punti dello shop.</p>
     <ol className={styles.rankGrid}>
       {shopRanks.map(rank => <li key={rank.level}>
-        <div className={styles.rankArt}><ShopRankGhost rank={rank} /></div>
+        <div className={styles.rankArt} data-level={rank.level}><ShopRankGhost rank={rank} /></div>
         <div className={styles.rankCopy}>
           <span>Livello {rank.level}</span>
           <h2>{rank.name}</h2>

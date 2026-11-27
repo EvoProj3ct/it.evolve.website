@@ -7,16 +7,15 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { SupportChat } from "@/components/SupportChat";
 import { MenuGhost } from "@/components/MenuGhost";
-import { E_DISK_VISIBLE } from "@/lib/ecommerce/product-visibility";
+import { E_DISK_VISIBLE, visibleShopProducts } from "@/lib/ecommerce/product-visibility";
 import styles from "./Navbar.module.css";
 
-type MenuKey = "services" | "training" | "utils";
-const NAV_ITEMS = ["services", "training", "about", "utils"] as const;
+type MenuKey = "services" | "training" | "utils" | "shop";
+const NAV_ITEMS = ["services", "training", "about", "utils", "shop"] as const;
 type Menu = {
   label: string;
   heading: string;
-  overviewLabel: string;
-  overviewHref: string;
+  overview?: { label: string; href: string };
   items: { label: string; href: string }[];
 };
 
@@ -24,8 +23,7 @@ const MENUS: Record<MenuKey, Menu> = {
   services: {
     label: "Servizi",
     heading: "Rivolgiti a chi ha lavorato nel settore IA fin dalla sua nascita.",
-    overviewLabel: "portfolio",
-    overviewHref: "/portfolio",
+    overview: { label: "portfolio", href: "/portfolio" },
     items: [
       { label: "Software per il mondo finestra", href: "/portfolio" },
       { label: "Consulenza e Sviluppo", href: "/consulenza-e-sviluppo" },
@@ -37,8 +35,7 @@ const MENUS: Record<MenuKey, Menu> = {
   training: {
     label: "Formazione",
     heading: "La tecnologia è un bene da condividere.",
-    overviewLabel: "Rimani aggiornato",
-    overviewHref: "/rimani-aggiornato",
+    overview: { label: "Rimani aggiornato", href: "/rimani-aggiornato" },
     items: [
       { label: "Cicli Formativi", href: "/rimani-aggiornato" },
       { label: "Seminari", href: "/rimani-aggiornato" },
@@ -48,13 +45,17 @@ const MENUS: Record<MenuKey, Menu> = {
   utils: {
     label: "Utils",
     heading: "Risorse da tenere a portata di mano.",
-    overviewLabel: "Tutte le risorse",
-    overviewHref: "/utils",
+    overview: { label: "Tutte le risorse", href: "/utils" },
     items: [
       { label: "Documenti e materiale scaricabile", href: "/utils" },
       { label: "Progetti e schemi open source", href: "/utils" },
       ...(E_DISK_VISIBLE ? [{ label: "e-disk", href: "/utils/e-disk" }] : []),
     ],
+  },
+  shop: {
+    label: "Shop",
+    heading: "Prodotti Evolve",
+    items: visibleShopProducts.map(product => ({ label: product, href: `/shop/${product}` })),
   },
 };
 
@@ -153,6 +154,8 @@ export function Navbar() {
     setChatOpen(true);
   };
   const menuTransition = { duration: reduceMotion ? 0 : 0.34, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] };
+  const activeOverview = activeMenu ? MENUS[activeMenu].overview : undefined;
+  const mobileOverview = mobileSection ? MENUS[mobileSection].overview : undefined;
 
   return (
     <>
@@ -239,9 +242,9 @@ export function Navbar() {
               <div className={styles.megaInner}>
                 <div className={styles.megaIntro}>
                   <h2>{MENUS[activeMenu].heading}</h2>
-                  <Link href={MENUS[activeMenu].overviewHref} className={styles.overviewLink} onClick={closeNavigation}>
-                    {MENUS[activeMenu].overviewLabel}
-                  </Link>
+                  {activeOverview && <Link href={activeOverview.href} className={styles.overviewLink} onClick={closeNavigation}>
+                    {activeOverview.label}
+                  </Link>}
                 </div>
                 <div className={styles.megaItems}>
                   {MENUS[activeMenu].items.map((item, index) => (
@@ -314,7 +317,7 @@ export function Navbar() {
                             </Link>
                           </motion.div>
                         ))}
-                        <Link href={MENUS[key].overviewHref} className={styles.mobileOverview} onClick={closeNavigation}>{MENUS[key].overviewLabel}</Link>
+                        {mobileOverview && <Link href={mobileOverview.href} className={styles.mobileOverview} onClick={closeNavigation}>{mobileOverview.label}</Link>}
                       </motion.div>
                     )}
                   </AnimatePresence>

@@ -6,15 +6,14 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, LogIn, ShoppingCart, UserRound } from "lucide-react";
 import { useGuestCart } from "@/lib/ecommerce/guest-cart";
-import { E_DISK_VISIBLE } from "@/lib/ecommerce/product-visibility";
+import { visibleShopProducts, type ProductId } from "@/lib/ecommerce/product-visibility";
 import { shopApi, useShopQueryView } from "@/lib/ecommerce/shop-store";
-import { PRODUCTS, type ProductId } from "./products";
 import { ProductMark } from "./ProductMark";
 import { NavInk, type NavInkPress } from "./NavInk";
 import { previewShopRank, ShopRankGhost } from "./ShopRankGhost";
 import styles from "./Shop.module.css";
 
-const visibleProducts = (Object.keys(PRODUCTS) as ProductId[]).filter(id => E_DISK_VISIBLE || id !== "e-disk");
+const rankLabel = `Livello account: ${previewShopRank.name}`;
 
 export function ShopNavigation() {
   const pathname = usePathname();
@@ -28,18 +27,18 @@ export function ShopNavigation() {
   const quantity = (account ? cart?.quantity ?? 0 : 0) + guestCart.reduce((total, line) => total + line.quantity, 0);
   const accountLabel = account?.name ?? (checkingProfile ? "Account" : "Accedi");
   const onRankPage = pathname === "/account/livelli";
-  const current = visibleProducts.find(id => pathname.startsWith(`/shop/${id}`));
+  const current = visibleShopProducts.find(id => pathname.startsWith(`/shop/${id}`));
   const highlighted = hovered ?? current;
 
   return (
     <header className={styles.globalHeader}>
       <div className={styles.logoLink}><Link href="/" aria-label="Evolve, torna al sito"><Image src="/logoEvolve.png" alt="Evolve" width={61} height={49} priority /></Link><Link href="/shop/e-linker" className={styles.shopWord}>shop</Link></div>
       <nav ref={navRef} className={styles.productLinks} aria-label="Prodotti Evolve" onPointerLeave={() => setHovered(null)}>
-        {visibleProducts.map(id => <Link key={id} data-nav-key={id} href={`/shop/${id}`} aria-current={current === id ? "page" : undefined} onClick={event => {
+        {visibleShopProducts.map(id => <Link key={id} data-nav-key={id} href={`/shop/${id}`} aria-current={current === id ? "page" : undefined} onClick={event => {
           if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || event.button > 0) return;
           setHovered(id); setPressed(current => ({ key: id, serial: (current?.serial ?? 0) + 1 }));
         }} onPointerEnter={event => { if (event.pointerType === "mouse") setHovered(id); }} onFocus={() => setHovered(id)} onBlur={() => setHovered(null)}>
-          <span data-nav-label className={styles.navLabel}>{PRODUCTS[id].name}</span>
+          <span data-nav-label className={styles.navLabel}>{id}</span>
         </Link>)}
         <NavInk active={highlighted} navRef={navRef} pressed={pressed} />
       </nav>
@@ -55,7 +54,7 @@ export function ShopNavigation() {
         </Link>
         {account && <Link href="/account/livelli" prefetch={false}
           className={`${styles.headerTool} ${styles.headerRank}`}
-          aria-label="Scopri i livelli dello shop" title="Livelli dello shop"
+          aria-label={rankLabel} title={rankLabel}
           aria-current={onRankPage ? "page" : undefined}>
           <ShopRankGhost rank={previewShopRank} />
         </Link>}

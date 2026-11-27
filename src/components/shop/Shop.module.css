@@ -35,7 +35,7 @@
 }
 .skipLink:not(:focus-visible) { clip-path: inset(50%); pointer-events: none; }
 .shop .skipLink:focus-visible { outline: 2px solid #365d3b; outline-offset: 2px; }
-.globalHeader { position: sticky; top: 0; z-index: 70; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 74px; padding: 10px var(--shop-gutter); border-bottom: 1px solid #e6ebe3; background: #fcfdfbf5; backdrop-filter: blur(18px); }
+.globalHeader { position: sticky; top: 0; z-index: 70; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; height: 74px; padding: 10px clamp(22px, 2vw, 36px) 10px var(--shop-gutter); border-bottom: 1px solid #e6ebe3; background: #fcfdfbf5; backdrop-filter: blur(18px); }
 .logoLink { display: inline-flex; align-items: center; gap: 19px; justify-self: start; }
 .logoLink img { width: 57px; height: auto; }
 .shopWord { font-size: 11px; letter-spacing: .1em; color: #5d6b60; }

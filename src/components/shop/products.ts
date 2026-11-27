@@ -1,4 +1,6 @@
-export type ProductId = "e-disk" | "e-linker" | "e-led";
+import type { ProductId } from "@/lib/ecommerce/product-visibility";
+
+export type { ProductId } from "@/lib/ecommerce/product-visibility";
 export type KeyringShape = "rectangle" | "square" | "circle" | "triangle";
 export type LogoAsset = { name: string; kind: "svg" | "image"; data: string };
 export type ProductConfiguration = {
