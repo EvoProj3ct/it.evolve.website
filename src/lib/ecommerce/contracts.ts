@@ -37,6 +37,7 @@ export function cartLineKey(item: { productPublicId: string; personalizationId?:
   return item.personalizationId ?? item.productPublicId;
 }
 export const cartSchema = z.object({ id: publicIdSchema.nullable(), revision: integer, status: z.enum(["empty", "active", "expired", "converted"]), items: z.array(cartItemSchema).max(100), previewTotals: totalsSchema.nullable(), requiresReview: z.boolean(), expiresAt: date.nullable(), convertedOrderPublicId: publicIdSchema.optional() }).strict().refine(cart => new Set(cart.items.map(cartLineKey)).size === cart.items.length).refine(cart => cart.status !== "empty" || (cart.id === null && cart.revision === 0 && cart.items.length === 0 && cart.expiresAt === null && cart.previewTotals === null));
+export const cartCountSchema = z.object({ quantity: integer.max(100000) }).strict();
 const saveCartItemSchema = z.object({
   productPublicId: publicIdSchema,
   listingRevision: integer,

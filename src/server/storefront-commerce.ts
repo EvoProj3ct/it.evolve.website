@@ -1,7 +1,7 @@
 import "server-only";
 import { getVercelOidcToken } from "@vercel/oidc";
 import { z } from "zod";
-import { cartSchema, checkoutOptionsSchema, orderGroupSchema, orderSchema, ordersSchema, paymentSchema, placeOrderSchema, placedOrderSchema, publicIdSchema, quoteInputSchema, quoteSchema, saveCartSchema, startPaymentSchema } from "@/lib/ecommerce/contracts";
+import { cartCountSchema, cartSchema, checkoutOptionsSchema, orderGroupSchema, orderSchema, ordersSchema, paymentSchema, placeOrderSchema, placedOrderSchema, publicIdSchema, quoteInputSchema, quoteSchema, saveCartSchema, startPaymentSchema } from "@/lib/ecommerce/contracts";
 import { storefrontAuth } from "./storefront-auth";
 import { storefrontLegal } from "./storefront-legal";
 import { commerceBoundary, commerceJson, CommerceServiceError, limitedJson, parseInput, query } from "./ecommerce-http";
@@ -10,6 +10,7 @@ const empty = z.object({}).strict();
 const cursor = z.object({ cursor: publicIdSchema.optional(), group: orderGroupSchema.optional() }).strict();
 const operations = {
   cart: { method: "GET", path: () => "/cart", input: empty, output: cartSchema },
+  cartCount: { method: "GET", path: () => "/cart/count", input: empty, output: cartCountSchema },
   saveCart: { method: "PUT", path: () => "/cart/items", input: saveCartSchema, output: cartSchema },
   checkoutOptions: { method: "GET", path: () => "/checkout-options", input: empty, output: checkoutOptionsSchema },
   quote: { method: "POST", path: () => "/quotes", input: quoteInputSchema, output: quoteSchema },
@@ -53,6 +54,30 @@ function connection() {
   } catch { throw new CommerceServiceError(503, "SERVICE_NOT_CONFIGURED", "Il servizio non è ancora disponibile."); }
 }
 
+async function measureCommercePhase<T>(
+  operation: Operation,
+  phase: "customer_session" | "oidc" | "atlas_request",
+  work: () => Promise<T>,
+): Promise<T> {
+  const startedAt = performance.now();
+  let response: Response | undefined;
+  try {
+    const result = await work();
+    if (result instanceof Response) response = result;
+    return result;
+  } finally {
+    const durationMs = Math.round(performance.now() - startedAt);
+    if (durationMs >= 1000) {
+      const requestId = response?.headers.get("x-request-id");
+      console.info("storefront.ecommerce.request.slow", {
+        operation, phase, durationMs,
+        atlasStatus: response?.status,
+        atlasRequestId: requestId && /^[a-f0-9-]{36}$/i.test(requestId) ? requestId : undefined,
+      });
+    }
+  }
+}
+
 // Chiuso a operazioni nominate. Nessun URL, principal o header Atlas proviene dal browser.
 export async function handleCommerce(request: Request, operation: Operation, rawId?: string): Promise<Response> {
   return commerceBoundary(async () => {
@@ -73,13 +98,15 @@ export async function handleCommerce(request: Request, operation: Operation, raw
     }
     const { origin, bypass } = connection();
     const path = `/api/ecommerce/internal${specification.path(id)}`;
-    const prepared = await storefrontAuth.prepareCommerceRequest(request, path, input);
+    const prepared = await measureCommercePhase(operation, "customer_session", () =>
+      storefrontAuth.prepareCommerceRequest(request, path, input));
     let token: string;
-    try { token = await getVercelOidcToken({ audience: origin }); if (!token) throw new Error(); }
+    try { token = await measureCommercePhase(operation, "oidc", () => getVercelOidcToken({ audience: origin })); if (!token) throw new Error(); }
     catch { throw new CommerceServiceError(503, "SERVICE_IDENTITY_UNAVAILABLE", "Il collegamento al servizio non è disponibile."); }
     let response: Response;
     try {
-      response = await fetch(new URL(path, origin), { method: "POST", cache: "no-store", redirect: "error", signal: AbortSignal.timeout(operation === "payment" ? 25000 : 15000), headers: { Authorization: `Bearer ${token}`, Accept: "application/json", "Content-Type": "application/json", "X-Commerce-Assertion": prepared.assertion, ...(bypass ? { "x-vercel-protection-bypass": bypass } : {}) }, body: JSON.stringify(prepared.payload) });
+      response = await measureCommercePhase(operation, "atlas_request", () =>
+        fetch(new URL(path, origin), { method: "POST", cache: "no-store", redirect: "error", signal: AbortSignal.timeout(operation === "payment" ? 25000 : 15000), headers: { Authorization: `Bearer ${token}`, Accept: "application/json", "Content-Type": "application/json", "X-Commerce-Assertion": prepared.assertion, ...(bypass ? { "x-vercel-protection-bypass": bypass } : {}) }, body: JSON.stringify(prepared.payload) }));
     } catch { throw new CommerceServiceError(503, "ATLAS_UNAVAILABLE", "Collegamento interrotto. L’esito dell’operazione potrebbe non essere ancora noto: aggiorna i dati prima di riprovare."); }
     const value = await limitedJson(response, 1048576);
     if (!response.ok) {

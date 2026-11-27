@@ -326,6 +326,7 @@ export function createStorefrontAuth({ mongoose, env = process.env }) {
         ) ||
         [
           "/api/ecommerce/internal/cart",
+          "/api/ecommerce/internal/cart/count",
           "/api/ecommerce/internal/checkout-options",
           "/api/ecommerce/internal/orders",
         ].includes(path) ||

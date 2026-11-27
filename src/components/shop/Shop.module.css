@@ -40,7 +40,7 @@
 .headerAccount > span { max-width: 126px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .headerAccount[data-guest="true"] { border-color: #d9e7d0; background: #edf5e8; color: #26452b; }
 .cartBadge { position: absolute; top: 0; right: -4px; display: grid; place-items: center; min-width: 17px; height: 17px; padding: 0 3px; border: 1px solid var(--shop-paper); border-radius: 10px; background: #26452b; color: white; font-size: 10px; font-weight: 700; line-height: 1; }
-.backToSite { display: inline-flex; align-items: center; gap: 8px; margin-left: 14px; font-size: 11px; color: #5d6b60; }
+.backToSite { display: inline-flex; align-items: center; gap: 8px; margin-right: 14px; font-size: 11px; color: #5d6b60; white-space: nowrap; }
 .backToSite > span { position: relative; }
 .backToSite > span::after { position: absolute; right: 0; bottom: -4px; left: 0; height: 1px; background: #72c94f; content: ""; transform: scaleX(0); transform-origin: left; transition: transform .35s cubic-bezier(.22,1,.36,1); }
 .backToSite:hover > span::after, .backToSite:focus-visible > span::after { transform: scaleX(1); }

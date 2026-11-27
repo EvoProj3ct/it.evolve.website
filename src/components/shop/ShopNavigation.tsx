@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, LogIn, ShoppingCart, UserRound } from "lucide-react";
 import { storefrontGet, subscribeSession } from "@/lib/ecommerce/browser";
-import { cartSchema, profileSchema, type Account } from "@/lib/ecommerce/contracts";
+import { cartCountSchema, profileSchema, type Account } from "@/lib/ecommerce/contracts";
 import { subscribeCartChanges } from "@/lib/ecommerce/cart";
 import { useGuestCart } from "@/lib/ecommerce/guest-cart";
 import { PRODUCTS, type ProductId } from "./products";
@@ -56,12 +56,18 @@ export function ShopNavigation() {
       pending?.abort();
       pending = new AbortController();
       const { signal } = pending;
-      void storefrontGet("/cart", cartSchema, signal).then(cart => {
-        if (!signal.aborted) setAccountQuantity(cart.items.reduce((total, line) => total + line.quantity, 0));
+      void storefrontGet("/cart/count", cartCountSchema, signal).then(cart => {
+        if (!signal.aborted) setAccountQuantity(cart.quantity);
       }).catch(() => {});
     }
     loadCart();
-    const unsubscribe = subscribeCartChanges(loadCart);
+    const unsubscribe = subscribeCartChanges((updatedQuantity) => {
+      if (updatedQuantity === undefined) loadCart();
+      else {
+        pending?.abort();
+        setAccountQuantity(updatedQuantity);
+      }
+    });
     return () => { unsubscribe(); pending?.abort(); };
   }, [accountId]);
   return (
@@ -77,15 +83,15 @@ export function ShopNavigation() {
         <NavInk active={highlighted} navRef={navRef} pressed={pressed} />
       </nav>
       <div className={styles.headerActions}>
-        <Link href={account ? "/account" : "/account/login"} prefetch={false} className={`${styles.headerTool} ${styles.headerAccount}`} data-guest={!account} aria-current={pathname.startsWith("/account") ? "page" : undefined} title={account ? `Il tuo profilo · ${account.name}` : "Accedi"}>
-          {account ? <UserRound size={17} aria-hidden="true" /> : <LogIn size={16} aria-hidden="true" />}
-          <span>{account?.name || "Accedi"}</span>
-        </Link>
+        <Link href="/" className={styles.backToSite}><span>Il mondo Evolve</span><ArrowUpRight size={14} /></Link>
         <Link href="/carrello" prefetch={false} className={styles.headerTool} aria-label={quantity ? `Il tuo carrello, ${quantity} ${quantity === 1 ? "articolo" : "articoli"}` : "Il tuo carrello"} aria-current={pathname === "/carrello" ? "page" : undefined} title="Il tuo carrello">
           <ShoppingCart size={18} aria-hidden="true" />
           {quantity > 0 && <span className={styles.cartBadge} aria-hidden="true">{quantity}</span>}
         </Link>
-        <Link href="/" className={styles.backToSite}><span>Il mondo Evolve</span><ArrowUpRight size={14} /></Link>
+        <Link href={account ? "/account" : "/account/login"} prefetch={false} className={`${styles.headerTool} ${styles.headerAccount}`} data-guest={!account} aria-current={pathname.startsWith("/account") ? "page" : undefined} title={account ? `Il tuo profilo · ${account.name}` : "Accedi"}>
+          {account ? <UserRound size={17} aria-hidden="true" /> : <LogIn size={16} aria-hidden="true" />}
+          <span>{account?.name || "Accedi"}</span>
+        </Link>
       </div>
     </header>
   );

@@ -113,27 +113,35 @@ export async function assertCommerceStorageReady(connection, definitions) {
       signature,
       (async () => {
         if (!connection.db) throw new Error("COMMERCE_DATABASE_NOT_CONNECTED");
-        for (const definition of Object.values(definitions)) {
-          const actual = await connection.db
-            .collection(definition.collection)
-            .listIndexes()
-            .toArray();
-          for (const expected of definition.indexes) {
-            const found = actual.find((entry) => entry.name === expected.name);
-            if (
-              !found ||
-              JSON.stringify(found.key) !== JSON.stringify(expected.key) ||
-              !!found.unique !== !!expected.unique ||
-              !!found.sparse ||
-              !!found.hidden ||
-              found.expireAfterSeconds !== expected.expireAfterSeconds ||
-              stableJson(found.partialFilterExpression) !==
-                stableJson(expected.partialFilterExpression) ||
-              found.collation
-            )
-              throw new Error(
-                `COMMERCE_INDEX_NOT_READY:${definition.collection}:${expected.name}`,
-              );
+        const models = Object.values(definitions);
+        const batchSize = 4;
+        for (let start = 0; start < models.length; start += batchSize) {
+          const batch = models.slice(start, start + batchSize);
+          const results = await Promise.allSettled(batch.map(async (definition) => {
+            const actual = await connection.db
+              .collection(definition.collection)
+              .listIndexes()
+              .toArray();
+            for (const expected of definition.indexes) {
+              const found = actual.find((entry) => entry.name === expected.name);
+              if (
+                !found ||
+                JSON.stringify(found.key) !== JSON.stringify(expected.key) ||
+                !!found.unique !== !!expected.unique ||
+                !!found.sparse ||
+                !!found.hidden ||
+                found.expireAfterSeconds !== expected.expireAfterSeconds ||
+                stableJson(found.partialFilterExpression) !==
+                  stableJson(expected.partialFilterExpression) ||
+                found.collation
+              )
+                throw new Error(
+                  `COMMERCE_INDEX_NOT_READY:${definition.collection}:${expected.name}`,
+                );
+            }
+          }));
+          for (const result of results) {
+            if (result.status === "rejected") throw result.reason;
           }
         }
       })().catch((error) => {

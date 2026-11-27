@@ -5,18 +5,19 @@ import { addGuestLine, readGuestCart, removeGuestLine } from "./guest-cart";
 
 const cartEvent = "evolve:storefront-cart";
 
-export function subscribeCartChanges(callback: () => void) {
-  window.addEventListener(cartEvent, callback);
+export function subscribeCartChanges(callback: (quantity?: number) => void) {
+  const local = (event: Event) => callback((event as CustomEvent<number | undefined>).detail);
+  window.addEventListener(cartEvent, local);
   const channel = typeof BroadcastChannel === "undefined" ? null : new BroadcastChannel(cartEvent);
-  if (channel) channel.onmessage = callback;
+  if (channel) channel.onmessage = () => callback();
   return () => {
-    window.removeEventListener(cartEvent, callback);
+    window.removeEventListener(cartEvent, local);
     channel?.close();
   };
 }
 
-export function cartChanged() {
-  window.dispatchEvent(new Event(cartEvent));
+export function cartChanged(quantity?: number) {
+  window.dispatchEvent(new CustomEvent(cartEvent, { detail: quantity }));
   if (typeof BroadcastChannel !== "undefined") {
     const channel = new BroadcastChannel(cartEvent);
     channel.postMessage("changed");
@@ -24,9 +25,13 @@ export function cartChanged() {
   }
 }
 
+function cartQuantity(cart: Cart) {
+  return cart.items.reduce((total, line) => total + line.quantity, 0);
+}
+
 export async function saveAccountCart(input: SaveCart, notify = true) {
   const cart = await storefrontMutate("/cart/items", "PUT", input, cartSchema);
-  if (notify) cartChanged();
+  if (notify) cartChanged(cartQuantity(cart));
   return cart;
 }
 
@@ -92,6 +97,6 @@ export async function importGuestCart(cart: Cart, signal: AbortSignal) {
     signal.throwIfAborted();
     return { cart: current, importError };
   } finally {
-    if (imported) cartChanged();
+    if (imported) cartChanged(cartQuantity(current));
   }
 }

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { CommerceServiceError, configurationError } from "../errors.js";
+import { renderVerificationMail, VERIFICATION_MAIL_TEMPLATE } from "./verification-mail.js";
 import {
   AUTH_TTL,
   opaque,
@@ -37,7 +38,12 @@ export async function queueNotice(
 ) {
   mailTransportConfig(runtime.env); // Do not silently accept requests into an unconfigured email pipeline.
   const publicId = randomUUID(),
-    payload = { to: destination, ...(token ? { token } : {}) };
+    payload = {
+      to: destination,
+      ...(token ? { token } : {}),
+      // Retries for queued jobs must keep the same content under the Resend idempotency key.
+      ...(kind === "verify_email" && { verificationTemplate: VERIFICATION_MAIL_TEMPLATE }),
+    };
   await new runtime.models.authDeliveries({
     shopId: runtime.shopId,
     publicId,
@@ -106,6 +112,8 @@ export async function issueToken(
   );
 }
 function message(config, job, payload) {
+  if (job.kind === "verify_email" && payload.verificationTemplate === VERIFICATION_MAIL_TEMPLATE)
+    return renderVerificationMail(config.origin, payload.token);
   const name = "Il tuo negozio";
   const templates = {
     verify_email: {
@@ -280,10 +288,11 @@ export async function deliverPendingMail(runtime, limit = 5) {
           "Idempotency-Key": `storefront-auth/${job.publicId}`,
         },
         body: JSON.stringify({
-          from,
+          from: content.senderName ? `${content.senderName} <${from}>` : from,
           to: [payload.to],
           subject: content.subject,
           text: content.text,
+          ...(content.html && { html: content.html }),
         }),
       });
       resendStatus = response.status;
