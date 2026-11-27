@@ -1,0 +1,132 @@
+.circuit {
+  --dormant-wire: #3d5448;
+  --current: #84e778;
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: clamp(450px, 38vw, 610px);
+  padding: 20px clamp(12px, 5vw, 72px);
+  isolation: isolate;
+  background: #080c0d;
+}
+
+.circuit::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background-image: radial-gradient(circle, #76958435 1px, transparent 1.3px);
+  background-size: 22px 22px;
+  mask-image: radial-gradient(ellipse at 50% 49%, #000 22%, transparent 74%);
+  pointer-events: none;
+  content: "";
+}
+
+.circuit::after {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 44%, #8eff7712, transparent 66%);
+  opacity: 0;
+  transition: opacity .24s ease;
+  pointer-events: none;
+  content: "";
+}
+
+.circuit[data-powered="true"]::after { opacity: 1; }
+
+.board {
+  display: grid;
+  justify-items: center;
+  width: min(100%, 1010px);
+}
+
+.word, .bus {
+  display: block;
+  width: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.signs {
+  filter: grayscale(1) brightness(.57);
+  transition: filter .22s ease;
+}
+
+g[data-live="true"] > .signs {
+  filter: hue-rotate(var(--branch-hue)) drop-shadow(0 0 5px color-mix(in srgb, var(--branch-color) 65%, transparent));
+}
+
+.outputWire, .bus path {
+  fill: none;
+  stroke: var(--dormant-wire);
+  stroke-width: 2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  transition: stroke .22s ease, filter .22s ease;
+}
+
+g[data-live="true"] > .outputWire {
+  stroke: var(--branch-color);
+  filter: drop-shadow(0 0 4px var(--branch-color));
+}
+
+.joints {
+  position: relative;
+  width: 100%;
+  height: 76px;
+}
+
+.bus {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+}
+
+.bus circle { fill: var(--dormant-wire); }
+.circuit[data-powered="true"] .bus path { stroke: var(--current); }
+.circuit[data-powered="true"] .bus circle { fill: var(--current); }
+
+.joint {
+  position: absolute;
+  top: 0;
+  display: grid;
+  place-items: center;
+  width: min(44px, 14%);
+  height: 44px;
+  padding: 0;
+  transform: translateX(-50%);
+  border: 1px solid #354f42;
+  border-radius: 11px;
+  background: #101a17;
+  color: #92a89b;
+  transition: background .22s ease, color .22s ease, border-color .22s ease;
+}
+
+.joint svg { fill: #101a17; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.joint:hover { border-color: #839f8d; background: #1b3026; }
+.joint[data-live="true"] { border-color: var(--branch-color); color: var(--branch-color); }
+.joint:focus-visible, .power:focus-visible { outline-offset: 2px; }
+
+.power {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 47px;
+  padding: 0 17px;
+  border: 1px solid #91dd84;
+  border-radius: 999px;
+  background: #b5ffa4;
+  color: #142719;
+  font-size: 14px;
+  font-weight: 600;
+  transition: background .22s ease, box-shadow .22s ease;
+}
+
+.power:hover { background: #d0ffc5; }
+.circuit[data-powered="true"] .power { box-shadow: 0 0 24px #72ff633b; }
+
+@media (max-width: 680px) {
+  .circuit { min-height: clamp(320px, 112vw, 440px); }
+  .joints { height: 66px; }
+}

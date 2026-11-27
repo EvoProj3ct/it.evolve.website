@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useDeferredValue, useEffect, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
 import { ArrowUpRight, BookOpen, Check, Download, Move, Pause, Play, Plus, Power, RotateCcw, Upload, X } from "lucide-react";
 import { ConfiguredPurchase } from "./ConfiguredPurchase";
+import { ELedCircuit } from "./ELedCircuit";
 import { ProductColorPicker } from "./ProductColorPicker";
 import { RelatedProducts } from "./RelatedProducts";
 import { colorName, PRODUCTS } from "./products";
@@ -133,6 +134,7 @@ export function ELedExperience() {
       </div>
     </section>
 
+    <ELedCircuit />
     <section className={styles.guideTeaser}><div><h2>Una bella idea.<br />Preparata bene<span>.</span></h2><p>Dal file del logo alla parete su cui la immagini. Scopri come preparare il tuo progetto.</p></div><Link href="/shop/e-led/documentazione"><BookOpen size={25} /><span>Dentro e-led<small>Testi, tracciati, luce e installazione</small></span><ArrowUpRight size={22} /></Link></section>
     <section className={styles.faq} aria-labelledby="led-faq-title"><h2 id="led-faq-title">Facciamo<br />chiarezza<span>.</span></h2><div>{PRODUCTS["e-led"].faq.map(item => <details key={item.question}><summary>{item.question}<Plus size={18} /></summary><p>{item.answer}</p></details>)}</div></section>
     <RelatedProducts current="e-led" dark />
