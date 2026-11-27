@@ -7,6 +7,7 @@ import { ArrowUpRight, BookOpen, Check, Download, Move, Pause, Play, Plus, Power
 import { ConfiguredPurchase } from "./ConfiguredPurchase";
 import { ELedCircuit } from "./ELedCircuit";
 import { ProductColorPicker } from "./ProductColorPicker";
+import { ProductMark } from "./ProductMark";
 import { RelatedProducts } from "./RelatedProducts";
 import { colorName, PRODUCTS } from "./products";
 import { defaultLedConfiguration, LED_EFFECTS, LED_MOODS, readLedLogo, type LedConfiguration } from "./led";
@@ -14,6 +15,17 @@ import styles from "./ELed.module.css";
 
 const LedScene = dynamic(() => import("./LedScene"), { ssr: false, loading: () => <div className={styles.sceneFallback}><span>EVOLVE</span><small>Accendiamo la tua idea…</small></div> });
 const lightStyle = (color: string) => ({ "--light": color } as CSSProperties);
+const floatingSigns = [
+  { color: "#72eaff", x: 17, y: 19, width: 30, tilt: -11, period: 9.8 },
+  { color: "#81f5ff", x: 54, y: 13, width: 27, tilt: -10, period: 10.6 },
+  { color: "#c99aff", x: 84, y: 24, width: 27, tilt: 15, period: 9.4 },
+  { color: "#ff85dc", x: 17, y: 48, width: 26, tilt: 6, period: 8.8 },
+  { color: "#ffc879", x: 84, y: 51, width: 26, tilt: -10, period: 10.3 },
+  { color: "#8faaff", x: 19, y: 78, width: 28, tilt: -10, period: 10.8 },
+  { color: "#eefff9", x: 45, y: 86, width: 25, tilt: 10, period: 9.6 },
+  { color: "#ff858f", x: 82, y: 81, width: 27, tilt: 17, period: 8.9 },
+  { color: "#87ff75", x: 49, y: 48, width: 41, tilt: 1, period: 11.4 },
+] as const;
 
 export function ELedExperience() {
   const [configuration, setConfiguration] = useState<LedConfiguration>(defaultLedConfiguration);
@@ -58,16 +70,14 @@ export function ELedExperience() {
         <p className={styles.heroDescription}>{PRODUCTS["e-led"].description}</p>
         <div className={styles.heroActions}><a href="#configura" className={styles.cta}>Accendi la tua idea <ArrowUpRight size={19} /></a><a href="#scopri" className={styles.textLink}>Scopri e-led <ArrowUpRight size={16} /></a></div>
       </div>
-      <picture className={styles.heroStage}>
-        <source media="(min-width: 601px)" srcSet="/shop/e-led-insegne-desktop.webp" />
-        <img
-          src="/shop/e-led-insegne.webp"
-          alt="Nove insegne e-led accese in colori diversi su sfondo nero"
-          width={1080}
-          height={1920}
-          fetchPriority="high"
-        />
-      </picture>
+      <div className={styles.heroStage} role="img" aria-label="Insegne e-led fluttuanti in nove colori">
+        {floatingSigns.map((sign, index) => <div key={sign.color} className={styles.floatingSign} style={{
+          left: `${sign.x}%`, top: `${sign.y}%`, width: `${sign.width}%`,
+          "--light": sign.color, "--tilt": `${sign.tilt}deg`, "--period": `${sign.period}s`, "--phase": `-${index * .79}s`,
+        } as CSSProperties}>
+          <ProductMark product="e-led" secondary={sign.color} />
+        </div>)}
+      </div>
       <div className={styles.heroFoot}><span>Think to Evolve <i /></span></div>
     </section>
 

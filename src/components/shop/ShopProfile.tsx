@@ -5,10 +5,12 @@ import { useRef, useState, type FormEvent } from "react";
 import { ArrowRight, ArrowUpRight, FileText, LayoutGrid, LogOut, Package, RefreshCw, Settings2 } from "lucide-react";
 import { customerLinkSchema, profileSchema, type Account } from "@/lib/ecommerce/contracts";
 import { errorText, hidesPreviousData, storefrontMutate } from "@/lib/ecommerce/browser";
-import { announceShopPreference, cacheShopEntries, shopApi, shopQueryError, useShopStore } from "@/lib/ecommerce/shop-store";
+import { orderGroups, type OrderStatusKind } from "@/lib/ecommerce/order-progress";
+import { announceShopPreference, cacheShopEntries, orderCacheAge, shopApi, shopQueryError, useShopQueryView, useShopStore } from "@/lib/ecommerce/shop-store";
+import { OrderStatusGhost } from "./OrderStatusGhost";
 import { ShopBillingProfile } from "./ShopBillingProfile";
 import { ResourceFeedback, ShopPageHeader } from "./ShopPreviewShared";
-import { ShopOrdersList } from "./ShopOrders";
+import { previewShopRank, ShopRankGhost } from "./ShopRankGhost";
 import styles from "./CommercePreview.module.css";
 import live from "./Storefront.module.css";
 
@@ -104,6 +106,35 @@ function PersonalDetails({ account }: { account: Account }) {
 
 const sectionLabels = { overview: "Panoramica", profile: "Dati personali", billing: "Fatturazione" };
 
+function AccountOverview() {
+  const { data: counts, error, busy, reload } = useShopQueryView(
+    shopApi.useOrderStatusCountsQuery(undefined, { refetchOnMountOrArgChange: orderCacheAge }),
+  );
+
+  return <div className={live.profileOverview}>
+    <Link href="/account/livelli" className={live.overviewRank}>
+      <ShopRankGhost rank={previewShopRank} className={live.overviewRankGhost} />
+      <div><span>Livello IA {previewShopRank.level}</span><strong>{previewShopRank.name}</strong></div>
+      <ArrowUpRight size={18} aria-hidden="true" />
+    </Link>
+    <section aria-labelledby="overview-orders-title">
+      <div className={styles.panelHeading}>
+        <h2 id="overview-orders-title">Ordini per stato<span>.</span></h2>
+        <Link href="/account/ordini" className={styles.textLink}>Tutti gli ordini <ArrowUpRight size={15} /></Link>
+      </div>
+      <ResourceFeedback busy={busy} error={error} reload={reload} />
+      {counts && <dl className={live.orderCounts}>
+        {(Object.keys(orderGroups) as OrderStatusKind[]).map(kind => (
+          <div key={kind} className={live.orderCount} data-section={kind}>
+            <dt><OrderStatusGhost kind={kind} /><span>{orderGroups[kind]}</span></dt>
+            <dd>{counts[kind].toLocaleString("it-IT")}</dd>
+          </div>
+        ))}
+      </dl>}
+    </section>
+  </div>;
+}
+
 export function ShopProfile() {
   const resource = shopApi.useProfileQuery(undefined, { refetchOnMountOrArgChange: 90 });
   const [section, setSection] = useState<keyof typeof sectionLabels>("overview");
@@ -134,15 +165,8 @@ export function ShopProfile() {
         </nav>
       </aside>
       <section className={styles.profilePanel} aria-label={sectionLabels[section]}>
-        {section === "overview" && <>
-          <CustomerLinkStatus />
-          <ShopOrdersList compact />
-          <div className={live.profileShopLink}>
-            <div><h2>Spazio alla prossima idea<span>.</span></h2><p>Scopri gli oggetti pubblicati nello shop.</p></div>
-            <Link href="/shop/e-linker" className={styles.textLink}>Esplora <ArrowUpRight size={17} /></Link>
-          </div>
-        </>}
-        {section === "profile" && <PersonalDetails key={account.id} account={account} />}
+        {section === "overview" && <AccountOverview />}
+        {section === "profile" && <><CustomerLinkStatus /><PersonalDetails key={account.id} account={account} /></>}
         {section === "billing" && <ShopBillingProfile key={account.id} account={account} />}
       </section>
     </div>}

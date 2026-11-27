@@ -11,17 +11,17 @@ import { ShopAuthArcade } from "./ShopAuthArcade";
 import styles from "./Storefront.module.css";
 
 export const AUTH_ACTIONS = {
-  login: { title: "Bentornato.", description: "Le tue idee ti aspettano.", button: "Accedi" },
-  register: { title: "Piacere di conoscerti.", description: "Uno spazio per i tuoi oggetti, ordini e prossime idee.", button: "Crea il tuo account" },
-  "verify-email": { title: "È proprio la tua email.", description: "Conferma l’indirizzo con la password scelta alla registrazione.", button: "Verifica email" },
-  "forgot-password": { title: "Ripartiamo da qui.", description: "Richiedi il link per scegliere una nuova password.", button: "Invia il link" },
-  "resend-verification": { title: "Un nuovo inizio.", description: "Richiedi un nuovo link di verifica per la tua email.", button: "Richiedi il link" },
-  "reset-password": { title: "Una nuova chiave.", description: "Scegli una passphrase da 15 a 128 caratteri.", button: "Reimposta la password" },
-  "change-password": { title: "Cambia la tua chiave.", description: "Le sessioni attive verranno chiuse dopo la modifica.", button: "Cambia password" },
-  "change-email": { title: "Restiamo in contatto.", description: "Confermerai il nuovo indirizzo tramite il link ricevuto via email.", button: "Richiedi il cambio email" },
-  "confirm-email": { title: "Il tuo nuovo indirizzo.", description: "Conferma con la password corrente e una sessione dello stesso account.", button: "Conferma la nuova email" },
-  logout: { title: "A presto.", description: "Vuoi uscire dal tuo spazio Evolve?", button: "Esci dal tuo account" },
-  "logout-all": { title: "Chiudiamo tutte le porte.", description: "Inserisci la password per uscire da tutti i dispositivi.", button: "Esci da tutte le sessioni" },
+  login: { title: "Bentornato.", button: "Accedi" },
+  register: { title: "Piacere di conoscerti.", button: "Crea il tuo account" },
+  "verify-email": { title: "È proprio la tua email.", button: "Verifica email" },
+  "forgot-password": { title: "Ripartiamo da qui.", button: "Invia il link" },
+  "resend-verification": { title: "Un nuovo inizio.", button: "Richiedi il link" },
+  "reset-password": { title: "Una nuova chiave.", button: "Reimposta la password" },
+  "change-password": { title: "Cambia la tua chiave.", button: "Cambia password" },
+  "change-email": { title: "Restiamo in contatto.", button: "Richiedi il cambio email" },
+  "confirm-email": { title: "Il tuo nuovo indirizzo.", button: "Conferma la nuova email" },
+  logout: { title: "A presto.", button: "Esci dal tuo account" },
+  "logout-all": { title: "Chiudiamo tutte le porte.", button: "Esci da tutte le sessioni" },
 } as const;
 export type AuthAction = keyof typeof AUTH_ACTIONS;
 type Legal = { termsVersion: string; privacyVersion: string; termsPath: string; privacyPath: string; registrationReady: boolean };
@@ -104,7 +104,7 @@ export function ShopAuthForm({ action, legal, nextPath }: { action: AuthAction; 
 
   return <main id="shop-content" className={styles.authPage}>
     <div className={styles.authStory} aria-hidden="true"><ShopAuthArcade /></div>
-    <section className={styles.authPanel} aria-labelledby="auth-title"><Link className={styles.back} href="/shop/e-linker" prefetch={false}>Torna agli oggetti</Link><h1 id="auth-title">{info.title}</h1><p className={styles.lead}>{info.description}</p>
+    <section className={styles.authPanel} aria-labelledby="auth-title"><Link className={styles.back} href="/shop/e-linker" prefetch={false}>Torna agli oggetti</Link><h1 id="auth-title">{info.title}</h1>
       <p ref={feedback} tabIndex={-1} className={error ? styles.error : styles.success} role={error ? "alert" : "status"}>{error || message}</p>
       {action === "register" && !legal.registrationReady && <p className={styles.notice}>La registrazione non è ancora disponibile. Riprova più tardi.</p>}
       {tokenAction && captured && !token && !message ? <div className={styles.notice}>Apri il link ricevuto via email. Se è scaduto o hai ricaricato questa pagina, richiedine uno nuovo.<Link href={action === "verify-email" ? "/account/resend-verification" : action === "confirm-email" ? "/account/change-email" : "/account/forgot-password"} prefetch={false}>Richiedi un nuovo link <ArrowRight size={15} /></Link></div> : !message && <form method="post" className={styles.form} onSubmit={submit} aria-busy={busy}>

@@ -1,13 +1,13 @@
 import { homepageGhostBody } from "@/components/ghost-shape";
+import type { OrderStatusKind } from "@/lib/ecommerce/order-progress";
 import styles from "./Storefront.module.css";
 
-export type OrderGhostKind = "blocked" | "payable" | "waiting" | "confirmed" | "progress" | "pickup" | "shipping" | "service_pending" | "received" | "closed";
-const colors: Record<OrderGhostKind, string> = {
+const colors: Record<OrderStatusKind, string> = {
   blocked: "#c4645e", payable: "#c78731", waiting: "#927ab9", confirmed: "#547fbf",
   progress: "#539a84", pickup: "#8b7856", shipping: "#457fb9", service_pending: "#569d55", received: "#72c94f", closed: "#87938c",
 };
 
-export function OrderStatusGhost({ kind }: { kind: OrderGhostKind }) {
+export function OrderStatusGhost({ kind }: { kind: OrderStatusKind }) {
   return <svg aria-hidden="true" focusable="false" viewBox="-17 -18 34 33" className={styles.orderStatusGhost}>
     <path d={homepageGhostBody} fill={colors[kind]} />
     <path d="M-6-2h4v5h-4zM2-2h4v5H2z" fill="#fcfdfb" />

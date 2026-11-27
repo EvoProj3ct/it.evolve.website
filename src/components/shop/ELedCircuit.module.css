@@ -1,11 +1,9 @@
 .circuit {
-  --dormant-wire: #3d5448;
-  --current: #84e778;
   position: relative;
   display: grid;
   place-items: center;
   min-height: clamp(450px, 38vw, 610px);
-  padding: 20px clamp(12px, 5vw, 72px);
+  padding: 24px clamp(11px, 3vw, 54px);
   isolation: isolate;
   background: #080c0d;
 }
@@ -14,119 +12,125 @@
   position: absolute;
   z-index: -1;
   inset: 0;
-  background-image: radial-gradient(circle, #76958435 1px, transparent 1.3px);
-  background-size: 22px 22px;
-  mask-image: radial-gradient(ellipse at 50% 49%, #000 22%, transparent 74%);
+  background: radial-gradient(ellipse at 19% 56%, #71ff7130, transparent 34%),
+    radial-gradient(ellipse at 49% 44%, #4ddfff2b, transparent 32%),
+    radial-gradient(ellipse at 69% 58%, #cf80ff2c, transparent 31%),
+    radial-gradient(ellipse at 88% 54%, #ff65882c, transparent 29%);
+  opacity: .18;
+  transition: opacity .26s ease;
   pointer-events: none;
   content: "";
 }
 
-.circuit::after {
-  position: absolute;
-  z-index: -2;
-  inset: 0;
-  background: radial-gradient(ellipse at 50% 44%, #8eff7712, transparent 66%);
-  opacity: 0;
-  transition: opacity .24s ease;
-  pointer-events: none;
-  content: "";
-}
+.circuit[data-powered="true"]::before { opacity: .8; }
 
-.circuit[data-powered="true"]::after { opacity: 1; }
-
-.board {
-  display: grid;
-  justify-items: center;
-  width: min(100%, 1010px);
-}
-
-.word, .bus {
-  display: block;
-  width: 100%;
-  overflow: visible;
-  pointer-events: none;
-}
+.board, .word { width: 100%; }
+.word { position: relative; }
+.diagram { display: block; width: 100%; overflow: visible; }
 
 .signs {
-  filter: grayscale(1) brightness(.57);
+  filter: grayscale(.96) brightness(.57);
   transition: filter .22s ease;
 }
 
 g[data-live="true"] > .signs {
-  filter: hue-rotate(var(--branch-hue)) drop-shadow(0 0 5px color-mix(in srgb, var(--branch-color) 65%, transparent));
+  filter: hue-rotate(var(--hue)) drop-shadow(0 0 5px color-mix(in srgb, var(--ink) 63%, transparent));
 }
 
-.outputWire, .bus path {
+.cable, .mobileLead {
   fill: none;
-  stroke: var(--dormant-wire);
-  stroke-width: 2;
+  stroke: color-mix(in srgb, var(--ink) 49%, #1b2424);
+  stroke-width: 2.5;
   stroke-linecap: round;
+  stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
   transition: stroke .22s ease, filter .22s ease;
 }
 
-g[data-live="true"] > .outputWire {
-  stroke: var(--branch-color);
-  filter: drop-shadow(0 0 4px var(--branch-color));
+.cable[data-live="true"], .mobileLead[data-live="true"] {
+  stroke: var(--ink);
+  filter: drop-shadow(0 0 3px var(--ink));
 }
 
-.joints {
-  position: relative;
-  width: 100%;
-  height: 76px;
-}
-
-.bus {
-  position: absolute;
-  inset: 0;
-  height: 100%;
-}
-
-.bus circle { fill: var(--dormant-wire); }
-.circuit[data-powered="true"] .bus path { stroke: var(--current); }
-.circuit[data-powered="true"] .bus circle { fill: var(--current); }
+.mobileLead { display: none; }
+.switches { position: absolute; inset: 0; pointer-events: none; }
 
 .joint {
   position: absolute;
-  top: 0;
+  top: var(--y);
   display: grid;
   place-items: center;
-  width: min(44px, 14%);
-  height: 44px;
+  width: clamp(37px, 3.6vw, 53px);
+  height: clamp(34px, 3.3vw, 48px);
   padding: 0;
-  transform: translateX(-50%);
-  border: 1px solid #354f42;
-  border-radius: 11px;
-  background: #101a17;
-  color: #92a89b;
-  transition: background .22s ease, color .22s ease, border-color .22s ease;
+  transform: translate(-50%, -50%) rotate(-7deg);
+  border: 2px solid #101919;
+  border-radius: 13px;
+  background: var(--ink);
+  color: #243128;
+  box-shadow: 0 4px 0 color-mix(in srgb, var(--ink) 49%, #101919);
+  pointer-events: auto;
+  transition: transform .18s ease, box-shadow .18s ease;
 }
 
-.joint svg { fill: #101a17; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
-.joint:hover { border-color: #839f8d; background: #1b3026; }
-.joint[data-live="true"] { border-color: var(--branch-color); color: var(--branch-color); }
-.joint:focus-visible, .power:focus-visible { outline-offset: 2px; }
+.joint svg { fill: transparent; stroke: currentColor; stroke-width: 2.9; stroke-linecap: round; }
+.joint:hover { transform: translate(-50%, calc(-50% - 2px)) rotate(-4deg); }
+.joint[aria-checked="false"] { transform: translate(-50%, -50%) rotate(8deg); }
+.joint[data-live="true"] { box-shadow: 0 4px 0 #131d17, 0 0 13px color-mix(in srgb, var(--ink) 44%, transparent); }
+.joint:focus-visible, .battery:focus-visible { outline-offset: 3px; }
 
-.power {
+.feed { position: relative; height: 49px; }
+.battery {
+  position: absolute;
+  top: -2px;
+  left: var(--battery-x);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  min-height: 47px;
-  padding: 0 17px;
-  border: 1px solid #91dd84;
-  border-radius: 999px;
-  background: #b5ffa4;
-  color: #142719;
-  font-size: 14px;
-  font-weight: 600;
-  transition: background .22s ease, box-shadow .22s ease;
+  gap: 6px;
+  width: clamp(48px, 6vw, 86px);
+  min-height: 43px;
+  padding: 0 5px;
+  transform: translateX(-50%) rotate(-5deg);
+  border: 2px solid #131b14;
+  border-radius: 12px;
+  background: #d7f67e;
+  color: #213018;
+  box-shadow: 0 5px 0 #729840;
+  isolation: isolate;
 }
 
-.power:hover { background: #d0ffc5; }
-.circuit[data-powered="true"] .power { box-shadow: 0 0 24px #72ff633b; }
+.battery::after {
+  position: absolute;
+  z-index: -1;
+  right: -7px;
+  width: 8px;
+  height: 17px;
+  border: 2px solid #131b14;
+  border-left: 0;
+  border-radius: 0 5px 5px 0;
+  background: #a9cb5a;
+  content: "";
+}
 
-@media (max-width: 680px) {
+.battery span { font-size: 11px; font-weight: 700; text-transform: uppercase; }
+.battery:hover { background: #edffa1; }
+.circuit[data-powered="true"] .battery { box-shadow: 0 5px 0 #729840, 0 0 21px #a3ff6e5b; }
+
+@media (max-width: 700px) {
   .circuit { min-height: clamp(320px, 112vw, 440px); }
-  .joints { height: 66px; }
+  .mobileLead { display: block; }
+  .switches { position: relative; inset: auto; height: 54px; }
+  .joint { top: 50%; width: min(42px, 13%); height: 44px; }
+  .feed::before {
+    position: absolute;
+    top: -7px;
+    left: var(--battery-x);
+    width: 2px;
+    height: 14px;
+    background: #9bff80;
+    content: "";
+  }
+  .battery { left: max(25px, var(--battery-x)); }
+  .battery svg { width: 15px; }
 }

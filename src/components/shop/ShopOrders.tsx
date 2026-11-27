@@ -20,7 +20,7 @@ import styles from "./Storefront.module.css";
 const date = (value: string) => new Intl.DateTimeFormat("it-IT", { dateStyle: "long", timeZone: "Europe/Rome" }).format(new Date(value));
 const groups = { active: "Attivi", received: "Ricevuti", cancelled: "Annullati", all: "Tutti" } as const;
 type Group = keyof typeof groups;
-export function ShopOrdersList({ compact = false }: { compact?: boolean }) {
+export function ShopOrdersList() {
   const [group, setGroup] = useState<Group>("active");
   const [cursor, setCursor] = useState("");
   const query = new URLSearchParams();
@@ -31,30 +31,29 @@ export function ShopOrdersList({ compact = false }: { compact?: boolean }) {
   const page = resource.data;
   return <section>
     <div className={common.panelHeading}>
-      <h2>{compact ? "Ordini attivi" : "I tuoi ordini"}<span>.</span></h2>
-      {compact ? <Link href="/account/ordini" className={common.textLink}>Tutti gli ordini <ArrowUpRight size={14} /></Link> :
-        <button type="button" className={styles.iconButton} disabled={resource.busy || resource.refreshing} onClick={resource.reload} aria-label="Aggiorna gli ordini"><RefreshCw size={17} /></button>}
+      <h2>I tuoi ordini<span>.</span></h2>
+      <button type="button" className={styles.iconButton} disabled={resource.busy || resource.refreshing} onClick={resource.reload} aria-label="Aggiorna gli ordini"><RefreshCw size={17} /></button>
     </div>
-    {!compact && <div className={styles.orderFilters} role="group" aria-label="Mostra gli ordini">
+    <div className={styles.orderFilters} role="group" aria-label="Mostra gli ordini">
       {(Object.entries(groups) as [Group, string][]).map(([key, label]) =>
         <button key={key} className={styles.secondary} type="button" aria-pressed={group === key}
           onClick={() => { setGroup(key); setCursor(""); }}>
           {label}{stats && key !== "all" && ` (${stats[key]})`}
         </button>)}
-    </div>}
+    </div>
     {stats && <dl className={styles.orderStatistics}>
       <div><dt>Attivi</dt><dd>{stats.active}</dd></div>
       <div><dt>Ricevuti</dt><dd>{stats.received}</dd></div>
-      {!compact && <div><dt>Speso al netto dei rimborsi</dt><dd>{money(Math.max(0, stats.paidMinor - stats.refundedMinor))}</dd></div>}
+      <div><dt>Speso al netto dei rimborsi</dt><dd>{money(Math.max(0, stats.paidMinor - stats.refundedMinor))}</dd></div>
     </dl>}
     <ResourceFeedback busy={resource.busy} error={resource.error} reload={resource.reload} next="/account/ordini" />
     {page && <>
       {!page.items.length && <p className={styles.notice}>{cursor ? "Nessun ordine in questa pagina." : group === "all" ? "Non ci sono ancora ordini." : `Nessun ordine tra quelli ${groups[group].toLowerCase()}.`}</p>}
-      <ShopOrderCards items={page.items.slice(0, compact ? 3 : 30)} formatDate={date} />
-      {!compact && <div className={styles.pagination}>
+      <ShopOrderCards items={page.items} formatDate={date} />
+      <div className={styles.pagination}>
         {cursor && <button type="button" className={styles.secondary} onClick={() => setCursor("")}>Torna all’inizio</button>}
         {page.nextCursor && <button type="button" className={styles.secondary} onClick={() => setCursor(page.nextCursor!)}>Altri ordini <ArrowRight size={15} /></button>}
-      </div>}
+      </div>
     </>}
   </section>;
 }

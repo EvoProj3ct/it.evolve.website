@@ -13,8 +13,13 @@
 .cta:hover { transform: translateY(-2px); background: #d6ffcc; box-shadow: 0 8px 40px #72ff6320; }
 .textLink { display: inline-flex; align-items: center; gap: 10px; min-height: 44px; color: #b1c6bb; font-size: 12px; }
 .textLink:hover { color: #b5ffa4; }
-.heroStage { position: relative; display: block; min-width: 0; width: 100%; aspect-ratio: 18 / 13; overflow: hidden; border: 1px solid #20352e; border-radius: 26px; background: #000; box-shadow: 0 24px 100px #0006; }
-.heroStage > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; }
+.heroStage { position: relative; min-width: 0; width: 100%; aspect-ratio: 18 / 13; }
+.floatingSign { position: absolute; transform: translate(-50%, -50%) rotate(var(--tilt)); }
+.floatingSign > svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 0 17px color-mix(in srgb, var(--light) 27%, transparent)); animation: signDrift var(--period) ease-in-out var(--phase) infinite alternate; }
+@keyframes signDrift {
+  from { transform: translate3d(-1px, -3px, 0) rotate(-.35deg); }
+  to { transform: translate3d(2px, 4px, 0) rotate(.35deg); }
+}
 .configStage::after { position: absolute; z-index: 2; inset: 0; border-radius: inherit; background-image: linear-gradient(#a8ffbd09 1px, transparent 1px), linear-gradient(90deg,#a8ffbd09 1px,transparent 1px); background-size: 48px 48px; mask-image: linear-gradient(transparent 45%,#0009); pointer-events: none; content: ""; }
 .viewerLabel > span:first-child { display: inline-flex; align-items: center; gap: 8px; }
 .viewerLabel i { width: 5px; height: 5px; border-radius: 50%; background: #72ff63; box-shadow: 0 0 10px #72ff6377; }
@@ -158,7 +163,6 @@
   .hero h1 { font-size: clamp(115px,26vw,170px); }
   .tagline { font-size: clamp(34px,7.7vw,52px); }
   .heroDescription { max-width: 470px; font-size: 14px; }
-  .heroStage { border-radius: 19px; }
   .heroFoot { font-size: 9px; }
   .story, .moods, .configurator { padding-block: 65px; }
   .sectionHeading { grid-template-columns: 1fr; gap: 25px; margin-bottom: 35px; }
@@ -181,5 +185,5 @@
   .guideIndex { position: static; flex-direction: row; flex-wrap: wrap; gap: 15px 20px; }
   .guide { padding-top: calc(35px + var(--product-nav-height)); }
 }
-@media (max-width: 600px) { .heroStage { aspect-ratio: 9 / 16; max-width: 384px; justify-self: center; } }
+@media (max-width: 600px) { .heroStage { aspect-ratio: 1.2; max-width: 460px; justify-self: center; } }
 @media (prefers-reduced-motion: reduce) { .page *, .page *::after { animation: none !important; transition: none !important; } }

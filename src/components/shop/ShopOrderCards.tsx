@@ -2,9 +2,10 @@ import Link from "next/link";
 import { ArrowUpRight, Ellipsis, Package } from "lucide-react";
 import { linkerBundleSize } from "@evolve/ecommerce-server/keyring-offers";
 import { money, type CustomerOrderListItem } from "@/lib/ecommerce/contracts";
+import { orderGroups, orderProgressFor } from "@/lib/ecommerce/order-progress";
 import { ProductMark } from "./ProductMark";
 import { LinkerBundleArtwork } from "./LinkerBundleArtwork";
-import { OrderPaymentBadge, OrderProgress, orderGroups, orderProgressFor } from "./OrderProgress";
+import { OrderPaymentBadge, OrderProgress } from "./OrderProgress";
 import styles from "./Storefront.module.css";
 
 function OrderProductMarks({ order }: { order: CustomerOrderListItem }) {

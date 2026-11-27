@@ -9,6 +9,7 @@ import type { PublicOrderTracking, PublicTrackingDeliveryDetails, PublicTracking
 import type { z } from "zod";
 import { hidesPreviousData, sessionChanged, storefrontSessionGeneration, StorefrontError, storefrontGet, storefrontRead } from "./browser";
 import { forgetCatalogSnapshot, saveCatalogSnapshot } from "./catalog-snapshot";
+import { orderGroups, orderProgressFor, type OrderStatusCounts } from "./order-progress";
 import {
   cartCountSchema, cartSchema, checkoutOptionsSchema, customerLinkSchema,
   orderSchema, ordersSchema, paymentSchema, profileSchema, savedBillingSchema,
@@ -72,6 +73,33 @@ export const shopApi = createApi({
     checkoutOptions: builder.query<z.infer<typeof checkoutOptionsSchema>, void>({ queryFn: privateQuery("/checkout-options", checkoutOptionsSchema) }),
     orders: builder.query<z.infer<typeof ordersSchema>, string>({
       queryFn: privateQuery((query: string) => `/orders${query ? `?${query}` : ""}`, ordersSchema),
+      providesTags: ["Orders"],
+    }),
+    orderStatusCounts: builder.query<OrderStatusCounts, void>({
+      queryFn: (_, { signal, getState }) => privateResult(async () => {
+        const counts = Object.fromEntries(Object.keys(orderGroups).map(kind => [kind, 0])) as OrderStatusCounts;
+        const seenOrders = new Set<string>();
+        const seenCursors = new Set<string>();
+        let cursor: string | null = null;
+
+        do {
+          const page: z.infer<typeof ordersSchema> = await storefrontGet(
+            cursor ? `/orders?cursor=${encodeURIComponent(cursor)}` : "/orders", ordersSchema, signal,
+          );
+          for (const order of page.items) {
+            if (seenOrders.has(order.id)) continue;
+            seenOrders.add(order.id);
+            counts[orderProgressFor(order).kind]++;
+          }
+          cursor = page.nextCursor;
+          if (cursor) {
+            if (seenCursors.has(cursor)) throw new StorefrontError("Pagina ordini non disponibile.", 502, "RESPONSE_INVALID");
+            seenCursors.add(cursor);
+          }
+        } while (cursor);
+
+        return counts;
+      }, getState),
       providesTags: ["Orders"],
     }),
     order: builder.query<z.infer<typeof orderSchema>, string>({
