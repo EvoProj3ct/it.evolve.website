@@ -138,6 +138,20 @@
 .guideBody p, .guideBody li { color: #91ac9a; font-size: 13px; line-height: 1.9; }
 .guideBody ul { padding-left: 20px; }
 @media (max-width: 1050px) { .hero { gap: 20px; grid-template-columns: .9fr 1.1fr; } .heroDescription { font-size: 13px; } .configGrid { grid-template-columns: minmax(0,1fr) 320px; gap: 30px; } .viewerControls { padding-inline: 15px; } .viewerControls > span { font-size: 9px; } .moodCaption { padding: 18px; } }
+@media (min-width: 861px) {
+  .hero {
+    --hero-stage-height: max(280px, 100svh - 74px - var(--product-nav-height) - 70px);
+    padding-top: calc(var(--product-nav-height) + 12px);
+    row-gap: 16px;
+  }
+  .heroCopy { padding-block: 6px 8px; }
+  .hero h1 { margin-bottom: 20px; font-size: clamp(88px, min(11vw, 21svh), 174px); }
+  .tagline { margin-bottom: 18px; font-size: clamp(31px, min(3.1vw, 5.5svh), 48px); }
+  .heroDescription { margin-bottom: 24px; }
+  .heroActions { gap: 16px; }
+  .heroStage { width: min(100%, calc(var(--hero-stage-height) * 18 / 13)); justify-self: end; }
+  .heroFoot { padding-block: 8px 14px; }
+}
 @media (max-width: 860px) {
   .hero { grid-template-columns: 1fr; gap: 20px; padding-top: calc(30px + var(--product-nav-height)); }
   .heroCopy { padding-block: 10px 15px; }
