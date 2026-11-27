@@ -38,7 +38,7 @@ Tutte sotto `/api/ecommerce/v1`, runtime Node e dinamiche:
 - `GET /cart`, `PUT /cart/items`, `GET /checkout-options`.
 - `POST /quotes`, `GET /quotes/[id]`, `POST /orders/place`.
 - `GET /orders`, `GET /orders/[id]`.
-- `POST /orders/[id]/payment-session`, `GET /orders/[id]/payment-status`.
+- `POST /orders/[id]/payment-session`, `GET /orders/[id]/payment-status`, `POST /orders/[id]/payment-status` per verificare il tentativo già associato all’ordine.
 - `GET /orders/[id]/tracking`, `/timeline`, `/deliveries/[deliveryId]`: client tracking condiviso.
 
 Non esistono un proxy universale, route staff o route verso anagrafiche, ricavi, EVENTI o calendario. Le mutazioni commerciali interne restano POST ad Atlas; le letture browser rimangono GET e il salvataggio carrello rimane PUT.

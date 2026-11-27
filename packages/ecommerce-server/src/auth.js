@@ -371,7 +371,7 @@ export function createStorefrontAuth({ mongoose, env = process.env }) {
       const method =
         path === "/api/ecommerce/internal/cart/items"
           ? "PUT"
-          : /^\/api\/ecommerce\/internal\/orders\/[A-Za-z0-9_-]{16,80}\/payment-session$/.test(
+          : /^\/api\/ecommerce\/internal\/orders\/[A-Za-z0-9_-]{16,80}\/payment-(?:session|verify)$/.test(
                 path,
               )
             ? "POST"

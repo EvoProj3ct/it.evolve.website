@@ -105,16 +105,66 @@
 .profileShopLink { display: flex; align-items: center; justify-content: space-between; gap: 25px; margin-top: 35px; padding-top: 25px; border-top: 1px solid #dde7d3; }
 .profileShopLink h2 { font-size: 28px; font-weight: 400; letter-spacing: -.05em; }
 .profileShopLink p { margin-top: 10px; color: #8f9e81; font-size: 11px; line-height: 1.7; }
-.realOrders { display: grid; gap: 13px; }
-.realOrder { display: flex; align-items: center; gap: 17px; padding: 22px; border: 1px solid #e0e9d7; border-radius: 13px; color: #4c6640; transition: background .35s, border-color .35s; }
-.realOrder:hover { border-color: #c7dcb7; background: #f7faf2; }
-.realOrder > div { flex: 1; min-width: 0; }
-.realOrder strong { display: block; font-size: 15px; font-weight: 400; }
-.realOrder small { display: block; margin-top: 8px; color: #91a180; font-size: 10px; }
-.realOrder > span:not(:first-child) { flex: none; font-size: 14px; }
-.realOrder > svg { flex: none; color: #92ae7e; }
-.orderStates { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-block: 22px; color: #7c9368; font-size: 11px; }
-.realOrder .orderStates { gap: 7px 15px; margin-block: 12px 0; font-size: 9px; }
+.realOrders { display: grid; gap: 24px; margin-block-start: 24px; }
+.orderGroup {
+  --status-ink: #315939;
+  --status-border: #adc4a8;
+  --status-paper: #f1f7ee;
+  display: grid;
+  gap: 9px;
+}
+.orderGroup[data-section="blocked"] { --status-ink: #873f3b; --status-border: #d8a39e; --status-paper: #fdf1ee; }
+.orderGroup[data-section="payable"] { --status-ink: #76500c; --status-border: #d8b770; --status-paper: #fdf7e8; }
+.orderGroup[data-section="waiting"] { --status-ink: #5d4885; --status-border: #bdafd6; --status-paper: #f7f3fc; }
+.orderGroup[data-section="fulfillment"] { --status-ink: #315a86; --status-border: #a4bedc; --status-paper: #eff5fc; }
+.orderGroup[data-section="progress"] { --status-ink: #2d695f; --status-border: #9dc4ba; --status-paper: #eef8f5; }
+.orderGroup[data-section="closed"] { --status-ink: #58625d; --status-border: #bcc6c1; --status-paper: #f3f6f4; }
+.orderGroup h3 { display: flex; align-items: center; gap: 9px; margin: 0; color: var(--status-ink); font-size: 13px; font-weight: 600; }
+.orderGroup h3 > i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.realOrder {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 17px;
+  border: 1px solid var(--status-border);
+  border-inline-start-width: 4px;
+  border-radius: 14px;
+  background: var(--status-paper);
+  color: #23372b;
+  transition: border-color .2s;
+}
+.realOrder:hover { border-color: var(--status-ink); }
+.orderProducts { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; max-width: 235px; }
+.orderProductCircle {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1px solid var(--status-border);
+  border-radius: 50%;
+  background: #fcfdfb;
+  color: var(--status-ink);
+}
+.orderProductCircle > svg { width: 76%; max-height: 76%; }
+.orderProductCircle > svg[class~="lucide"] { width: 49%; }
+.orderCardBody { min-width: 0; }
+.orderCardBody > strong { display: block; font-size: 15px; font-weight: 600; overflow-wrap: anywhere; }
+.orderCardBody > time { display: block; margin-top: 5px; color: #526459; font-size: 11px; }
+.orderCardTotal { display: inline-flex; align-items: center; gap: 10px; color: var(--status-ink); font-size: 15px; font-weight: 500; white-space: nowrap; }
+.orderStates { display: flex; flex-wrap: wrap; gap: 7px; margin-block: 18px; font-size: 12px; }
+.realOrder .orderStates { margin-block: 9px 0; }
+.orderStates > span { display: inline-flex; align-items: center; gap: 5px; padding: 4px 9px; border: 1px solid #d2ded1; border-radius: 999px; background: #f4f7f2; color: #3d5242; font-weight: 600; }
+.orderStates small { color: inherit; opacity: .78; font-size: 10px; font-weight: 400; }
+.orderStates > :is([data-state="paid"], [data-state="fulfilled"], [data-state="completed"]) { border-color: #a9c7a4; background: #e9f5e6; color: #265732; }
+.orderStates > :is([data-state="awaiting"], [data-state="failed"], [data-state="expired"]) { border-color: #dfc287; background: #fff4d9; color: #79520e; }
+.orderStates > :is([data-state="on_hold"], [data-state="under_review"], [data-state="disputed"]) { border-color: #dfaaa4; background: #fbe8e4; color: #873f3b; }
+.orderStates > [data-state="unfulfilled"] { border-color: #a7bddb; background: #e8f1ff; color: #315a86; }
+.orderStates > :is([data-state="in_progress"], [data-state="partial"]) { border-color: #a8c9be; background: #e9f6ef; color: #2d695f; }
+.orderStates > :is([data-state="processing"], [data-state="refund_pending"], [data-state="partially_refunded"]) { border-color: #cbbddc; background: #f2ebf9; color: #5d4885; }
+.orderStates > :is([data-state="cancelled"], [data-state="refunded"]) { border-color: #c6cfca; background: #edf1ee; color: #56615d; }
 .detailGrid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 45px; align-items: start; }
 .orderSection { min-width: 0; margin-top: 33px; padding-top: 27px; border-top: 1px solid #dfe8d5; }
 .orderSection h2 { margin: 0 0 24px; font-size: 31px; font-weight: 400; letter-spacing: -.055em; }
@@ -133,6 +183,40 @@
 .addresses h3 { margin-bottom: 13px; color: #678351; font-size: 13px; font-weight: 400; }
 .addresses address { color: #8a9b7a; font-size: 12px; line-height: 1.9; font-style: normal; overflow-wrap: anywhere; }
 .paymentState { color: #5f8149; font-size: 20px; }
+.paymentOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 105;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: #182c2033;
+  pointer-events: none;
+}
+.paymentOverlayCard {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: min(100%, 34rem);
+  padding: clamp(20px, 5vw, 40px);
+  border: 1px solid #c2d6ba;
+  border-radius: 24px;
+  background: #f8fcf5;
+  box-shadow: 0 18px 70px #142e2628;
+  color: #193821;
+  text-align: center;
+}
+.paymentOverlayCard > div { width: 100%; }
+.paymentOverlayCard strong { font-size: clamp(1.65rem, 4.2vw, 2.6rem); font-weight: 500; letter-spacing: -.045em; line-height: 1.06; }
+.paymentGhost { width: 76px; height: 76px; }
+.paymentOverlay[data-confirmed="true"] { animation: payment-confirmation 5s ease both; }
+@keyframes payment-confirmation {
+  0%, 100% { opacity: 0; }
+  6%, 86% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .paymentOverlay[data-confirmed="true"] { animation: none; }
+}
 .moneyPair { display: grid; gap: 13px; margin: 23px 0; }
 .moneyPair > span { display: flex; justify-content: space-between; gap: 20px; color: #95a585; font-size: 11px; }
 .moneyPair strong { color: #5d7a49; font-weight: 400; }
@@ -201,12 +285,11 @@
   .customerStatus { margin-bottom: 28px; padding: 20px; }
   .profileShopLink { align-items: flex-start; }
   .profileShopLink h2 { font-size: 25px; }
-  .realOrder { flex-wrap: wrap; gap: 13px; padding: 18px; }
-  .realOrder > span:first-child { display: none; }
-  .realOrder > div { flex-basis: 60%; }
-  .realOrder > span:not(:first-child) { font-size: 13px; }
-  .realOrder > svg { display: none; }
-  .orderStates { gap: 9px 15px; font-size: 10px; }
+  .realOrder { grid-template-columns: minmax(0, 1fr) auto; gap: 11px; padding: 13px; }
+  .orderCardBody { grid-column: 1 / -1; grid-row: 2; }
+  .orderProductCircle { width: 32px; }
+  .orderCardTotal { gap: 5px; font-size: 13px; }
+  .orderStates { font-size: 11px; }
   .orderSection { margin-top: 26px; padding-top: 23px; }
   .orderSection h2 { font-size: 28px; }
   .quote { padding: 23px 20px; }
@@ -227,6 +310,8 @@
 .configuredPurchase { display: grid; justify-items: start; gap: 10px; }
 .configuredPurchase select { display: block; max-width: 100%; padding: 8px; border: 1px solid #a9b6a3; border-radius: 6px; background: #fcfdfb; color: #253722; }
 .configuredPurchase button:disabled { opacity: .6; cursor: not-allowed; }
+.checkoutAdded { display: grid; justify-items: start; gap: 10px; }
+.checkoutAdded > p { display: flex; align-items: center; gap: 7px; color: #2d6839; font-size: 13px; font-weight: 600; }
 .orderFilters { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 16px; }
 .orderFilters button[aria-pressed="true"] { background: #e6f1df; border-color: #47783a; }
 .orderStatistics { display: flex; flex-wrap: wrap; gap: 12px; margin-block: 18px; }

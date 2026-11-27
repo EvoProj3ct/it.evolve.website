@@ -7,3 +7,7 @@ export async function GET(request: Request, { params }: Context) {
   return handleCommerce(request, "paymentStatus", (await params).id);
 }
 
+export async function POST(request: Request, { params }: Context) {
+  return handleCommerce(request, "verifyPayment", (await params).id);
+}
+

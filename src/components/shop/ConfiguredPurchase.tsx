@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, ShoppingCart } from "lucide-react";
+import { ArrowRight, Check, ShoppingCart } from "lucide-react";
 import type { ConfiguratorKind, PublicCatalogProduct } from "@evolve/ecommerce-server/catalog";
 import { isLinkerOfferKind, linkerBundleSize } from "@evolve/ecommerce-server/keyring-offers";
 import { GhostLoading } from "@/components/GhostLoading";
@@ -67,6 +67,7 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
   const pending = useRef<AbortController | null>(null);
   const product = selected ? products.find(item => item.id === selected) : products[0];
   const bundleSize = linkerBundleSize(kind);
+  const goToCheckout = outcome === "added" && isLinkerOfferKind(kind);
 
   useEffect(() => subscribeSession(() => {
     pending.current?.abort();
@@ -175,15 +176,21 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
     </select></label>}
     {product && <><p>{product.name} · <strong>{money(product.price.unitGrossCents)}</strong> IVA inclusa
       {bundleSize && <> · {bundleSize} pezzi per confezione</>}</p>
-      <button type="button" className={buttonClass} disabled={busy || loading || disabled || outcome === "review"} onClick={() => void add()}>
+      {!goToCheckout && <button type="button" className={buttonClass} disabled={busy || loading || disabled || outcome === "review"} onClick={() => void add()}>
         {busy ? "Aggiunta…" : bundleSize ? "Aggiungi il bundle al carrello" : "Aggiungi la configurazione al carrello"} <ShoppingCart size={18} />
-      </button></>}
+      </button>}</>}
+    {goToCheckout && <div className={styles.checkoutAdded}>
+      <p role="status"><Check size={16} aria-hidden="true" /> Aggiunto al carrello</p>
+      <Link href="/checkout" prefetch={false} className={buttonClass}>Vai al checkout <ArrowRight size={18} /></Link>
+      <Link href="/carrello" prefetch={false} className={styles.secondary}>Vedi il carrello</Link>
+      <button type="button" className={styles.secondary} onClick={() => setOutcome(null)}>Configura un altro articolo</button>
+    </div>}
     {loading && !products.length && <GhostLoading label="Caricamento articoli…" />}
     {catalogError && <p role="alert">{catalogError} <button type="button" onClick={() => setRetry(value => value + 1)}>Riprova</button></p>}
     {!loading && !catalogError && !product && <p>{products.length ? "L’articolo selezionato non è più disponibile. Scegline uno dall’elenco." : bundleSize ? "Questo bundle non è ancora acquistabile online." : "Nessun articolo acquistabile è pubblicato per questo configuratore."}</p>}
     {next && <button type="button" className={styles.secondary} disabled={loading || busy} onClick={() => setCursor(next)}>Altri articoli</button>}
     {error && <p role="alert">{error}</p>}
-    {(outcome === "review" || outcome === "added") && <Link href="/carrello" className={styles.secondary}>{outcome === "added" ? "Aggiunto · Apri il carrello" : "Controlla il carrello"} <ArrowRight size={16} /></Link>}
+    {(outcome === "review" || outcome === "added" && !goToCheckout) && <Link href="/carrello" className={styles.secondary}>{outcome === "added" ? "Aggiunto · Apri il carrello" : "Controlla il carrello"} <ArrowRight size={16} /></Link>}
     {outcome === "review" && <button type="button" className={styles.secondary} disabled={loading} onClick={() => {
       setOutcome(null);
       setError("");

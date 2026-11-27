@@ -68,8 +68,18 @@ const paymentSummary = z.object({ paidMinor: integer, refundedMinor: integer, pa
 export const orderSummarySchema = z.object({ id: publicIdSchema, number: text(80), revision: integer, placedAt: date, operationalStatus: operationalStatusSchema, paymentStatus: paymentStatusSchema, fulfillmentStatus: fulfillmentStatusSchema, totals: totalsSchema, payment: paymentSummary.optional() }).strict();
 export const orderSchema = orderSummarySchema.extend({ lines: z.array(orderLineSchema).min(1).max(100), discount: discountSchema.optional(), billing: billingSchema, shipping: addressSchema.optional(), fulfillmentSelections: z.array(selectionSchema).max(2), fulfillment: z.array(z.object({ lineId: publicIdSchema, state: z.enum(["unfulfilled", "preparing", "shipped", "delivered", "service_completed", "cancelled"]), fulfilledQuantity: integer.max(1000), shippedQuantity: integer.max(1000) }).strict()).max(100), termsVersion: text(80) }).strict();
 export const orderGroupSchema = z.enum(["active", "received", "cancelled"]);
+const orderProductMarkSchema = z.enum(["e-disk", "e-disk-bundle", "e-disk-disc", "e-led", ...linkerOfferKinds]);
+const customerOrderListItemSchema = orderSummarySchema.extend({
+  productCount: integer.max(100).optional(),
+  products: z.array(z.object({
+    title: text(200),
+    mark: orderProductMarkSchema.optional(),
+    color: colorSchema.optional(),
+    secondaryColor: colorSchema.optional(),
+  }).strict()).max(4).optional(),
+});
 export const ordersSchema = z.object({
-  items: z.array(orderSummarySchema).max(30),
+  items: z.array(customerOrderListItemSchema).max(30),
   nextCursor: publicIdSchema.nullable(),
   stats: z.object({ active: integer, received: integer, cancelled: integer, paidMinor: integer, refundedMinor: integer }).strict(),
 }).strict();
@@ -97,6 +107,7 @@ export type Quote = z.infer<typeof quoteSchema>;
 export type Order = z.infer<typeof orderSchema>;
 export type OrderSummary = z.infer<typeof orderSummarySchema>;
 export type Orders = z.infer<typeof ordersSchema>;
+export type CustomerOrderListItem = z.infer<typeof customerOrderListItemSchema>;
 export type Payment = z.infer<typeof paymentSchema>;
 export type Account = z.infer<typeof accountSchema>;
 export type CustomerLink = z.infer<typeof customerLinkSchema>;

@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import { ArrowRight } from "lucide-react";
 import { money, placedOrderSchema, quoteSchema, type Quote, type QuoteInput } from "@/lib/ecommerce/contracts";
 import { errorText, StorefrontError, storefrontMutate, subscribeSession } from "@/lib/ecommerce/browser";
-import { cartChanged } from "@/lib/ecommerce/cart";
+import { cartChanged, importGuestCart } from "@/lib/ecommerce/cart";
 import { useGuestCart } from "@/lib/ecommerce/guest-cart";
 import { cachedShopData, shopApi, shopReads, useShopStore, type ShopStore } from "@/lib/ecommerce/shop-store";
 import { PersonalizationText } from "./ShopPersonalization";
@@ -17,7 +17,7 @@ import common from "./CommercePreview.module.css";
 import styles from "./Storefront.module.css";
 
 async function loadCheckout(store: ShopStore, signal: AbortSignal, refresh: boolean) {
-  const [profile, cart, policy, link, savedBilling] = await Promise.all([
+  const [profile, accountCart, policy, link, savedBilling] = await Promise.all([
     shopReads.profile(store, refresh),
     shopReads.cart(store, refresh),
     shopReads.checkoutOptions(store, refresh),
@@ -28,6 +28,7 @@ async function loadCheckout(store: ShopStore, signal: AbortSignal, refresh: bool
     }),
   ]);
   signal.throwIfAborted();
+  const { cart } = await importGuestCart(accountCart, signal);
   return { account: profile.account, cart, policy, link, billing: savedBilling?.billing, billingUnavailable: savedBilling === null };
 }
 export function ShopCheckout({ termsPath, termsVersion }: { termsPath: string; termsVersion: string }) {

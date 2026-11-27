@@ -76,6 +76,7 @@ export const shopApi = createApi({
     }),
     order: builder.query<z.infer<typeof orderSchema>, string>({
       queryFn: privateQuery(orderPath, orderSchema),
+      providesTags: ["Orders"],
     }),
     paymentStatus: builder.query<z.infer<typeof paymentSchema>, string>({
       queryFn: (id, { signal, getState }) => privateResult(async () => {

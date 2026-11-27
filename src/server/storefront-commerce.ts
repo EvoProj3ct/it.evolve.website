@@ -20,6 +20,7 @@ const operations = {
   order: { method: "GET", path: (id?: string) => `/orders/${id}`, input: empty, output: orderSchema },
   payment: { method: "POST", path: (id?: string) => `/orders/${id}/payment-session`, input: startPaymentSchema, output: paymentSchema },
   paymentStatus: { method: "GET", path: (id?: string) => `/orders/${id}/payment-status`, input: empty, output: paymentSchema },
+  verifyPayment: { method: "POST", path: (id?: string) => `/orders/${id}/payment-verify`, input: empty, output: paymentSchema },
 } as const;
 type Operation = keyof typeof operations;
 
@@ -88,7 +89,7 @@ export async function handleCommerce(request: Request, operation: Operation, raw
   return commerceBoundary(async () => {
     const specification: { method: "GET" | "PUT" | "POST"; path: (id?: string) => string; input: z.ZodType; output: z.ZodType } = operations[operation];
     if (request.method !== specification.method) throw new CommerceServiceError(405, "METHOD_NOT_ALLOWED", "Metodo non consentito.");
-    const id = ["readQuote", "order", "payment", "paymentStatus"].includes(operation) ? parseInput(publicIdSchema, rawId) : undefined;
+    const id = ["readQuote", "order", "payment", "paymentStatus", "verifyPayment"].includes(operation) ? parseInput(publicIdSchema, rawId) : undefined;
     const parameters = query(request, operation === "orders" ? ["cursor", "group"] : []);
     const body = specification.method === "GET" ? parameters : await limitedJson(request, 32768);
     const parsed = specification.input.safeParse(body);
@@ -111,7 +112,7 @@ export async function handleCommerce(request: Request, operation: Operation, raw
     let response: Response;
     try {
       response = await measureCommercePhase(operation, "atlas_request", () =>
-        fetch(new URL(path, origin), { method: "POST", cache: "no-store", redirect: "error", signal: AbortSignal.timeout(operation === "payment" ? 25000 : 15000), headers: { Authorization: `Bearer ${token}`, Accept: "application/json", "Content-Type": "application/json", "X-Commerce-Assertion": prepared.assertion, ...(bypass ? { "x-vercel-protection-bypass": bypass } : {}) }, body: JSON.stringify(prepared.payload) }));
+        fetch(new URL(path, origin), { method: "POST", cache: "no-store", redirect: "error", signal: AbortSignal.timeout(operation === "payment" || operation === "verifyPayment" ? 25000 : 15000), headers: { Authorization: `Bearer ${token}`, Accept: "application/json", "Content-Type": "application/json", "X-Commerce-Assertion": prepared.assertion, ...(bypass ? { "x-vercel-protection-bypass": bypass } : {}) }, body: JSON.stringify(prepared.payload) }));
     } catch { throw new CommerceServiceError(503, "ATLAS_UNAVAILABLE", "Collegamento interrotto. L’esito dell’operazione potrebbe non essere ancora noto: aggiorna i dati prima di riprovare."); }
     const value = await limitedJson(response, 1048576);
     if (!response.ok) {
@@ -143,7 +144,8 @@ export async function handleCommerce(request: Request, operation: Operation, raw
     if (!checked.success) throw new CommerceServiceError(502, "ATLAS_RESPONSE_INVALID", "Il servizio ha restituito dati non validi.");
     const result = checked.data as unknown as Record<string, unknown>;
     const mismatch = (operation === "readQuote" || operation === "order") && result.id !== id
-      || (operation === "payment" || operation === "paymentStatus") && result.orderPublicId !== id
+      || (operation === "payment" || operation === "paymentStatus" || operation === "verifyPayment") && result.orderPublicId !== id
+      || operation === "verifyPayment" && result.checkoutUrl !== null
       || operation === "saveCart" && !input.guestImportId && input.cartPublicId !== null && result.id !== input.cartPublicId
       || operation === "quote" && (result.cartPublicId !== input.cartPublicId || result.cartRevision !== input.cartRevision || result.policyRevision !== input.policyRevision || result.termsVersion !== input.termsVersion
         || (result.discount as { code: string } | undefined)?.code !== (input.discountCode as string | undefined)?.toUpperCase());
