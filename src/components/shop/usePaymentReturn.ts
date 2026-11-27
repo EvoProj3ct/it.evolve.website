@@ -8,10 +8,18 @@ import { cachedShopData, cacheShopEntries, shopApi, shopQueryError, useShopStore
 
 const checks = [
   { delay: 0, verify: true },
-  { delay: 2000, verify: false },
-  { delay: 4000, verify: true },
-  { delay: 6000, verify: false },
+  { delay: 1000, verify: false },
+  { delay: 1800, verify: false },
+  { delay: 2200, verify: true },
+  { delay: 3500, verify: false },
+  { delay: 5000, verify: false },
+  { delay: 6000, verify: true },
+  { delay: 8000, verify: false },
+  { delay: 12000, verify: false },
+  { delay: 15000, verify: false },
 ];
+const maxCheckingMs = 90000;
+const overlayMs = 6000;
 
 function paymentConfirmationPending(payment?: Payment) {
   return !payment || payment.paymentStatus === "awaiting" || payment.paymentStatus === "processing";
@@ -22,6 +30,7 @@ export function usePaymentReturn(orderId: string, hint: ShopPaymentReturn) {
   const [initialized, setInitialized] = useState(false);
   const [remembered, setRemembered] = useState(false);
   const [checking, setChecking] = useState(true);
+  const [showOverlay, setShowOverlay] = useState(true);
   const [failure, setFailure] = useState<unknown>(null);
   const [retry, setRetry] = useState(0);
   const returned = hint === "success" || (hint !== "cancelled" && remembered);
@@ -46,7 +55,15 @@ export function usePaymentReturn(orderId: string, hint: ShopPaymentReturn) {
   }, [hint, orderId]);
 
   useEffect(() => {
+    if (!returned || !checking) return;
+    setShowOverlay(true);
+    const timer = window.setTimeout(() => setShowOverlay(false), overlayMs);
+    return () => window.clearTimeout(timer);
+  }, [checking, retry, returned]);
+
+  useEffect(() => {
     if (!returned) return;
+    const deadline = Date.now() + maxCheckingMs;
     let cancelled = false;
     let timer: number | undefined;
     let lastVerificationError: unknown = null;
@@ -71,10 +88,11 @@ export function usePaymentReturn(orderId: string, hint: ShopPaymentReturn) {
       setChecking(false);
     }
 
-    function schedule(index: number) {
+    function schedule(index: number, retryAfterMs = 0) {
       if (!active()) return;
       const step = checks[index];
-      if (!step) {
+      const delay = step ? Math.max(step.delay, retryAfterMs) : 0;
+      if (!step || Date.now() + delay >= deadline) {
         finish(currentPayment(), lastVerificationError);
         return;
       }
@@ -96,28 +114,39 @@ export function usePaymentReturn(orderId: string, hint: ShopPaymentReturn) {
             }
           } catch (error) {
             if (!active()) return;
-            if (hidesPreviousData(error) || error instanceof StorefrontError && error.status === 429) {
+            if (hidesPreviousData(error)) {
               finish(undefined, error);
               return;
             }
             lastVerificationError = error;
+            if (error instanceof StorefrontError && error.status === 429) {
+              schedule(index + 1, (error.retryAfter || 60) * 1000);
+              return;
+            }
           }
         } else {
           const result = await store.dispatch(endpoint.initiate(orderId, { subscribe: false, forceRefetch: true }));
           if (!active()) return;
           if (result.error) {
             const error = shopQueryError(result.error);
-            if (hidesPreviousData(error) || error instanceof StorefrontError && error.status === 429) {
+            if (hidesPreviousData(error)) {
               finish(undefined, error);
               return;
             }
+            if (error instanceof StorefrontError && error.status === 429) {
+              lastVerificationError = error;
+              schedule(index + 1, (error.retryAfter || 60) * 1000);
+              return;
+            }
+          } else if (lastVerificationError instanceof StorefrontError && lastVerificationError.status === 429) {
+            lastVerificationError = null;
           }
         }
         if (!active()) return;
         const after = currentPayment();
         if (paymentConfirmationPending(after)) schedule(index + 1);
         else finish(after);
-      }, step.delay);
+      }, delay);
     }
 
     schedule(0);
@@ -128,6 +157,7 @@ export function usePaymentReturn(orderId: string, hint: ShopPaymentReturn) {
     initialized,
     returned,
     checking: returned && checking,
+    showOverlay: returned && checking && showOverlay,
     failure,
     recheck() {
       setChecking(true);

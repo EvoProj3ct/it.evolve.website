@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { ArrowRight, ArrowUpRight, CheckCircle2, RefreshCw } from "lucide-react";
 import { isStripeCheckoutUrl, money, paymentSchema, statusLabels, type Order, type Payment } from "@/lib/ecommerce/contracts";
 import { errorText, hidesPreviousData, StorefrontError, storefrontMutate } from "@/lib/ecommerce/browser";
@@ -109,10 +109,7 @@ function OrderPayment({ order, resource, confirmation, paymentReturn }: {
     finally { lock.current = false; setBusy(false); }
   }
   return <section className={styles.orderSection}>
-    <PaymentReturnFeedback
-      checking={checkingConfirmation}
-      confirmed={(confirmation.returned || requestedPayment) && paid}
-    />
+    {!confirmation.returned && <PaymentReturnFeedback checking={false} confirmed={requestedPayment && paid} />}
     <div className={common.panelHeading}>
       <h2>Pagamento<span>.</span></h2>
       <button type="button" className={styles.iconButton}
@@ -122,7 +119,7 @@ function OrderPayment({ order, resource, confirmation, paymentReturn }: {
     <ResourceFeedback busy={resource.busy && !awaitingConfirmation} error={checkingConfirmation ? null : resource.error ?? (needsConfirmation && hidesPreviousData(confirmation.failure) ? confirmation.failure : null)}
       reload={refresh} next={`/account/ordini/${order.id}`} />
     {paid && <p className={styles.paymentSuccess} role="status"><CheckCircle2 size={22} aria-hidden="true" /> Pagamento effettuato con successo</p>}
-    {!paid && <p className={styles.paymentState}>{awaitingConfirmation ? "In attesa della conferma" : statusLabels[order.paymentStatus]}</p>}
+    {!paid && <p className={styles.paymentState} role="status">{checkingConfirmation ? "Verifica del pagamento in corso…" : awaitingConfirmation ? "In attesa della conferma" : statusLabels[order.paymentStatus]}</p>}
     {amounts && <div className={styles.moneyPair}>
       <span>Incassato <strong>{money(amounts.paidMinor)}</strong></span>
       <span>Rimborsato <strong>{money(amounts.refundedMinor)}</strong></span>
@@ -141,23 +138,39 @@ function OrderPayment({ order, resource, confirmation, paymentReturn }: {
 }
 
 export function ShopOrderDetail({ id, paymentReturn }: { id: string; paymentReturn: ShopPaymentReturn }) {
-  const resource = useShopQueryView(shopApi.useOrderQuery(id, { refetchOnMountOrArgChange: orderCacheAge }));
-  const payment = useShopQueryView(shopApi.usePaymentStatusQuery(id, { skip: !resource.data, refetchOnMountOrArgChange: orderCacheAge }));
+  const store = useShopStore();
   const confirmation = usePaymentReturn(id, paymentReturn);
+  const resource = useShopQueryView(shopApi.useOrderQuery(id, { refetchOnMountOrArgChange: orderCacheAge }));
+  const paymentEndpoint = shopApi.endpoints.paymentStatus;
+  paymentEndpoint.useQuerySubscription(id, {
+    skip: !resource.data || !confirmation.initialized || confirmation.checking,
+    refetchOnMountOrArgChange: orderCacheAge,
+  });
+  const paymentState = paymentEndpoint.useQueryState(id);
+  const reloadPayment = useCallback(() => {
+    void store.dispatch(paymentEndpoint.initiate(id, { subscribe: false, forceRefetch: true }));
+  }, [id, paymentEndpoint, store]);
+  const payment = useShopQueryView({ ...paymentState, refetch: reloadPayment });
   const currentOrder = resource.data;
   const currentPayment = payment.data;
   const order = currentOrder && currentPayment && currentPayment.orderRevision >= currentOrder.revision
     ? { ...currentOrder, paymentStatus: currentPayment.paymentStatus }
     : currentOrder;
+  const returnStatus = order?.paymentStatus ?? currentPayment?.paymentStatus;
+  const waitingForPayment = confirmation.returned && (returnStatus === "awaiting" || returnStatus === "processing");
   const fulfillment = new Map(order?.fulfillment.map(item => [item.lineId, item]));
   return <main id="shop-content" className={common.page}>
     <ShopPageHeader title={order?.number || "Il tuo ordine"} description={order ? `Confermato il ${date(order.placedAt)}.` : "Dettagli, pagamento e aggiornamenti della fornitura."} />
-    {confirmation.checking && !order && !hidesPreviousData(resource.error) && <PaymentReturnFeedback checking confirmed={false} />}
+    <PaymentReturnFeedback
+      checking={confirmation.showOverlay && (!returnStatus || returnStatus === "awaiting" || returnStatus === "processing") && !hidesPreviousData(resource.error)}
+      confirmed={confirmation.returned && returnStatus === "paid"}
+    />
     <ResourceFeedback busy={resource.busy && !confirmation.returned} error={resource.error} reload={resource.reload} next={`/account/ordini/${id}`} />
     {order && <>
       <div className={common.panelHeading}>
         <Link href="/account/ordini" className={common.textLink}>Tutti gli ordini <ArrowRight size={14} /></Link>
-        <button type="button" className={styles.secondary} disabled={resource.refreshing} onClick={resource.reload}>
+        <button type="button" className={styles.secondary} disabled={resource.refreshing || confirmation.checking}
+          onClick={waitingForPayment ? confirmation.recheck : resource.reload}>
           <RefreshCw size={15} /> Aggiorna lo stato
         </button>
       </div>
@@ -172,7 +185,7 @@ export function ShopOrderDetail({ id, paymentReturn }: { id: string; paymentRetu
         </section>
         <OrderPayment key={order.id} order={order} resource={payment} confirmation={confirmation} paymentReturn={paymentReturn} />
       </div>
-      <ShopTracking orderId={order.id} />
+      {!confirmation.showOverlay && <ShopTracking orderId={order.id} />}
     </>}
   </main>;
 }
