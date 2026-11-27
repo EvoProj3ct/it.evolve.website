@@ -28,13 +28,12 @@
   top: 0;
   left: 0;
   display: none;
-  transform: translate3d(var(--hand-x, 0), var(--hand-y, 0), 0) translate(-42%, -28%) rotate(-11deg);
+  transform: translate3d(var(--hand-x, 0), var(--hand-y, 0), 0) translate(-42%, -28%) rotate(var(--hand-angle, -11deg));
   filter: drop-shadow(0 2px 3px #22332438);
   color: #263c35;
   pointer-events: none;
 }
 .hand svg { fill: #fcfdfb; stroke-width: 1.7; }
 .surface[data-hand="true"] .hand { display: block; }
-.hand > svg:last-child, .surface[data-grabbing="true"] .hand > svg:first-child { display: none; }
-.surface[data-grabbing="true"] .hand > svg:last-child { display: block; }
+.surface[data-pushing="true"] { --hand-angle: -27deg; }
 @media (max-width: 680px) { .surface { height: clamp(320px, 112vw, 440px); } }
