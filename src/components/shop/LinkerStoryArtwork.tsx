@@ -9,6 +9,10 @@ const scenes = {
     background: "#EAE4F5", screen: "#F7F4FB", accent: "#7954A5", primary: "#DCCCF3", secondary: "#443167",
     glyph: "M116 37h8v8h-8zM129 37h8v8h-8zM116 50h8v8h-8zM129 54h8m-4-4v8",
   },
+  chatbot: {
+    background: "#DFEDF4", screen: "#F1F8FB", accent: "#396E95", primary: "#B5D8EC", secondary: "#27485F",
+    glyph: "M119 39h15a4 4 0 0 1 4 4v7a4 4 0 0 1-4 4h-9l-5 4v-4h-1a4 4 0 0 1-4-4v-7a4 4 0 0 1 4-4zM121 47h.1m5.4 0h.1m5.4 0h.1",
+  },
   lights: {
     background: "#F7EDD2", screen: "#FFF9ED", accent: "#98680D", primary: "#F6D987", secondary: "#60451B",
     glyph: "M123 56v-4c-2.6-1.4-4-3.5-4-6a7.5 7.5 0 1 1 15 0c0 2.5-1.4 4.6-4 6v4zm1 3h5M126.5 38v-3m-10 6-2-2m22 2 2-2",

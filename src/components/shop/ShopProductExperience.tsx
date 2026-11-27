@@ -251,7 +251,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
       {isDisk && <EDiskGiftIdeas onChoose={setDiscSource} />}
 
       {!isDisk && <section id="scopri" className={styles.story} aria-labelledby="story-title">
-        <div className={styles.storyHeading}><h2 id="story-title">{info.punchline}<span>.</span></h2><p>Il tag NFC apre il collegamento che scegli, con uno smartphone compatibile.</p></div>
+        <h2 id="story-title">{info.punchline}<span>.</span></h2>
         <LinkerStoryCarousel />
       </section>}
 

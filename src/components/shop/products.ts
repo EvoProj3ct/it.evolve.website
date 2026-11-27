@@ -134,6 +134,7 @@ export const PRODUCTS = {
       { scene: "product", title: "Dai spazio a un prodotto.", description: "Una scheda, un video, una novità. Un accesso diretto a ciò che vuoi far scoprire." },
       { scene: "memory", title: "Regala un ricordo.", description: "Un album, una dedica, un video per un amico. Un momento da portare sempre con sé." },
       { scene: "app", title: "Apri la tua app.", description: "Un link configurato porta a una schermata della tua app. Chi non l’ha installata può proseguire sul sito." },
+      { scene: "chatbot", title: "Collega il tuo chatbot.", description: "Abbina e-linker al link pubblico del tuo chatbot. Chi avvicina il telefono può aprire la chat e iniziare a scrivere." },
       { scene: "lights", title: "Accendi le luci.", description: "Abbina il tag a un’automazione in Comandi Rapidi su iPhone per accendere una lampada compatibile o attivare una scena di Casa." },
       { scene: "wifi", title: "Condividi il Wi‑Fi.", description: "Apri una pagina con il nome e la password della rete ospiti, pronti da copiare." },
       { scene: "map", title: "Fatti trovare.", description: "Apri la mappa con le indicazioni per il tuo negozio, lo stand in fiera o il punto di ritiro." },

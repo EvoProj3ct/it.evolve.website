@@ -6,7 +6,8 @@ import { LinkerStoryArtwork } from "./LinkerStoryArtwork";
 import { PRODUCTS } from "./products";
 import styles from "./Shop.module.css";
 
-const autoplayDelay = 7000;
+const autoplaySpeed = 52;
+const manualPauseMs = 1800;
 const reducedMotionQuery = "(prefers-reduced-motion: reduce)";
 
 function cardSpacing(track: HTMLDivElement) {
@@ -44,30 +45,56 @@ export function LinkerStoryCarousel() {
     if (!track || paused) return;
 
     const motion = matchMedia(reducedMotionQuery);
-    const hover = matchMedia("(hover: hover)");
-    let timer: number | undefined;
+    let visible = false;
+    let frame = 0;
+    let lastFrame = 0;
+    let position = track.scrollLeft;
     let direction: -1 | 1 = 1;
-    const observer = new IntersectionObserver(([entry]) => {
-      if (timer !== undefined) window.clearInterval(timer);
-      if (!entry || entry.intersectionRatio < 0.25) return;
-      timer = window.setInterval(() => {
-        if (motion.matches || document.hidden || drag.current || Date.now() < resumeAt.current ||
-            track.matches(":focus-within") || (hover.matches && track.matches(":hover"))) return;
 
-        if (track.scrollLeft >= track.scrollWidth - track.clientWidth - 1) direction = -1;
-        else if (track.scrollLeft <= 1) direction = 1;
-        scrollByCard(track, direction);
-      }, autoplayDelay);
+    const advance = (now: number) => {
+      frame = requestAnimationFrame(advance);
+      if (drag.current || now < resumeAt.current || track.matches(":focus-visible")) {
+        lastFrame = 0;
+        return;
+      }
+
+      const limit = track.scrollWidth - track.clientWidth;
+      if (limit <= 0) return;
+      const current = track.scrollLeft;
+      // Keep the fractional position on high-refresh displays, and resync after manual scroll.
+      if (!lastFrame || Math.abs(current - position) > 1) position = current;
+      const elapsed = lastFrame ? Math.min(now - lastFrame, 40) / 1000 : 0;
+      lastFrame = now;
+
+      if (position >= limit) direction = -1;
+      else if (position <= 0) direction = 1;
+      position = Math.max(0, Math.min(limit, position + direction * autoplaySpeed * elapsed));
+      track.scrollLeft = position;
+    };
+
+    function syncPlayback() {
+      cancelAnimationFrame(frame);
+      lastFrame = 0;
+      if (visible && !motion.matches && !document.hidden) frame = requestAnimationFrame(advance);
+    }
+
+    const observer = new IntersectionObserver(([entry]) => {
+      visible = !!entry && entry.intersectionRatio >= 0.25;
+      syncPlayback();
     }, { threshold: 0.25 });
     observer.observe(track);
+    motion.addEventListener("change", syncPlayback);
+    document.addEventListener("visibilitychange", syncPlayback);
     return () => {
       observer.disconnect();
-      if (timer !== undefined) window.clearInterval(timer);
+      motion.removeEventListener("change", syncPlayback);
+      document.removeEventListener("visibilitychange", syncPlayback);
+      cancelAnimationFrame(frame);
     };
   }, [paused]);
 
   function deferAutoplay() {
-    resumeAt.current = Date.now() + autoplayDelay;
+    resumeAt.current = performance.now() + manualPauseMs;
   }
 
   function startDrag(event: PointerEvent<HTMLDivElement>) {

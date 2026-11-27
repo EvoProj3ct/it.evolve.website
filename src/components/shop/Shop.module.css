@@ -135,10 +135,9 @@
 .ticker b { font-size: 28px; font-weight: 400; line-height: .8; }
 @keyframes ticker { to { transform: translateX(-50%); } }
 .story { padding: 110px var(--shop-gutter) 100px; }
-.storyHeading { display: grid; grid-template-columns: 1.25fr .75fr; gap: 10%; align-items: end; }
 .story h2, .configHeading h2, .colorStudies h2, .resources h2, .faq h2, .docs h1 { margin: 0; font-size: clamp(42px, 5.3vw, 82px); font-weight: 400; line-height: 1.02; letter-spacing: -.07em; white-space: pre-line; }
 .story h2 > span, .configHeading h2 > span, .colorStudies h2 > span, .resources h2 > span, .faq h2 > span, .docs h1 > span { color: #65c342; }
-.storyHeading > p, .configHeading > p { max-width: 365px; margin: 0 0 4px; font-size: 13px; line-height: 1.9; color: #596352; }
+.configHeading > p { max-width: 365px; margin: 0 0 4px; font-size: 13px; line-height: 1.9; color: #596352; }
 .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 58px; border: 1px solid var(--shop-ink); }
 .step { min-width: 0; padding: 22px 27px 31px; background: #d5edba; }
 .step + .step { border-left: 1px solid var(--shop-ink); }
@@ -344,16 +343,13 @@
   gap: var(--story-gap);
   overflow-x: auto;
   overscroll-behavior-inline: contain;
-  scroll-snap-type: x mandatory;
   scrollbar-width: none;
   cursor: grab;
 }
 .linkerStoryTrack::-webkit-scrollbar { display: none; }
-.linkerStoryTrack > .step { scroll-snap-align: start; }
 .linkerStoryTrack:focus-visible { outline: 2px solid #51943d; outline-offset: 5px; }
 .productPage[data-product="e-linker"] .linkerStoryTrack[data-dragging="true"] {
   cursor: grabbing;
-  scroll-snap-type: none;
   user-select: none;
 }
 .linkerStoryControls { display: flex; justify-content: flex-end; gap: 7px; margin-top: 22px; }
@@ -415,7 +411,6 @@
   .heroVisual { height: 460px; }
   .heroDescription { font-size: 12px; }
   .sticker { width: 80px; height: 80px; font-size: 18px; }
-  .storyHeading { gap: 7%; }
   .configGrid { grid-template-columns: minmax(0,1fr) minmax(280px,340px); gap: 30px; }
   .configScene { height: clamp(300px, calc(100svh - 290px), 380px); }
   .step { padding: 18px; }
@@ -453,9 +448,7 @@
   .ticker { padding: 12px 0; }
   .ticker span { gap: 22px; padding-right: 22px; font-size: 13px; }
   .story { padding-top: 80px; padding-bottom: 65px; }
-  .storyHeading { grid-template-columns: 1fr; gap: 25px; }
-  .storyHeading h2 { font-size: clamp(43px, 9vw, 65px); }
-  .storyHeading > p { max-width: 490px; font-size: 12px; }
+  .story h2 { font-size: clamp(43px, 9vw, 65px); }
   .steps { grid-template-columns: 1fr; margin-top: 35px; }
   .step { display: grid; grid-template-columns: 1fr 100px; column-gap: 14px; padding: 22px; }
   .step + .step { border-top: 1px solid var(--shop-ink); border-left: 0; }
