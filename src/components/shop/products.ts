@@ -133,6 +133,13 @@ export const PRODUCTS = {
       { scene: "profile", title: "Fatti conoscere.", description: "Il tuo sito, i social, il menu della tua attività. Il prossimo contatto comincia con un gesto." },
       { scene: "product", title: "Dai spazio a un prodotto.", description: "Una scheda, un video, una novità. Un accesso diretto a ciò che vuoi far scoprire." },
       { scene: "memory", title: "Regala un ricordo.", description: "Un album, una dedica, un video per un amico. Un momento da portare sempre con sé." },
+      { scene: "app", title: "Apri la tua app.", description: "Un link configurato porta a una schermata della tua app. Chi non l’ha installata può proseguire sul sito." },
+      { scene: "lights", title: "Accendi le luci.", description: "Abbina il tag a un’automazione in Comandi Rapidi su iPhone per accendere una lampada compatibile o attivare una scena di Casa." },
+      { scene: "wifi", title: "Condividi il Wi‑Fi.", description: "Apri una pagina con il nome e la password della rete ospiti, pronti da copiare." },
+      { scene: "map", title: "Fatti trovare.", description: "Apri la mappa con le indicazioni per il tuo negozio, lo stand in fiera o il punto di ritiro." },
+      { scene: "review", title: "Raccogli recensioni.", description: "Porta i clienti direttamente al modulo per recensire la tua attività, per esempio su Google." },
+      { scene: "booking", title: "Apri le prenotazioni.", description: "Collega il portachiavi alla pagina per fissare un appuntamento, prenotare un tavolo o iscriversi a un evento." },
+      { scene: "guide", title: "Tieni la guida a portata.", description: "Apri le istruzioni di un prodotto, un video di montaggio o la pagina di assistenza." },
     ],
     faq: [
       { question: "Che cosa contiene e-linker?", answer: "Un tag NFC all’interno del portachiavi stampato in 3D. Avvicinandolo a uno smartphone compatibile puoi aprire il collegamento scelto: la tua attività, un prodotto oppure un contenuto personale." },

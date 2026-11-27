@@ -8,7 +8,7 @@ import { isLinkerOfferKind, linkerBundleSize, linkerBundleSizes, linkerOfferKind
 import { ProductMark } from "./ProductMark";
 import { LinkerBundleArtwork } from "./LinkerBundleArtwork";
 import { LinkerPile } from "./LinkerPile";
-import { LinkerStoryArtwork } from "./LinkerStoryArtwork";
+import { LinkerStoryCarousel } from "./LinkerStoryCarousel";
 import { ProductColorPicker } from "./ProductColorPicker";
 import { CartoonNotes } from "./CartoonNotes";
 import { BundleDiscFields, EDiskBundle, EDiskDiscStudio, EDiskGiftIdeas, EDiskRecordDemo, type BundleDisc, type DiscSource } from "./EDiskRecords";
@@ -252,14 +252,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
 
       {!isDisk && <section id="scopri" className={styles.story} aria-labelledby="story-title">
         <div className={styles.storyHeading}><h2 id="story-title">{info.punchline}<span>.</span></h2><p>Il tag NFC apre il collegamento che scegli, con uno smartphone compatibile.</p></div>
-        <div className={styles.steps}>{PRODUCTS["e-linker"].steps.map((step, index) =>
-          <article key={step.scene} className={styles.step}>
-            <span className={styles.stepNumber}>0{index + 1}</span>
-            <div className={styles.stepGraphic}><LinkerStoryArtwork scene={step.scene} /></div>
-            <h3>{step.title}</h3>
-            <p>{step.description}</p>
-          </article>,
-        )}</div>
+        <LinkerStoryCarousel />
       </section>}
 
       {colorStudies}
