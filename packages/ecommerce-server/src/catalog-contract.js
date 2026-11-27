@@ -1,5 +1,6 @@
 import { CommerceServiceError } from "./errors.js";
-const configurators = ["e-disk", "e-disk-bundle", "e-disk-disc", "e-linker", "e-led"];
+import { linkerOfferKinds } from "./keyring-offers.js";
+const configurators = ["e-disk", "e-disk-bundle", "e-disk-disc", ...linkerOfferKinds, "e-led"];
 
 const invalid = () => {
   throw new CommerceServiceError(

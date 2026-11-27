@@ -1,4 +1,5 @@
 import type { AtlasCommerceClient } from "./index.js";
+import type { LinkerOfferKind } from "./keyring-offers.js";
 export interface PublicCatalogMedia {
   id: string;
   url: string;
@@ -6,7 +7,7 @@ export interface PublicCatalogMedia {
   width: number;
   height: number;
 }
-export type ConfiguratorKind = "e-disk" | "e-disk-bundle" | "e-disk-disc" | "e-linker" | "e-led";
+export type ConfiguratorKind = "e-disk" | "e-disk-bundle" | "e-disk-disc" | LinkerOfferKind | "e-led";
 export interface PublicCatalogProduct {
   id: string;
   slug: string;

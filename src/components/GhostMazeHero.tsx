@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./GhostMazeHero.module.css";
+import { homepageGhostBody } from "./ghost-shape";
 
 type Point = { x: number; y: number };
 type Size = { width: number; height: number };
@@ -249,7 +250,7 @@ function Ghost({
     <g className={styles.ghostShape} transform={worker ? "scale(1.48)" : undefined}>
       <path
         ref={bodyRef}
-        d="M-4-10H4V-8H6V-6H8V-4H10V8H6V6H3V8H-3V6H-6V8H-10V-4H-8V-6H-6V-8H-4Z"
+        d={homepageGhostBody}
         fill={color}
       />
       {worker && (

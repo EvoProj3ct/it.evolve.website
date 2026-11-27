@@ -4,6 +4,7 @@ import {
   publicId,
   assertInvariant,
 } from "./schema-kit.js";
+import { linkerOfferKinds } from "./keyring-offers.js";
 
 // Technical ceilings, not shop commercial settings. Checkout must use its lower configured cap.
 export const COMMERCE_LIMITS = Object.freeze({
@@ -49,7 +50,7 @@ export const billing = () =>
     address: address(),
   });
 export const configurationDetails = () => f.object({
-  kind: f.choice(["e-disk", "e-disk-bundle", "e-disk-disc", "e-linker", "e-led"]),
+  kind: f.choice(["e-disk", "e-disk-bundle", "e-disk-disc", ...linkerOfferKinds, "e-led"]),
   secondaryColor: f.text(7, { ...opt, pattern: "^#[0-9A-F]{6}$" }),
   shape: f.choice(["rectangle", "square", "circle", "triangle"], opt),
   dedication: f.text(80, opt),

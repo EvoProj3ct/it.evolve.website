@@ -4,7 +4,9 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
 import { ArrowUpRight, BookOpen, Check, Download, Heart, MoveHorizontal, Package, Pause, Play, Plus, RotateCcw, Smartphone, Store, Upload, Volume2, VolumeX, X } from "lucide-react";
+import { isLinkerOfferKind, linkerBundleSize, linkerBundleSizes, linkerOfferKind, type LinkerOfferKind } from "@evolve/ecommerce-server/keyring-offers";
 import { ProductMark } from "./ProductMark";
+import { LinkerBundleArtwork } from "./LinkerBundleArtwork";
 import { ProductColorPicker } from "./ProductColorPicker";
 import { CartoonNotes } from "./CartoonNotes";
 import { BundleDiscFields, EDiskBundle, EDiskDiscStudio, EDiskGiftIdeas, EDiskRecordDemo, type BundleDisc, type DiscSource } from "./EDiskRecords";
@@ -47,11 +49,19 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
   const isDisk = product === "e-disk";
   const [configuration, setConfiguration] = useState<ProductConfiguration>(() => defaultConfiguration(product));
   const [diskOffer, setDiskOffer] = useState<"device" | "bundle">("device");
+  const [linkerOffer, setLinkerOffer] = useState<LinkerOfferKind | null>(null);
   const [bundleDiscs, setBundleDiscs] = useState<BundleDisc[]>(() =>
     ["#cabee6", "#ffab8a", "#b4df7b"].map((color, index) => ({ title: `Disco ${index + 1}`, color, dedication: "", trackUrl: "" })));
   useEffect(() => {
-    if (isDisk && new URLSearchParams(window.location.search).get("offerta") === "bundle") setDiskOffer("bundle");
+    const query = new URLSearchParams(window.location.search);
+    if (isDisk) {
+      if (query.get("offerta") === "bundle") setDiskOffer("bundle");
+    } else {
+      const kind = query.get("tipo");
+      setLinkerOffer(isLinkerOfferKind(kind) ? kind : "e-linker");
+    }
   }, [isDisk]);
+  const linkerCount = linkerBundleSize(linkerOffer) ?? 1;
   const [discSource, setDiscSource] = useState<DiscSource>("ai");
   const presets = isDisk ? DISK_PRESETS : LINKER_PRESETS;
   const previewConfiguration = useDeferredValue(configuration);
@@ -175,13 +185,16 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
     setConfiguration(current => ({ ...current, primary: colors[first].hex, secondary: colors[second].hex }));
   };
   const download = () => {
-    const blob = new Blob([JSON.stringify({ version: 1, product, ...(isDisk ? { offer: diskOffer, includedRecords: diskOffer === "bundle" ? 3 : 0, ...(diskOffer === "bundle" && { discs: bundleDiscs }) } : {}), ...configuration, note: "Copia delle scelte del configuratore." }, null, 2)], { type: "application/json" });
+    const offer = isDisk
+      ? { offer: diskOffer, includedRecords: diskOffer === "bundle" ? 3 : 0, ...(diskOffer === "bundle" && { discs: bundleDiscs }) }
+      : { offer: linkerOffer ?? "e-linker", includedKeyrings: linkerCount };
+    const blob = new Blob([JSON.stringify({ version: 1, product, ...offer, ...configuration, note: "Copia delle scelte del configuratore." }, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url; link.download = `evolve-${product}-configurazione.json`; link.click();
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
-  const mailBody = `Ciao Evolve!\nVorrei saperne di più su questa configurazione:\n\n${configurationSummary(product, configuration)}\n\n${configuration.logo ? "Allego alla mail il logo originale.\n\n" : ""}Mi indicate prezzo, disponibilità e prossimi passi?`;
+  const mailBody = `Ciao Evolve!\nVorrei saperne di più su questa configurazione:\n\n${configurationSummary(product, configuration)}\nQuantità: ${linkerCount}\n\n${configuration.logo ? "Allego alla mail il logo originale.\n\n" : ""}Mi indicate prezzo, disponibilità e prossimi passi?`;
   const mailHref = `mailto:infoevolvecompany@gmail.com?subject=${encodeURIComponent(`Il mio ${product}`)}&body=${encodeURIComponent(mailBody)}`;
   const colorStudies = (
     <section className={styles.colorStudies} aria-labelledby="studies-title">
@@ -213,6 +226,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
             <div className={styles.heroActions}>
               <a href="#configura" className={styles.heroCta}>{isDisk ? "Scegli i tuoi colori" : "Personalizza"} <ArrowUpRight size={21} /></a>
               {isDisk && <a href="#incidi" className={`${styles.heroCta} ${styles.heroDiscsCta}`}>Incidi i tuoi dischi <ArrowUpRight size={21} /></a>}
+              {!isDisk && <a href="#offerta-e-linker" className={`${styles.heroCta} ${styles.heroBundleCta}`}>Scopri i bundle <ArrowUpRight size={21} /></a>}
             </div>
           </div>
           <div className={styles.heroVisual}>
@@ -254,6 +268,21 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
 
           <div className={styles.configPanel}>
             {!isDisk && <>
+              <fieldset id="offerta-e-linker" className={styles.linkerOffers}>
+                <legend>Quanti portachiavi vuoi?</legend>
+                <div className={styles.linkerOfferGrid}>
+                  {([1, ...linkerBundleSizes] as const).map(size => {
+                    const kind = linkerOfferKind(size);
+                    const selected = linkerCount === size;
+                    return <button key={kind} type="button" aria-pressed={selected} onClick={() => setLinkerOffer(kind)}>
+                      <LinkerBundleArtwork size={size} primary={configuration.primary} secondary={configuration.secondary} />
+                      <span>{size === 1 ? "1 portachiavi" : `${size} portachiavi`}</span>
+                      {selected && <Check size={14} aria-hidden="true" />}
+                    </button>;
+                  })}
+                </div>
+                {linkerCount > 1 && <p className={styles.help}>Forma, colori, scritta e logo si applicano a tutto il bundle.</p>}
+              </fieldset>
               <fieldset className={styles.controlGroup}><legend>Scegli la forma</legend><div className={styles.shapeOptions}>{KEYRING_SHAPES.map(shape => <button type="button" key={shape.id} aria-pressed={configuration.shape === shape.id} onClick={() => setConfiguration(current => ({ ...current, shape: shape.id }))}><span aria-hidden="true">{shape.symbol}</span>{shape.name}</button>)}</div></fieldset>
               <div className={styles.controlGroup}><label className={styles.fieldLabel} htmlFor="keyring-text">Lascia il tuo segno</label><div className={styles.textInput}><input id="keyring-text" type="text" value={configuration.text} maxLength={18} placeholder="Il tuo nome, un’idea…" onChange={event => setConfiguration(current => ({ ...current, text: event.target.value.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ0-9 .!?&+@#'_-]/g, "") }))} aria-describedby="text-help" /><span>{configuration.text.length}/18</span></div><p id="text-help" className={styles.help}>La scritta prende forma in rilievo. Puoi anche lasciare solo il logo.</p>
                 <input ref={inputRef} className={styles.fileInput} tabIndex={-1} type="file" accept=".svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg" onChange={uploadLogo} aria-label="Carica il logo per il portachiavi" />
@@ -286,12 +315,12 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
                   })),
                 } : { kind: "e-disk", secondaryColor: configuration.secondary },
               })} /> :
-              <ConfiguredPurchase kind="e-linker" buttonClass={styles.requestButton} disabled={uploading}
+              linkerOffer && <ConfiguredPurchase key={linkerOffer} kind={linkerOffer} buttonClass={styles.requestButton} disabled={uploading}
                 prepare={() => ({
                   color: configuration.primary,
                   inscription: configuration.text.trim() || undefined,
                   logoAsset: configuration.logo,
-                  details: { kind: "e-linker", secondaryColor: configuration.secondary, shape: configuration.shape },
+                  details: { kind: linkerOffer, secondaryColor: configuration.secondary, shape: configuration.shape },
                 })} />}
             <button type="button" onClick={download} className={styles.downloadButton}><Download size={15} /> Salva la tua configurazione</button>
             {!isDisk && <a href={mailHref} className={styles.downloadButton}>Parliamone <ArrowUpRight size={15} /></a>}

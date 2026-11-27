@@ -1,0 +1,62 @@
+.loading {
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  min-block-size: 3rem;
+  color: inherit;
+  font-size: .8rem;
+}
+
+.loading[data-page="true"] {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  min-block-size: 66svh;
+}
+
+.runway {
+  position: relative;
+  inline-size: 4.5rem;
+  block-size: 1.5rem;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.loading[data-page="true"] .runway {
+  inline-size: min(76vw, 28rem);
+  block-size: 3rem;
+}
+
+.ghost {
+  position: absolute;
+  inset-block-start: 20%;
+  left: 0;
+  width: .85rem;
+  opacity: .48;
+  animation: escape 3.4s linear both;
+}
+
+.loading[data-page="true"] .ghost { width: 1.5rem; }
+.ghost:nth-child(2) { inset-block-start: 43%; animation-delay: .32s; }
+.ghost:nth-child(3) { inset-block-start: 11%; animation-delay: .68s; }
+.body { fill: #171b19; animation: ghost-blink 3.4s linear both; }
+.ghost:nth-child(2) .body { animation-delay: .32s; }
+.ghost:nth-child(3) .body { animation-delay: .68s; }
+
+@keyframes escape {
+  0% { left: -20%; opacity: 0; }
+  14% { opacity: .48; }
+  80% { opacity: .48; }
+  100% { left: 100%; opacity: 0; }
+}
+
+@keyframes ghost-blink {
+  0%, 54%, 63%, 75%, 100% { opacity: 1; }
+  59%, 69%, 83% { opacity: .15; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ghost, .body { animation: none; }
+  .ghost { left: calc(50% - .5rem); }
+  .ghost:nth-child(n+2) { display: none; }
+}

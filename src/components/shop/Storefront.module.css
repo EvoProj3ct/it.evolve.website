@@ -57,8 +57,6 @@
 .feedback h2 { margin: 0 0 14px; color: #293d25; font-size: 30px; font-weight: 400; line-height: 1.1; letter-spacing: -.045em; }
 .feedback p { max-width: 570px; margin: 0 0 20px; font-size: 13px; line-height: 1.8; }
 .feedback > div { display: flex; flex-wrap: wrap; align-items: center; gap: 22px; font-size: 12px; }
-.loading { display: inline-flex; align-items: center; gap: 10px; min-height: 80px; color: #8c9c7e; font-size: 12px; }
-.loading > i { width: 7px; height: 7px; border-radius: 50%; background: #72c94f; box-shadow: 0 0 0 5px #72c94f12; }
 .iconButton { display: grid; place-items: center; width: 39px; height: 39px; padding: 0; border: 1px solid #dce7d2; border-radius: 50%; background: transparent; color: #7d976b; }
 .iconButton:hover { background: #eff5e8; }
 .lineWarning { margin: 11px 0; color: #a48655; font-size: 10px; line-height: 1.8; }

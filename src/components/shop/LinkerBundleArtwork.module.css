@@ -1,0 +1,18 @@
+.artwork {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1.65;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.mark {
+  position: absolute;
+  display: block;
+  width: 43%;
+  transform: translate(-50%, -50%) rotate(var(--rotation));
+  filter: drop-shadow(0 3px 3px #172b2422);
+}
+
+.artwork[data-single="true"] .mark { width: 70%; }
+.mark svg { display: block; width: 100%; height: auto; }

@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { linkerOfferKinds } from "@evolve/ecommerce-server/keyring-offers";
+import { stripeCheckoutUrlIssue, stripeCheckoutUrlMaxLength } from "@evolve/ecommerce-server/stripe-checkout-url";
 
 export const publicIdSchema = z.string().regex(/^[A-Za-z0-9_-]{16,80}$/);
 const integer = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
@@ -13,7 +15,7 @@ const configurationDetailsSchema = z.discriminatedUnion("kind", [
     secondaryColor: colorSchema,
     discs: z.array(z.object({ title: inscriptionSchema, color: colorSchema, dedication: inscriptionSchema.optional(), trackUrl: z.string().max(512).optional() }).strict()).length(3),
   }).strict(),
-  z.object({ kind: z.literal("e-linker"), secondaryColor: colorSchema, shape: z.enum(["rectangle", "square", "circle", "triangle"]) }).strict(),
+  z.object({ kind: z.enum(linkerOfferKinds), secondaryColor: colorSchema, shape: z.enum(["rectangle", "square", "circle", "triangle"]) }).strict(),
   z.object({ kind: z.literal("e-disk-disc"), dedication: inscriptionSchema.optional(), trackUrl: z.string().max(512).optional() }).strict(),
   z.object({ kind: z.literal("e-led"), secondaryColor: colorSchema, effect: z.enum(["flow", "steady", "breathe", "pulse"]), mode: z.enum(["text", "logo", "both"]), width: integer.min(60).max(180), brightness: integer.min(20).max(100), speedTenths: integer.min(5).max(15).optional() }).strict(),
 ]);
@@ -79,9 +81,9 @@ export const placeOrderSchema = z.object({
 export const placedOrderSchema = z.object({ order: orderSchema, replayed: z.boolean() }).strict();
 export const startPaymentSchema = z.object({ expectedRevision: integer, idempotencyKey: publicIdSchema }).strict();
 export function isStripeCheckoutUrl(value: string): boolean {
-  try { const url = new URL(value); return url.origin === "https://checkout.stripe.com" && !url.username && !url.password && /^\/c\/pay\/cs_[A-Za-z0-9_]+$/.test(url.pathname); } catch { return false; }
+  return stripeCheckoutUrlIssue(value) === null;
 }
-export const paymentSchema = z.object({ orderPublicId: publicIdSchema, orderRevision: integer, paymentStatus: paymentStatusSchema, attempt: z.object({ id: publicIdSchema, state: z.enum(["creating", "ready", "processing", "paid", "failed", "expired", "cancelled", "under_review"]), expiresAt: date.nullable() }).strict().nullable(), paidMinor: integer, refundedMinor: integer, checkoutUrl: z.string().max(4096).refine(isStripeCheckoutUrl).nullable() }).strict();
+export const paymentSchema = z.object({ orderPublicId: publicIdSchema, orderRevision: integer, paymentStatus: paymentStatusSchema, attempt: z.object({ id: publicIdSchema, state: z.enum(["creating", "ready", "processing", "paid", "failed", "expired", "cancelled", "under_review"]), expiresAt: date.nullable() }).strict().nullable(), paidMinor: integer, refundedMinor: integer, checkoutUrl: z.string().max(stripeCheckoutUrlMaxLength).refine(isStripeCheckoutUrl).nullable() }).strict();
 export const accountSchema = z.object({ id: publicIdSchema, email: z.string().email().max(254), name: text(200), kind: z.enum(["individual", "company"]), phone: text(40).optional(), emailVerified: z.literal(true) }).strict();
 export const profileSchema = z.object({ account: accountSchema }).strict();
 export const customerLinkSchema = z.object({ status: z.enum(["pending", "linked", "review_required", "blocked"]), checkoutReady: z.boolean(), message: text(1000) }).strict();

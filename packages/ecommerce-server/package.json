@@ -31,6 +31,14 @@
       "types": "./src/catalog-validation.d.ts",
       "default": "./src/catalog-contract.js"
     },
+    "./keyring-offers": {
+      "types": "./src/keyring-offers.d.ts",
+      "default": "./src/keyring-offers.js"
+    },
+    "./stripe-checkout-url": {
+      "types": "./src/stripe-checkout-url.d.ts",
+      "default": "./src/stripe-checkout-url.js"
+    },
     "./auth": {
       "types": "./src/auth.d.ts",
       "browser": "./src/browser-denied.js",

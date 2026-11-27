@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight, ShoppingCart } from "lucide-react";
 import type { ConfiguratorKind, PublicCatalogProduct } from "@evolve/ecommerce-server/catalog";
+import { isLinkerOfferKind, linkerBundleSize } from "@evolve/ecommerce-server/keyring-offers";
+import { GhostLoading } from "@/components/GhostLoading";
 import { money, publicIdSchema, type PersonalizationInput } from "@/lib/ecommerce/contracts";
 import { addCatalogProduct } from "@/lib/ecommerce/cart";
 import { errorText, hidesPreviousData, StorefrontError, subscribeSession } from "@/lib/ecommerce/browser";
@@ -13,9 +15,9 @@ import type { LogoAsset } from "./products";
 import styles from "./Storefront.module.css";
 
 export function configuratorHref(kind: ConfiguratorKind, id: string) {
-  const page = kind.startsWith("e-disk") ? "e-disk" : kind;
+  const page = kind.startsWith("e-disk") ? "e-disk" : isLinkerOfferKind(kind) ? "e-linker" : kind;
   const bundle = kind === "e-disk-bundle";
-  const hash = kind === "e-disk-disc" ? "incidi" : bundle ? "offerta-edisk" : "configura";
+  const hash = kind === "e-disk-disc" ? "incidi" : bundle ? "offerta-edisk" : linkerBundleSize(kind) ? "offerta-e-linker" : "configura";
   return `/shop/${page}?articolo=${id}&tipo=${kind}${bundle ? "&offerta=bundle" : ""}#${hash}`;
 }
 
@@ -64,6 +66,7 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
   const [outcome, setOutcome] = useState<"added" | "review" | null>(null);
   const pending = useRef<AbortController | null>(null);
   const product = selected ? products.find(item => item.id === selected) : products[0];
+  const bundleSize = linkerBundleSize(kind);
 
   useEffect(() => subscribeSession(() => {
     pending.current?.abort();
@@ -170,13 +173,14 @@ export function ConfiguredPurchase({ kind, prepare, disabled, buttonClass }: {
       {!product && <option value="" disabled>Scegli un articolo disponibile</option>}
       {products.map(item => <option key={item.id} value={item.id}>{item.name} · {money(item.price.unitGrossCents)}</option>)}
     </select></label>}
-    {product && <><p>{product.name} · <strong>{money(product.price.unitGrossCents)}</strong> IVA inclusa</p>
+    {product && <><p>{product.name} · <strong>{money(product.price.unitGrossCents)}</strong> IVA inclusa
+      {bundleSize && <> · {bundleSize} pezzi per confezione</>}</p>
       <button type="button" className={buttonClass} disabled={busy || loading || disabled || outcome === "review"} onClick={() => void add()}>
-        {busy ? "Aggiunta…" : "Aggiungi la configurazione al carrello"} <ShoppingCart size={18} />
+        {busy ? "Aggiunta…" : bundleSize ? "Aggiungi il bundle al carrello" : "Aggiungi la configurazione al carrello"} <ShoppingCart size={18} />
       </button></>}
-    {loading && !products.length && <p role="status">Caricamento articoli…</p>}
+    {loading && !products.length && <GhostLoading label="Caricamento articoli…" />}
     {catalogError && <p role="alert">{catalogError} <button type="button" onClick={() => setRetry(value => value + 1)}>Riprova</button></p>}
-    {!loading && !catalogError && !product && <p>{products.length ? "L’articolo selezionato non è più disponibile. Scegline uno dall’elenco." : "Nessun articolo acquistabile è pubblicato per questo configuratore."}</p>}
+    {!loading && !catalogError && !product && <p>{products.length ? "L’articolo selezionato non è più disponibile. Scegline uno dall’elenco." : bundleSize ? "Questo bundle non è ancora acquistabile online." : "Nessun articolo acquistabile è pubblicato per questo configuratore."}</p>}
     {next && <button type="button" className={styles.secondary} disabled={loading || busy} onClick={() => setCursor(next)}>Altri articoli</button>}
     {error && <p role="alert">{error}</p>}
     {(outcome === "review" || outcome === "added") && <Link href="/carrello" className={styles.secondary}>{outcome === "added" ? "Aggiunto · Apri il carrello" : "Controlla il carrello"} <ArrowRight size={16} /></Link>}
