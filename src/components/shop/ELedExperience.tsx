@@ -67,7 +67,7 @@ export function ELedExperience() {
           fetchPriority="high"
         />
       </picture>
-      <div className={styles.heroFoot}><span>Il tuo nome. Il tuo logo. La tua luce.</span><span>Think to Evolve <i /></span></div>
+      <div className={styles.heroFoot}><span>Think to Evolve <i /></span></div>
     </section>
 
     <section id="scopri" className={styles.story} aria-labelledby="led-story-title">

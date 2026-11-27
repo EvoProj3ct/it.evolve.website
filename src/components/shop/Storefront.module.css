@@ -67,15 +67,17 @@
 .catalogArt { color: #99b085; }
 .catalogArt[data-illustrated="true"][data-product] > svg { width: 82%; height: 82%; transform: none; }
 .catalogArt > img { display: block; width: 100%; height: 100%; max-height: 420px; object-fit: contain; }
-.catalogGrid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 42px 25px; }
-.catalogCard { min-width: 0; }
-.catalogCard h2 { margin: 19px 0 10px; font-size: 30px; font-weight: 400; letter-spacing: -.055em; }
-.catalogCard h2 > span, .productInfo h2 > span, .orderSection h2 > span, .profileShopLink h2 > span { color: #72c94f; }
-.catalogCard p { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; color: #6b7d60; font-size: 12px; line-height: 1.75; }
-.catalogPrice { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-top: 23px; padding-bottom: 18px; border-bottom: 1px solid #dde8d3; font-size: 18px; }
-.catalogPrice small, .detailPrice small { display: block; margin-top: 6px; color: #8e9d81; font-size: 10px; }
-.catalogPrice > a { display: grid; place-items: center; width: 39px; height: 39px; border: 1px solid #e0e9d8; border-radius: 50%; color: #7ea16a; transition: background .3s, transform .35s; }
-.catalogPrice > a:hover { background: #edf5e6; transform: translate(1px,-1px); }
+.productInfo h2 > span, .orderSection h2 > span, .profileShopLink h2 > span { color: #72c94f; }
+.detailPrice small { display: block; margin-top: 6px; color: #8e9d81; font-size: 10px; }
+.rankIntro { max-width: 60ch; color: #53675b; font-size: 15px; line-height: 1.65; }
+.rankGrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 16px; margin: 26px 0 0; padding: 0; list-style: none; }
+.rankGrid > li { min-width: 0; overflow: hidden; border: 1px solid #dce7d7; border-radius: 14px; background: #fff; }
+.rankArt { display: grid; place-items: center; aspect-ratio: 1.25; border-bottom: 1px solid #dce7d7; background: radial-gradient(ellipse, #e4f0df, #f3f7f0 76%); }
+.rankArt > svg { width: 55%; }
+.rankCopy { display: grid; gap: 7px; padding: 16px; }
+.rankCopy > span { color: #536c5d; font-size: 11px; font-weight: 600; }
+.rankCopy h2 { color: #172e24; font-size: 20px; font-weight: 500; }
+.rankCopy p { color: #526459; font-size: 13px; line-height: 1.55; }
 .productGrid { display: grid; grid-template-columns: 1.1fr 1fr; align-items: start; gap: clamp(30px,6vw,90px); }
 .productInfo { padding-top: 17px; }
 .productInfo h2 { margin-bottom: 20px; font-size: 38px; font-weight: 400; letter-spacing: -.055em; line-height: 1.05; }
@@ -210,6 +212,8 @@
 .addressLines { display: grid; gap: 1px; }
 .addressLines small { color: #526459; font-size: 12px; }
 .paymentState { color: #5f8149; font-size: 20px; }
+.paymentTotal { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 18px 0; padding: 14px 16px; border: 1px solid #d8e5d0; border-radius: 10px; background: #eff5ec; color: #284331; font-size: 14px; }
+.paymentTotal strong { font-size: 22px; font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .paymentSuccess {
   display: flex;
   align-items: center;
@@ -298,7 +302,6 @@
   .authStory { padding: 50px 35px; }
   .authPanel { padding-inline: 35px; }
   .authStory > p { font-size: 47px; }
-  .catalogGrid { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .deliveries { grid-template-columns: repeat(2,minmax(0,1fr)); }
   .detailGrid { gap: 28px; }
 }
@@ -312,11 +315,6 @@
   .productInfo { padding-top: 0; }
   .productInfo h2 { font-size: 33px; }
   .productSections, .mediaGrid { grid-template-columns: 1fr; gap: 30px; margin-top: 40px; }
-  .catalogGrid { gap: 30px 17px; }
-  .catalogCard h2 { font-size: 26px; }
-  .catalogCard p { font-size: 11px; }
-  .catalogPrice { margin-top: 18px; font-size: 16px; }
-  .catalogPrice > a { width: 33px; height: 33px; }
   .liveCartItem { grid-template-columns: 90px minmax(0,1fr) !important; gap: 15px !important; }
   .lineSymbol { width: 43px; height: 54px; border-radius: 9px; }
   .lineSymbol > svg { width: 23px; }
@@ -343,8 +341,6 @@
   .deliveryCard { min-height: auto; padding: 20px; }
 }
 @media (max-width: 420px) {
-  .catalogGrid { grid-template-columns: 1fr; }
-  .catalogCard h2 { font-size: 30px; }
   .fieldGrid { grid-template-columns: 1fr; }
   .addresses { grid-template-columns: 1fr; }
   .quote > .primary { width: 100%; min-width: 0; }

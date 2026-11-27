@@ -9,6 +9,6 @@ export const metadata: Metadata = {
 };
 
 export default function EDiskPage() {
-  if (!E_DISK_VISIBLE) redirect("/negozio");
+  if (!E_DISK_VISIBLE) redirect("/shop/e-linker");
   return <EDiskExperience />;
 }

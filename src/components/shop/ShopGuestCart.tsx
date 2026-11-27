@@ -27,7 +27,7 @@ export function ShopGuestCart({ importError, retry }: { importError?: unknown; r
     return <div className={styles.emptyState}>
       <span className={styles.emptyIcon}><ShoppingBag size={30} strokeWidth={1} /></span>
       <h2>Il carrello è vuoto.</h2>
-      <Link className={styles.textLink} href="/negozio">Esplora gli oggetti <ArrowUpRight size={16} /></Link>
+      <Link className={styles.textLink} href="/shop/e-linker">Esplora gli oggetti <ArrowUpRight size={16} /></Link>
     </div>;
 
   const total = lines.reduce((amount, line) => amount + line.unitGrossCents * line.quantity, 0);
@@ -60,7 +60,7 @@ export function ShopGuestCart({ importError, retry }: { importError?: unknown; r
           </div>
         </li>)}
       </ul>
-      <Link href="/negozio" className={styles.continueLink}>Continua a esplorare <ArrowUpRight size={16} /></Link>
+      <Link href="/shop/e-linker" className={styles.continueLink}>Continua a esplorare <ArrowUpRight size={16} /></Link>
     </section>
     <aside className={styles.cartAside}>
       <div className={styles.summaryCard}>

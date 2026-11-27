@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function ShopPage() {
-  redirect("/negozio");
+  redirect("/shop/e-linker");
 }

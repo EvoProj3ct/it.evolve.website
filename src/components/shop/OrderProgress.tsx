@@ -9,7 +9,7 @@ export const orderGroups = {
   waiting: "Pagamento in verifica",
   confirmed: "Confermati",
   progress: "In lavorazione",
-  pickup: "Pronti per il ritiro",
+  pickup: "Ritiro disponibile",
   shipping: "In spedizione",
   service_pending: "Servizio da completare",
   received: "Ricevuti",
@@ -21,7 +21,7 @@ const journey = {
   waiting: { step: "payment", label: "Pagamento in verifica" },
   confirmed: { step: "confirmed", label: "Confermato" },
   progress: { step: "progress", label: "In lavorazione" },
-  pickup: { step: "handoff", label: "Pronto per il ritiro" },
+  pickup: { step: "handoff", label: "Ritiro disponibile" },
   shipping: { step: "handoff", label: "Spedito" },
 } as const;
 
@@ -46,7 +46,7 @@ function deliveryMode(order: OrderSummary) {
 function receiptLabel(mode: OrderSummary["deliveryMode"]) {
   if (mode === "pickup") return "Ritirato";
   if (mode === "service") return "Servizio completato";
-  return "Consegnato";
+  return mode === "shipping" ? "Consegnato" : "Ricevuto";
 }
 
 export function orderProgressFor(order: OrderSummary): OrderProgressState {
@@ -90,7 +90,7 @@ export function OrderProgress({ order, compact = false }: { order: OrderSummary;
     { id: "payment", label: "Pagamento" },
     { id: "confirmed", label: "Confermato" },
     { id: "progress", label: "Lavorazione" },
-    ...(mode === "service" ? [] : [{ id: "handoff", label: mode === "pickup" ? "Ritiro" : "Spedizione" }]),
+    ...(mode === "service" ? [] : [{ id: "handoff", label: mode === "pickup" ? "Ritiro disponibile" : mode === "shipping" ? "Spedizione" : "Consegna" }]),
     { id: "received", label: mode === "service" || progress.kind === "service_pending" ? "Completato" : receiptLabel(mode) },
   ];
   const currentIndex = steps.findIndex((step) => step.id === progress.step);

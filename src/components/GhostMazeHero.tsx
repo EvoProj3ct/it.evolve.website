@@ -632,7 +632,7 @@ export function GhostMazeHero({ variant = "home" }: { variant?: "home" | "constr
           Evolve è il tuo Hub per un domani più smart.
         </p>
         <div className={styles.actions}>
-          <Link className={styles.primaryLink} href="/shop">
+          <Link className={styles.primaryLink} href="/shop/e-linker">
             <span>Vai allo Shop</span>
             <svg className={styles.primaryArrow} aria-hidden="true" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 13 13 3M5 3h8v8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square" strokeLinejoin="miter" /></svg>
           </Link>

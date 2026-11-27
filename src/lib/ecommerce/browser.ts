@@ -98,7 +98,7 @@ export function storefrontMutate<T>(path: string, method: "POST" | "PUT" | "PATC
 }
 export function safeReturnTo(value: string | null | undefined, fallback = "/account") {
   if (!value || value.length > 250 || value.includes("\\") || /[\u0000-\u0020]/.test(value)) return fallback;
-  return /^(?:\/carrello|\/checkout|\/shop\/(?:carrello|profilo)|\/account(?:\/ordini(?:\/[A-Za-z0-9_-]{16,80})?)?|\/negozio(?:\/[a-z0-9-]+)?)$/.test(value) ? value : fallback;
+  return /^(?:\/carrello|\/checkout|\/shop\/(?:carrello|profilo|e-linker)|\/account(?:\/livelli|\/ordini(?:\/[A-Za-z0-9_-]{16,80})?)?|\/negozio(?:\/[a-z0-9-]+)?)$/.test(value) ? value : fallback;
 }
 export const loginHref = (next: string) => `/account/login?next=${encodeURIComponent(safeReturnTo(next))}`;
 export function errorText(error: unknown) {

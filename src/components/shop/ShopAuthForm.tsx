@@ -91,8 +91,8 @@ export function ShopAuthForm({ action, legal, nextPath }: { action: AuthAction; 
   }
 
   return <main id="shop-content" className={styles.authPage}>
-    <section className={styles.authStory} aria-label="Il tuo spazio Evolve"><div className={styles.authOrbit} aria-hidden="true"><i /><i /><i /><span>e<span>.</span></span></div><p>Oggetti fisici.<br />Connessioni nuove<span>.</span></p><Link href="/negozio" prefetch={false}>Esplora lo shop <ArrowUpRight size={17} /></Link></section>
-    <section className={styles.authPanel} aria-labelledby="auth-title"><Link className={styles.back} href="/negozio" prefetch={false}>Torna agli oggetti</Link><h1 id="auth-title">{info.title}</h1><p className={styles.lead}>{info.description}</p>
+    <section className={styles.authStory} aria-label="Il tuo spazio Evolve"><div className={styles.authOrbit} aria-hidden="true"><i /><i /><i /><span>e<span>.</span></span></div><p>Oggetti fisici.<br />Connessioni nuove<span>.</span></p><Link href="/shop/e-linker" prefetch={false}>Esplora lo shop <ArrowUpRight size={17} /></Link></section>
+    <section className={styles.authPanel} aria-labelledby="auth-title"><Link className={styles.back} href="/shop/e-linker" prefetch={false}>Torna agli oggetti</Link><h1 id="auth-title">{info.title}</h1><p className={styles.lead}>{info.description}</p>
       <p ref={feedback} tabIndex={-1} className={error ? styles.error : styles.success} role={error ? "alert" : "status"}>{error || message}</p>
       {action === "register" && !legal.registrationReady && <p className={styles.notice}>La registrazione non è ancora disponibile. Riprova più tardi.</p>}
       {tokenAction && captured && !token && !message ? <div className={styles.notice}>Apri il link ricevuto via email. Se è scaduto o hai ricaricato questa pagina, richiedine uno nuovo.<Link href={action === "verify-email" ? "/account/resend-verification" : action === "confirm-email" ? "/account/change-email" : "/account/forgot-password"} prefetch={false}>Richiedi un nuovo link <ArrowRight size={15} /></Link></div> : !message && <form method="post" className={styles.form} onSubmit={submit} aria-busy={busy}>

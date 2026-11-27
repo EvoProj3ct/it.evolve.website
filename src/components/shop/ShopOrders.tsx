@@ -72,14 +72,15 @@ function OrderPayment({ order, resource, confirmation, paymentReturn }: {
   const payment = resource.data;
   const amounts = payment && payment.orderRevision >= order.revision ? payment : order.payment;
   const paid = order.paymentStatus === "paid";
+  const needsPayment = order.operationalStatus !== "cancelled"
+    && ["awaiting", "failed", "expired"].includes(order.paymentStatus);
   const awaitingConfirmation = confirmation.returned && ["awaiting", "processing"].includes(order.paymentStatus);
   const needsConfirmation = awaitingConfirmation && !hidesPreviousData(resource.error);
   const checkingConfirmation = needsConfirmation && confirmation.checking;
   const canResumeAfterBrowserBack = paymentReturn === undefined && !confirmation.checking && !confirmation.failure
     && payment?.attempt?.state === "ready" && order.paymentStatus === "awaiting";
   const allowed = confirmation.initialized && !!payment && (!awaitingConfirmation || canResumeAfterBrowserBack)
-    && order.operationalStatus !== "cancelled" && !order.payment?.requiresReview
-    && ["awaiting", "failed", "expired"].includes(order.paymentStatus)
+    && needsPayment && !order.payment?.requiresReview
     && order.paymentStatus === payment.paymentStatus
     && (!payment.attempt || ["ready", "failed", "expired", "cancelled"].includes(payment.attempt.state));
   const refresh = awaitingConfirmation ? confirmation.recheck : resource.reload;
@@ -121,6 +122,10 @@ function OrderPayment({ order, resource, confirmation, paymentReturn }: {
       reload={refresh} next={`/account/ordini/${order.id}`} />
     {paid && <p className={styles.paymentSuccess} role="status"><CheckCircle2 size={22} aria-hidden="true" /> Pagamento effettuato con successo</p>}
     {!paid && <p className={styles.paymentState} role="status">{checkingConfirmation ? "Verifica del pagamento in corso…" : awaitingConfirmation ? "In attesa della conferma" : statusLabels[order.paymentStatus]}</p>}
+    <div className={styles.paymentTotal}>
+      <span>{needsPayment && !awaitingConfirmation ? "Totale da pagare" : "Totale ordine"}</span>
+      <strong>{money(order.totals.grossMinor)}</strong>
+    </div>
     {amounts && <div className={styles.moneyPair}>
       <span>Incassato <strong>{money(amounts.paidMinor)}</strong></span>
       <span>Rimborsato <strong>{money(amounts.refundedMinor)}</strong></span>

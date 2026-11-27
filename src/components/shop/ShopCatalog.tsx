@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ArrowRight, ArrowUpRight, ShoppingCart } from "lucide-react";
+import { ArrowRight, ShoppingCart } from "lucide-react";
 import type { PublicCatalogProduct } from "@evolve/ecommerce-server/catalog";
 import { money, type PersonalizationInput } from "@/lib/ecommerce/contracts";
 import { errorText, StorefrontError, subscribeSession } from "@/lib/ecommerce/browser";
@@ -89,40 +89,6 @@ export function AddToCart({ product }: { product: PublicCatalogProduct }) {
     {added && <p className={styles.success} role="status">Articolo aggiunto al carrello.</p>}
   </div>;
 }
-export function ShopCatalog() {
-  const [cursor, setCursor] = useState("");
-  const query = `limit=20${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`;
-  const snapshot = useCatalogSnapshot("catalog", query);
-  const resource = useShopQueryView(shopApi.useCatalogQuery(query, { refetchOnMountOrArgChange: catalogCacheAge }),
-    snapshot?.endpointName === "catalog" ? snapshot.value : undefined);
-  const data = resource.data;
-  const products = data?.items.filter(isStorefrontProductVisible) ?? [];
-  const nextCursor = data?.nextCursor;
-  return <main id="shop-content" className={common.page}>
-    <ShopPageHeader title="Oggetti, idee, connessioni" />
-    <ResourceFeedback busy={resource.busy} error={resource.error} reload={resource.reload} next="/negozio" />
-    {data && <>
-      {products.length > 0 ? <div className={styles.catalogGrid}>
-        {products.map(product => <article key={product.id} className={styles.catalogCard}>
-          <Link href={`/negozio/${product.slug}`}>
-            <CatalogArtwork product={product} />
-            <h2>{product.name}<span>.</span></h2>
-            <p>{product.description}</p>
-          </Link>
-          <div className={styles.catalogPrice}>
-            <span>{money(product.price.unitGrossCents)}<small>IVA inclusa</small></span>
-            <Link href={`/negozio/${product.slug}`} aria-label={`Scopri ${product.name}`}><ArrowUpRight size={22} /></Link>
-          </div>
-        </article>)}
-      </div> : <p className={styles.notice}>{cursor || nextCursor ? "Nessun articolo disponibile in questa pagina." : "Al momento non ci sono articoli pubblicati nello shop."}</p>}
-      <div className={styles.pagination}>
-        {cursor && <button type="button" className={styles.secondary} onClick={() => setCursor("")}>Torna all’inizio</button>}
-        {nextCursor && <button type="button" className={styles.secondary} onClick={() => setCursor(nextCursor)}>Altri oggetti <ArrowRight size={15} /></button>}
-      </div>
-    </>}
-  </main>;
-}
-
 export function ShopCatalogProduct({ slug }: { slug: string }) {
   const snapshot = useCatalogSnapshot("productPage", slug);
   const resource = useShopQueryView(shopApi.useProductPageQuery(slug, { refetchOnMountOrArgChange: catalogCacheAge }),

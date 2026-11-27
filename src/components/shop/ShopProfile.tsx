@@ -139,7 +139,7 @@ export function ShopProfile() {
           <ShopOrdersList compact />
           <div className={live.profileShopLink}>
             <div><h2>Spazio alla prossima idea<span>.</span></h2><p>Scopri gli oggetti pubblicati nello shop.</p></div>
-            <Link href="/negozio" className={styles.textLink}>Esplora <ArrowUpRight size={17} /></Link>
+            <Link href="/shop/e-linker" className={styles.textLink}>Esplora <ArrowUpRight size={17} /></Link>
           </div>
         </>}
         {section === "profile" && <PersonalDetails key={account.id} account={account} />}

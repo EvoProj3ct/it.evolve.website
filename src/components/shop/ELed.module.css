@@ -22,8 +22,8 @@
 .viewerControls button { display: grid; place-items: center; flex: none; width: 36px; height: 36px; padding: 0; border: 1px solid #2c4036; border-radius: 50%; background: #13221b70; color: #b4cfbf; transition: color .3s, border-color .3s; }
 .viewerControls button:hover { border-color: #739e7d; color: #c7ffb8; }
 .viewerControls button[aria-pressed="false"] { color: #63756e; }
-.heroFoot { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 25px 0 30px; border-bottom: 1px solid #25372f; color: #71867b; font-size: 10px; }
-.heroFoot > span:last-child { display: inline-flex; align-items: center; gap: 11px; }
+.heroFoot { grid-column: 1 / -1; display: flex; justify-content: flex-end; padding: 25px 0 30px; border-bottom: 1px solid #25372f; color: #71867b; font-size: 10px; }
+.heroFoot > span { display: inline-flex; align-items: center; gap: 11px; }
 .heroFoot i { width: 5px; height: 5px; border-radius: 50%; background: #72c94f; }
 .sceneWrap, .scene { position: absolute; inset: 0; width: 100%; height: 100%; min-width: 0; }
 .scene { opacity: 0; transition: opacity .6s; }
@@ -146,7 +146,6 @@
   .heroDescription { max-width: 470px; font-size: 14px; }
   .heroStage { border-radius: 19px; }
   .heroFoot { font-size: 9px; }
-  .heroFoot > span:first-child { max-width: 200px; line-height: 1.6; }
   .story, .moods, .configurator { padding-block: 65px; }
   .sectionHeading { grid-template-columns: 1fr; gap: 25px; margin-bottom: 35px; }
   .sectionHeading h2 { font-size: clamp(43px,10vw,65px); }

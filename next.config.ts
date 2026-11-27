@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     if (E_DISK_VISIBLE) return [];
     return ["/shop/e-disk/:path*", "/utils/e-disk/:path*", "/shop/brand/e-disk.svg"].map(source => ({
       source,
-      destination: "/negozio",
+      destination: "/shop/e-linker",
       permanent: false,
     }));
   },

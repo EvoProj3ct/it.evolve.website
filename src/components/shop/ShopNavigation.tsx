@@ -11,6 +11,7 @@ import { shopApi, useShopQueryView } from "@/lib/ecommerce/shop-store";
 import { PRODUCTS, type ProductId } from "./products";
 import { ProductMark } from "./ProductMark";
 import { NavInk, type NavInkPress } from "./NavInk";
+import { previewShopRank, ShopRankGhost } from "./ShopRankGhost";
 import styles from "./Shop.module.css";
 
 const visibleProducts = (Object.keys(PRODUCTS) as ProductId[]).filter(id => E_DISK_VISIBLE || id !== "e-disk");
@@ -26,12 +27,13 @@ export function ShopNavigation() {
   const guestCart = useGuestCart();
   const quantity = (account ? cart?.quantity ?? 0 : 0) + guestCart.reduce((total, line) => total + line.quantity, 0);
   const accountLabel = account?.name ?? (checkingProfile ? "Account" : "Accedi");
+  const onRankPage = pathname === "/account/livelli";
   const current = visibleProducts.find(id => pathname.startsWith(`/shop/${id}`));
   const highlighted = hovered ?? current;
 
   return (
     <header className={styles.globalHeader}>
-      <div className={styles.logoLink}><Link href="/" aria-label="Evolve, torna al sito"><Image src="/logoEvolve.png" alt="Evolve" width={61} height={49} priority /></Link><Link href="/negozio" className={styles.shopWord}>shop</Link></div>
+      <div className={styles.logoLink}><Link href="/" aria-label="Evolve, torna al sito"><Image src="/logoEvolve.png" alt="Evolve" width={61} height={49} priority /></Link><Link href="/shop/e-linker" className={styles.shopWord}>shop</Link></div>
       <nav ref={navRef} className={styles.productLinks} aria-label="Prodotti Evolve" onPointerLeave={() => setHovered(null)}>
         {visibleProducts.map(id => <Link key={id} data-nav-key={id} href={`/shop/${id}`} aria-current={current === id ? "page" : undefined} onClick={event => {
           if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || event.button > 0) return;
@@ -47,10 +49,16 @@ export function ShopNavigation() {
           <ShoppingCart size={18} aria-hidden="true" />
           {quantity > 0 && <span className={styles.cartBadge} aria-hidden="true">{quantity}</span>}
         </Link>
-        <Link href={account || checkingProfile ? "/account" : "/account/login"} prefetch={false} className={`${styles.headerTool} ${styles.headerAccount}`} data-guest={!account && !checkingProfile} aria-current={pathname.startsWith("/account") ? "page" : undefined} title={account ? `Il tuo profilo · ${account.name}` : accountLabel}>
+        <Link href={account || checkingProfile ? "/account" : "/account/login"} prefetch={false} className={`${styles.headerTool} ${styles.headerAccount}`} data-guest={!account && !checkingProfile} aria-current={pathname.startsWith("/account") && !onRankPage ? "page" : undefined} title={account ? `Il tuo profilo · ${account.name}` : accountLabel}>
           {account || checkingProfile ? <UserRound size={17} aria-hidden="true" /> : <LogIn size={16} aria-hidden="true" />}
           <span>{accountLabel}</span>
         </Link>
+        {account && <Link href="/account/livelli" prefetch={false}
+          className={`${styles.headerTool} ${styles.headerRank}`}
+          aria-label="Scopri i livelli dello shop" title="Livelli dello shop"
+          aria-current={onRankPage ? "page" : undefined}>
+          <ShopRankGhost rank={previewShopRank} />
+        </Link>}
       </div>
     </header>
   );
