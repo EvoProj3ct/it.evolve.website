@@ -152,7 +152,7 @@ export function authorizeMailDelivery(request, env) {
     !/^[A-Za-z0-9_-]{43,128}$/.test(expected) ||
     expected === env.NEXTAUTH_SECRET
   )
-    throw configurationError();
+    throw configurationError("ECOMMERCE_AUTH_DELIVERY_SECRET");
   if (!secretEqual(actual, `Bearer ${expected}`))
     throw new CommerceServiceError(
       401,
@@ -206,6 +206,8 @@ export async function deliverPendingMail(runtime, limit = 5) {
       leaseToken,
       leaseUntil: { $gt: new Date() },
     };
+    let failureCode = "DELIVERY_LOOKUP_FAILED";
+    let resendStatus;
     try {
       const account = await runtime.models.accounts
         .findOne({ _id: job.accountId, shopId: runtime.shopId })
@@ -247,12 +249,14 @@ export async function deliverPendingMail(runtime, limit = 5) {
         skipped++;
         continue;
       }
+      failureCode = "DELIVERY_DECRYPT_FAILED";
       const payload = openMail(
         runtime.env,
         runtime.config,
         job.publicId,
         job.envelope,
       );
+      failureCode = "DELIVERY_PAYLOAD_INVALID";
       payload.to = email(payload.to);
       if (
         job.tokenId &&
@@ -265,6 +269,7 @@ export async function deliverPendingMail(runtime, limit = 5) {
       )
         throw new Error("AUTH_MAIL_PAYLOAD_INVALID");
       const content = message(runtime.config, job, payload);
+      failureCode = "RESEND_REQUEST_FAILED";
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST",
         redirect: "error",
@@ -281,10 +286,13 @@ export async function deliverPendingMail(runtime, limit = 5) {
           text: content.text,
         }),
       });
+      resendStatus = response.status;
       if (!response.ok) {
+        failureCode = `RESEND_HTTP_${resendStatus}`;
         await response.body?.cancel();
         throw new Error("AUTH_MAIL_PROVIDER_REJECTED");
       }
+      failureCode = "RESEND_RESPONSE_INVALID";
       const data = JSON.parse(await boundedBody(response, 8192));
       if (
         typeof data.id !== "string" ||
@@ -292,17 +300,27 @@ export async function deliverPendingMail(runtime, limit = 5) {
         data.id.length > 200
       )
         throw new Error("AUTH_MAIL_PROVIDER_RESPONSE_INVALID");
+      failureCode = "DELIVERY_SAVE_FAILED";
       await runtime.models.authDeliveries.updateOne(filter, {
         $set: { state: "sent", providerId: data.id },
         $unset: { envelope: 1, leaseToken: 1, leaseUntil: 1, lastErrorCode: 1 },
         $inc: { revision: 1 },
       });
       sent++;
-    } catch {
+    } catch (error) {
+      // Provider responses and raw exceptions can contain recipients, links or credentials.
+      console.error("storefront.ecommerce.auth_mail.failed", {
+        deliveryId: job.publicId,
+        kind: job.kind,
+        attempt: job.attempts,
+        failureCode,
+        resendStatus,
+        driverCode: Number.isInteger(error?.code) ? error.code : undefined,
+      });
       await runtime.models.authDeliveries.updateOne(filter, {
         $set: {
           state: job.attempts >= 5 ? "dead" : "pending",
-          lastErrorCode: "DELIVERY_FAILED",
+          lastErrorCode: failureCode,
           availableAt: new Date(
             Date.now() + Math.min(300000, 5000 * 2 ** job.attempts),
           ),

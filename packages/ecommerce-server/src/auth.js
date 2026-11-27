@@ -404,9 +404,10 @@ export function createStorefrontAuth({ mongoose, env = process.env }) {
         authorizeMailDelivery(request, env);
         if (request.method !== "POST")
           authError(405, "METHOD_NOT_ALLOWED", "Metodo non consentito.");
-        return commerceJson(await deliverPendingMail(await runtime()), {
-          requestId,
-        });
+        const result = await deliverPendingMail(await runtime());
+        if (result.sent || result.skipped || result.failed)
+          console.info("storefront.ecommerce.auth_mail.processed", { requestId, ...result });
+        return commerceJson(result, { requestId });
       } catch (error) {
         return commerceErrorResponse(error, requestId);
       }
