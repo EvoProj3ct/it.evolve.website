@@ -55,29 +55,36 @@ type Piece = {
   width: number;
   angle: number;
   color: number;
+  mobility: number;
   vx: number;
   vy: number;
   turn: number;
 };
 
 const clamp = (value: number, low: number, high: number) => Math.max(low, Math.min(high, value));
+const layers = [
+  { spacingX: .51, spacingY: .39, jitter: .68, offsetX: .27, offsetY: .65, seed: 239, mobility: .32 },
+  { spacingX: .43, spacingY: .35, jitter: .66, offsetX: 0, offsetY: 0, seed: 37, mobility: .65 },
+  { spacingX: .61, spacingY: .47, jitter: .85, offsetX: .3, offsetY: .42, seed: 138, mobility: 1 },
+] as const;
 
-function makePiece(x: number, y: number, size: number, random = Math.random): Piece {
+function makePiece(x: number, y: number, size: number, mobility: number, random = Math.random): Piece {
   return {
     x, y,
     width: size * (.82 + random() * .38),
     angle: (random() - .5) * (random() < .28 ? Math.PI * 2 : 3.8),
     color: Math.floor(random() * colors.length),
+    mobility,
     vx: 0, vy: 0, turn: 0,
   };
 }
 
-function arrange(width: number, height: number, size: number, upper: boolean) {
+function arrange(width: number, height: number, size: number, layer: (typeof layers)[number]) {
   const pieces: Piece[] = [];
-  const spacingX = size * (upper ? .61 : .43);
-  const spacingY = size * (upper ? .47 : .35);
-  const jitter = upper ? .85 : .66;
-  let seed = upper ? 138 : 37;
+  const spacingX = size * layer.spacingX;
+  const spacingY = size * layer.spacingY;
+  const { jitter } = layer;
+  let seed: number = layer.seed;
   const random = () => {
     seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
     return seed / 4294967296;
@@ -85,12 +92,12 @@ function arrange(width: number, height: number, size: number, upper: boolean) {
 
   for (let row = 0; row * spacingY < height; row++) {
     for (let column = -1; column * spacingX < width + spacingX; column++) {
-      const offset = (row % 2 ? .45 : 0) + (upper ? .3 : 0);
+      const offset = (row % 2 ? .45 : 0) + layer.offsetX;
       const x = (column + offset + (random() - .5) * jitter) * spacingX;
-      const y = (row + (upper ? .42 : 0) + (random() - .5) * jitter) * spacingY;
+      const y = (row + layer.offsetY + (random() - .5) * jitter) * spacingY;
       const top = size * (.56 + .13 * Math.sin(x / (size * 2.3)));
       const bottom = height - size * (.58 + .13 * Math.cos(x / (size * 1.8)));
-      if (y >= top && y <= bottom) pieces.push(makePiece(x, y, size, random));
+      if (y >= top && y <= bottom) pieces.push(makePiece(x, y, size, layer.mobility, random));
     }
   }
   return pieces;
@@ -169,7 +176,7 @@ export async function drawLinkerCarpet(surface: HTMLButtonElement, canvas: HTMLC
     canvas.width = Math.round(width * pixels);
     canvas.height = Math.round(height * pixels);
     size = clamp(width * .06, 54, 92);
-    pieces = [...arrange(width, height, size, false), ...arrange(width, height, size, true)];
+    pieces = layers.flatMap(layer => arrange(width, height, size, layer));
     capacity = pieces.length + Math.max(36, Math.ceil(pieces.length * .2));
     moving.clear();
     const initialLimit = pieces.length + Math.ceil(pieces.length * .07);
@@ -205,11 +212,35 @@ export async function drawLinkerCarpet(surface: HTMLButtonElement, canvas: HTMLC
       return Math.abs(dx * cos + dy * sin) < piece.width * .28 && Math.abs(dy * cos - dx * sin) < piece.width * .195;
     });
     if (covered) return;
+    const jitter = size * .13;
+    pieces.unshift(makePiece(x + (Math.random() - .5) * jitter, y + (Math.random() - .5) * jitter, size, layers[0].mobility));
+  }
+
+  function replenishBelow(x: number, y: number) {
+    if (x < 0 || x > width || y < size * .55 || y > height - size * .55) return;
+    const radiusSquared = (size * .44) ** 2;
+    let cover: Piece | undefined;
+    let nearby = 0;
+    for (let index = pieces.length - 1; index >= 0; index--) {
+      const piece = pieces[index];
+      const dx = piece.x - x, dy = piece.y - y;
+      if (dx * dx + dy * dy > radiusSquared) continue;
+      cover ??= piece;
+      if (++nearby >= layers.length) return;
+    }
+    if (!cover || cover.mobility === layers[0].mobility) return;
+
     const full = pieces.length >= capacity;
-    const buried = full ? reuseBuriedPiece(x, y) : undefined;
+    const buried = full ? reuseBuriedPiece(cover.x, cover.y) : undefined;
     if (full && !buried) return;
-    const piece = makePiece(x + (Math.random() - .5) * size * .13, y + (Math.random() - .5) * size * .13, size);
-    pieces.unshift(buried ? Object.assign(buried, piece) : piece);
+    // Match a visible tag so the new one stays covered until the layers slide apart.
+    const hidden: Piece = {
+      ...cover,
+      color: Math.floor(Math.random() * colors.length),
+      mobility: layers[0].mobility,
+      vx: 0, vy: 0, turn: 0,
+    };
+    pieces.unshift(buried ? Object.assign(buried, hidden) : hidden);
   }
 
   function sweep(fromX: number, fromY: number, toX: number, toY: number) {
@@ -226,6 +257,9 @@ export async function drawLinkerCarpet(surface: HTMLButtonElement, canvas: HTMLC
     for (let step = 1; step <= steps; step++) {
       const x = fromX + dx * step / steps;
       const y = fromY + dy * step / steps;
+      replenishBelow(x, y);
+      replenishBelow(x + sideX * size * .29, y + sideY * size * .29);
+      replenishBelow(x - sideX * size * .29, y - sideY * size * .29);
       for (const piece of pieces) {
         const offsetX = piece.x - x, offsetY = piece.y - y;
         const along = offsetX * forwardX + offsetY * forwardY;
@@ -235,7 +269,7 @@ export async function drawLinkerCarpet(surface: HTMLButtonElement, canvas: HTMLC
 
         // The leading edge sweeps each tag sideways at its current position.
         const spread = across < 0 ? -1 : 1;
-        const weight = (1 - reach / radius) * travel;
+        const weight = (1 - reach / radius) * travel * piece.mobility;
         const pushX = (forwardX * .72 + sideX * spread * .85) * weight;
         const pushY = (forwardY * .72 + sideY * spread * .85) * weight;
         piece.x += pushX;
@@ -249,11 +283,6 @@ export async function drawLinkerCarpet(surface: HTMLButtonElement, canvas: HTMLC
           moving.add(piece);
         }
       }
-      const behindX = x - forwardX * size * .43;
-      const behindY = y - forwardY * size * .43;
-      fillGap(behindX, behindY);
-      fillGap(behindX + sideX * size * .29, behindY + sideY * size * .29);
-      fillGap(behindX - sideX * size * .29, behindY - sideY * size * .29);
     }
     queueFrame();
   }

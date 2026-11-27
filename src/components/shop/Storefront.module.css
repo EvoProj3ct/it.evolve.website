@@ -6,12 +6,14 @@
 .back { color: #7f8f74; font-size: 10px; }
 .lead { margin: 15px 0 29px; color: #819176; font-size: 13px; line-height: 1.7; }
 .form { display: grid; gap: 21px; max-width: 620px; margin-top: 24px; }
-.form > label, .fieldGrid > label { display: grid; gap: 10px; color: #5c7251; font-size: 11px; }
+.form > label, .passwordConfirmation, .fieldGrid > label { display: grid; gap: 10px; color: #5c7251; font-size: 11px; }
 .form input:not([type="checkbox"]):not([type="radio"]), .fieldGrid input, .fieldGrid select { width: 100%; min-width: 0; min-height: 49px; padding: 12px 14px; border: 1px solid #dce6d4; border-radius: 9px; background: #fcfdfb; color: #253722; font: inherit; font-size: 14px; transition: border-color .3s, box-shadow .3s; }
 .form input:focus, .fieldGrid input:focus, .fieldGrid select:focus { outline: none; border-color: #8bbc73; box-shadow: 0 0 0 3px #72c94f12; }
 .form input:disabled, .fieldGrid input:disabled, .fieldGrid select:disabled { opacity: .65; }
 .password { position: relative; display: block; }
 .password > input { padding-right: 47px !important; }
+.form .password > input[aria-invalid="true"] { border-color: #be815e; }
+.passwordConfirmation .error { margin: 0; }
 .password > button { position: absolute; top: 3px; right: 4px; display: grid; place-items: center; width: 42px; height: 43px; padding: 0; border: 0; border-radius: 7px; background: transparent; color: #879b7a; }
 .password > button:hover { background: #f0f6ea; }
 .kind { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; border: 0; }

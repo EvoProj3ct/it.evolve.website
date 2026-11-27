@@ -44,8 +44,12 @@ export function ShopAuthForm({ action, legal, nextPath }: { action: AuthAction; 
   const [error, setError] = useState("");
   const [kind, setKind] = useState("individual");
   const [visible, setVisible] = useState(false);
+  const [confirmationVisible, setConfirmationVisible] = useState(false);
+  const [passwordMismatch, setPasswordMismatch] = useState(false);
+  const confirmation = useRef<HTMLInputElement>(null);
   const feedback = useRef<HTMLParagraphElement>(null);
   const disabled = busy || action === "register" && !legal.registrationReady || tokenAction && !token;
+  const clearPasswordMismatch = () => setPasswordMismatch(false);
   useLayoutEffect(() => {
     if (!tokenAction || capture.current) return;
     capture.current = true;
@@ -66,6 +70,13 @@ export function ShopAuthForm({ action, legal, nextPath }: { action: AuthAction; 
     if (tokenAction) body.token = token;
     if (action === "register") {
       if (data.get("accepted") !== "on") return;
+      if (data.get("passwordConfirmation") !== body.password) {
+        setError("");
+        setPasswordMismatch(true);
+        confirmation.current?.focus();
+        return;
+      }
+      clearPasswordMismatch();
       Object.assign(body, { name: data.get("name"), kind, termsVersion: legal.termsVersion, privacyVersion: legal.privacyVersion });
     }
     const newPassword = action === "register" ? body.password : body.newPassword;
@@ -99,10 +110,25 @@ export function ShopAuthForm({ action, legal, nextPath }: { action: AuthAction; 
       {tokenAction && captured && !token && !message ? <div className={styles.notice}>Apri il link ricevuto via email. Se è scaduto o hai ricaricato questa pagina, richiedine uno nuovo.<Link href={action === "verify-email" ? "/account/resend-verification" : action === "confirm-email" ? "/account/change-email" : "/account/forgot-password"} prefetch={false}>Richiedi un nuovo link <ArrowRight size={15} /></Link></div> : !message && <form method="post" className={styles.form} onSubmit={submit} aria-busy={busy}>
         {action === "register" && <><fieldset className={styles.kind}><legend>Il tuo account</legend>{[["individual", "Privato"], ["company", "Azienda"]].map(([value, label]) => <label key={value} data-selected={kind === value}><input type="radio" name="kind" value={value} checked={kind === value} onChange={() => setKind(value)} />{label}</label>)}</fieldset><label htmlFor="auth-name">{kind === "company" ? "Ragione sociale" : "Nome e cognome"}<input id="auth-name" name="name" required autoComplete={kind === "company" ? "organization" : "name"} maxLength={200} /></label></>}
         {["login", "register", "forgot-password", "resend-verification", "change-email"].includes(action) && <label htmlFor="auth-email">{action === "change-email" ? "Nuovo indirizzo email" : "Email"}<input id="auth-email" type="email" name="email" required autoComplete={action === "change-email" ? "email" : "username"} maxLength={254} /></label>}
-        {["login", "register", "verify-email"].includes(action) && <label htmlFor="auth-password">{action === "verify-email" ? "Password scelta alla registrazione" : "Password"}<span className={styles.password}><input data-password="true" id="auth-password" name="password" type={visible ? "text" : "password"} required maxLength={256} autoComplete={action === "register" ? "new-password" : "current-password"} aria-describedby={action === "register" ? "password-help" : undefined} /><button type="button" aria-label={visible ? "Nascondi la password" : "Mostra la password"} onClick={() => setVisible(value => !value)}>{visible ? <EyeOff size={17} /> : <Eye size={17} />}</button></span></label>}
+        {["login", "register", "verify-email"].includes(action) && <label htmlFor="auth-password">{action === "verify-email" ? "Password scelta alla registrazione" : "Password"}<span className={styles.password}><input data-password="true" id="auth-password" name="password" type={visible ? "text" : "password"} required maxLength={256} autoComplete={action === "register" ? "new-password" : "current-password"} aria-describedby={action === "register" ? "password-help" : undefined} onChange={action === "register" ? clearPasswordMismatch : undefined} /><button type="button" aria-label={visible ? "Nascondi la password" : "Mostra la password"} onClick={() => setVisible(value => !value)}>{visible ? <EyeOff size={17} /> : <Eye size={17} />}</button></span></label>}
         {["change-password", "change-email", "confirm-email", "logout-all"].includes(action) && <label htmlFor="auth-current-password">Password corrente<input id="auth-current-password" type="password" name="currentPassword" required maxLength={256} autoComplete="current-password" /></label>}
         {["change-password", "reset-password"].includes(action) && <label htmlFor="auth-new-password">Nuova password<input id="auth-new-password" type="password" name="newPassword" required maxLength={256} autoComplete="new-password" aria-describedby="password-help" /></label>}
         {["register", "change-password", "reset-password"].includes(action) && <p id="password-help" className={styles.help}>Da 15 a 128 caratteri. Puoi usare una frase facile da ricordare.</p>}
+        {action === "register" && <div className={styles.passwordConfirmation}>
+          <label htmlFor="auth-password-confirmation">Conferma password</label>
+          <div className={styles.password}>
+            <input ref={confirmation} data-password="true" id="auth-password-confirmation" name="passwordConfirmation"
+              type={confirmationVisible ? "text" : "password"} autoComplete="new-password" required maxLength={256}
+              aria-invalid={passwordMismatch || undefined} aria-describedby={passwordMismatch ? "password-confirmation-error" : undefined}
+              onChange={clearPasswordMismatch} />
+            <button type="button" aria-controls="auth-password-confirmation"
+              aria-label={confirmationVisible ? "Nascondi la conferma della password" : "Mostra la conferma della password"}
+              onClick={() => setConfirmationVisible(value => !value)}>
+              {confirmationVisible ? <EyeOff size={17} /> : <Eye size={17} />}
+            </button>
+          </div>
+          {passwordMismatch && <p id="password-confirmation-error" className={styles.error} role="alert">Le password non coincidono.</p>}
+        </div>}
         {action === "register" && <label className={styles.check}><input type="checkbox" name="accepted" required disabled={!legal.registrationReady} /><span>Ho letto e accetto le {legal.termsPath ? <Link href={legal.termsPath} prefetch={false} target="_blank" rel="noreferrer">condizioni dell’account</Link> : "condizioni dell’account"} e ho letto l’{legal.privacyPath ? <Link href={legal.privacyPath} prefetch={false} target="_blank" rel="noreferrer">informativa privacy</Link> : "informativa privacy"}.</span></label>}
         {action === "login" && <Link className={styles.inlineLink} href="/account/forgot-password" prefetch={false}>Password dimenticata?</Link>}
         <button className={styles.primary} type="submit" disabled={disabled}>{busy ? "Attendi…" : info.button}<ArrowRight size={18} /></button>
