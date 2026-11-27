@@ -6,11 +6,14 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ArrowUpRight, LogIn, ShoppingCart, UserRound } from "lucide-react";
 import { useGuestCart } from "@/lib/ecommerce/guest-cart";
+import { E_DISK_VISIBLE } from "@/lib/ecommerce/product-visibility";
 import { shopApi, useShopQueryView } from "@/lib/ecommerce/shop-store";
 import { PRODUCTS, type ProductId } from "./products";
 import { ProductMark } from "./ProductMark";
 import { NavInk, type NavInkPress } from "./NavInk";
 import styles from "./Shop.module.css";
+
+const visibleProducts = (Object.keys(PRODUCTS) as ProductId[]).filter(id => E_DISK_VISIBLE || id !== "e-disk");
 
 export function ShopNavigation() {
   const pathname = usePathname();
@@ -23,14 +26,14 @@ export function ShopNavigation() {
   const guestCart = useGuestCart();
   const quantity = (account ? cart?.quantity ?? 0 : 0) + guestCart.reduce((total, line) => total + line.quantity, 0);
   const accountLabel = account?.name ?? (checkingProfile ? "Account" : "Accedi");
-  const current = (Object.keys(PRODUCTS) as ProductId[]).find(id => pathname.startsWith(`/shop/${id}`));
+  const current = visibleProducts.find(id => pathname.startsWith(`/shop/${id}`));
   const highlighted = hovered ?? current;
 
   return (
     <header className={styles.globalHeader}>
       <div className={styles.logoLink}><Link href="/" aria-label="Evolve, torna al sito"><Image src="/logoEvolve.png" alt="Evolve" width={61} height={49} priority /></Link><Link href="/negozio" className={styles.shopWord}>shop</Link></div>
       <nav ref={navRef} className={styles.productLinks} aria-label="Prodotti Evolve" onPointerLeave={() => setHovered(null)}>
-        {(Object.keys(PRODUCTS) as ProductId[]).map(id => <Link key={id} data-nav-key={id} href={`/shop/${id}`} aria-current={current === id ? "page" : undefined} onClick={event => {
+        {visibleProducts.map(id => <Link key={id} data-nav-key={id} href={`/shop/${id}`} aria-current={current === id ? "page" : undefined} onClick={event => {
           if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey || event.button > 0) return;
           setHovered(id); setPressed(current => ({ key: id, serial: (current?.serial ?? 0) + 1 }));
         }} onPointerEnter={event => { if (event.pointerType === "mouse") setHovered(id); }} onFocus={() => setHovered(id)} onBlur={() => setHovered(null)}>

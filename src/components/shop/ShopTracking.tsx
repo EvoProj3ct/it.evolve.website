@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { RefreshCw } from "lucide-react";
-import type { PublicTrackingEvent, PublicTrackingTime } from "@evolve/ecommerce-server/tracking";
+import type { PublicTrackingDelivery, PublicTrackingEvent, PublicTrackingTime } from "@evolve/ecommerce-server/tracking";
 import { statusLabels } from "@/lib/ecommerce/contracts";
 import { hidesPreviousData, StorefrontError } from "@/lib/ecommerce/browser";
 import { cacheShopEntries, orderCacheAge, shopApi, useShopQueryView, useShopStore } from "@/lib/ecommerce/shop-store";
@@ -15,6 +15,9 @@ function time(value: PublicTrackingTime) {
   return value.kind === "window" ? `${format(value.startsAt)} – ${format(value.endsAt)} (${value.timeZone})` : `${format(value.startsAt)} (${value.timeZone})`;
 }
 function actual(value: string) { return new Intl.DateTimeFormat("it-IT", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Rome" }).format(new Date(value)); }
+function deliveryStatus(delivery: PublicTrackingDelivery) {
+  return delivery.mode === "pickup" && delivery.phase === "delivered" ? "Ritirato" : statusLabels[delivery.phase];
+}
 function Timeline({ orderId, delivery, version, unavailable, restart }: { orderId: string; delivery: string; version: number; unavailable: () => void; restart: () => void }) {
   const [cursor, setCursor] = useState(""), [events, setEvents] = useState<PublicTrackingEvent[]>([]);
   const resource = useShopQueryView(shopApi.useTrackingTimelineQuery({ orderId, delivery, cursor, version }, { refetchOnMountOrArgChange: orderCacheAge }));
@@ -51,7 +54,7 @@ function Timeline({ orderId, delivery, version, unavailable, restart }: { orderI
 function Delivery({ orderId, id, version, unavailable }: { orderId: string; id: string; version: number; unavailable: () => void }) {
   const resource = useShopQueryView(shopApi.useTrackingDeliveryQuery({ orderId, id, version }, { refetchOnMountOrArgChange: orderCacheAge }));
   useEffect(() => { if (resource.error instanceof StorefrontError && resource.error.status === 404) unavailable(); }, [resource.error, unavailable]);
-  return <div className={styles.notice}><ResourceFeedback busy={resource.busy} error={resource.error} reload={resource.reload} next={`/account/ordini/${orderId}`} />{resource.data && <><strong>{resource.data.delivery.label}</strong><p>{resource.data.delivery.message}</p><p>{statusLabels[resource.data.delivery.phase]}</p></>}</div>;
+  return <div className={styles.notice}><ResourceFeedback busy={resource.busy} error={resource.error} reload={resource.reload} next={`/account/ordini/${orderId}`} />{resource.data && <><strong>{resource.data.delivery.label}</strong><p>{resource.data.delivery.message}</p><p>{deliveryStatus(resource.data.delivery)}</p></>}</div>;
 }
 export function ShopTracking({ orderId }: { orderId: string }) {
   const store = useShopStore();
@@ -64,5 +67,5 @@ export function ShopTracking({ orderId }: { orderId: string }) {
   const refresh = resource.reload;
   const tracking = resource.data;
   const selectedDelivery = tracking?.status === "available" && tracking.deliveries.some(item => item.publicId === delivery) ? delivery : "";
-  return <section className={styles.orderSection}><div className={common.panelHeading}><h2>Il percorso del tuo ordine<span>.</span></h2><button type="button" className={styles.iconButton} disabled={resource.busy || resource.refreshing} onClick={refresh} aria-label="Aggiorna il tracking"><RefreshCw size={17} /></button></div><ResourceFeedback busy={resource.busy} error={resource.error} reload={refresh} next={`/account/ordini/${orderId}`} />{tracking?.status === "not_available" && <p className={styles.notice}>Gli aggiornamenti del tuo ordine saranno disponibili qui, appena pubblicati da Evolve.</p>}{tracking?.status === "available" && <><p className={styles.help}>Fase: {statusLabels[tracking.phase]} · Evasione: {statusLabels[tracking.fulfillmentStatus]}</p><div className={styles.deliveries}>{tracking.deliveries.map(item => <button type="button" key={item.publicId} className={styles.deliveryCard} aria-pressed={selectedDelivery === item.publicId} onClick={() => setDelivery(value => value === item.publicId ? "" : item.publicId)}><strong>{item.label}</strong><span>{statusLabels[item.phase]}</span>{item.message && <p>{item.message}</p>}{item.expected && <small>Previsione: {time(item.expected)}</small>}{item.shippedAt && <small>Spedito il {actual(item.shippedAt)}</small>}{item.completedAt && <small>Completato il {actual(item.completedAt)}</small>}</button>)}</div>{selectedDelivery && <Delivery key={selectedDelivery} orderId={orderId} id={selectedDelivery} version={tracking.publicationVersion} unavailable={unavailable} />}<Timeline key={`${tracking.publicationVersion}-${selectedDelivery}`} orderId={orderId} delivery={selectedDelivery} version={tracking.publicationVersion} unavailable={unavailable} restart={refresh} /></>}</section>;
+  return <section className={styles.orderSection}><div className={common.panelHeading}><h2>Il percorso del tuo ordine<span>.</span></h2><button type="button" className={styles.iconButton} disabled={resource.busy || resource.refreshing} onClick={refresh} aria-label="Aggiorna il tracking"><RefreshCw size={17} /></button></div><ResourceFeedback busy={resource.busy} error={resource.error} reload={refresh} next={`/account/ordini/${orderId}`} />{tracking?.status === "not_available" && <p className={styles.notice}>Gli aggiornamenti del tuo ordine saranno disponibili qui, appena pubblicati da Evolve.</p>}{tracking?.status === "available" && <><div className={styles.deliveries}>{tracking.deliveries.map(item => <button type="button" key={item.publicId} className={styles.deliveryCard} aria-pressed={selectedDelivery === item.publicId} onClick={() => setDelivery(value => value === item.publicId ? "" : item.publicId)}><strong>{item.label}</strong><span>{deliveryStatus(item)}</span>{item.message && <p>{item.message}</p>}{item.expected && <small>Previsione: {time(item.expected)}</small>}{item.shippedAt && <small>Spedito il {actual(item.shippedAt)}</small>}{item.completedAt && <small>Completato il {actual(item.completedAt)}</small>}</button>)}</div>{selectedDelivery && <Delivery key={selectedDelivery} orderId={orderId} id={selectedDelivery} version={tracking.publicationVersion} unavailable={unavailable} />}<Timeline key={`${tracking.publicationVersion}-${selectedDelivery}`} orderId={orderId} delivery={selectedDelivery} version={tracking.publicationVersion} unavailable={unavailable} restart={refresh} /></>}</section>;
 }

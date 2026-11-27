@@ -7,6 +7,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { SupportChat } from "@/components/SupportChat";
 import { MenuGhost } from "@/components/MenuGhost";
+import { E_DISK_VISIBLE } from "@/lib/ecommerce/product-visibility";
 import styles from "./Navbar.module.css";
 
 type MenuKey = "services" | "training" | "utils";
@@ -52,7 +53,7 @@ const MENUS: Record<MenuKey, Menu> = {
     items: [
       { label: "Documenti e materiale scaricabile", href: "/utils" },
       { label: "Progetti e schemi open source", href: "/utils" },
-      { label: "e-disk", href: "/utils/e-disk" },
+      ...(E_DISK_VISIBLE ? [{ label: "e-disk", href: "/utils/e-disk" }] : []),
     ],
   },
 };

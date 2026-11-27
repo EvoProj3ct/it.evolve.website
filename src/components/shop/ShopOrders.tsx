@@ -9,7 +9,8 @@ import { ResourceFeedback, ShopPageHeader } from "./ShopPreviewShared";
 import { PersonalizationText } from "./ShopPersonalization";
 import { OrderAddresses } from "./ShopAddress";
 import { ShopTracking } from "./ShopTracking";
-import { OrderStateBadges, ShopOrderCards } from "./ShopOrderCards";
+import { ShopOrderCards } from "./ShopOrderCards";
+import { OrderProgress } from "./OrderProgress";
 import { PaymentReturnFeedback } from "./PaymentReturnFeedback";
 import { forgetStripeCheckout, rememberStripeCheckout, type ShopPaymentReturn } from "./stripeCheckoutReturn";
 import { usePaymentReturn } from "./usePaymentReturn";
@@ -25,7 +26,7 @@ export function ShopOrdersList({ compact = false }: { compact?: boolean }) {
   const query = new URLSearchParams();
   if (group !== "all") query.set("group", group);
   if (cursor) query.set("cursor", cursor);
-  const resource = useShopQueryView(shopApi.useOrdersQuery(query.toString(), { refetchOnMountOrArgChange: orderCacheAge }));
+  const resource = useShopQueryView(shopApi.useOrdersQuery(query.toString(), { refetchOnMountOrArgChange: true }));
   const stats = resource.data?.stats;
   const page = resource.data;
   return <section>
@@ -140,7 +141,7 @@ function OrderPayment({ order, resource, confirmation, paymentReturn }: {
 export function ShopOrderDetail({ id, paymentReturn }: { id: string; paymentReturn: ShopPaymentReturn }) {
   const store = useShopStore();
   const confirmation = usePaymentReturn(id, paymentReturn);
-  const resource = useShopQueryView(shopApi.useOrderQuery(id, { refetchOnMountOrArgChange: orderCacheAge }));
+  const resource = useShopQueryView(shopApi.useOrderQuery(id, { refetchOnMountOrArgChange: true }));
   const paymentEndpoint = shopApi.endpoints.paymentStatus;
   paymentEndpoint.useQuerySubscription(id, {
     skip: !resource.data || !confirmation.initialized || confirmation.checking,
@@ -158,9 +159,11 @@ export function ShopOrderDetail({ id, paymentReturn }: { id: string; paymentRetu
     : currentOrder;
   const returnStatus = order?.paymentStatus ?? currentPayment?.paymentStatus;
   const waitingForPayment = confirmation.returned && (returnStatus === "awaiting" || returnStatus === "processing");
-  const fulfillment = new Map(order?.fulfillment.map(item => [item.lineId, item]));
+  const progressOrder = order && !order.deliveryMode
+    ? { ...order, deliveryMode: order.fulfillmentSelections.find(selection => selection.mode !== "service")?.mode ?? order.fulfillmentSelections[0]?.mode }
+    : order;
   return <main id="shop-content" className={common.page}>
-    <ShopPageHeader title={order?.number || "Il tuo ordine"} description={order ? `Confermato il ${date(order.placedAt)}.` : "Dettagli, pagamento e aggiornamenti della fornitura."} />
+    <ShopPageHeader title={order?.number || "Il tuo ordine"} />
     <PaymentReturnFeedback
       checking={confirmation.showOverlay && (!returnStatus || returnStatus === "awaiting" || returnStatus === "processing") && !hidesPreviousData(resource.error)}
       confirmed={confirmation.returned && returnStatus === "paid"}
@@ -168,17 +171,20 @@ export function ShopOrderDetail({ id, paymentReturn }: { id: string; paymentRetu
     <ResourceFeedback busy={resource.busy && !confirmation.returned} error={resource.error} reload={resource.reload} next={`/account/ordini/${id}`} />
     {order && <>
       <div className={common.panelHeading}>
-        <Link href="/account/ordini" className={common.textLink}>Tutti gli ordini <ArrowRight size={14} /></Link>
+        <div className={styles.orderDetailMeta}>
+          <Link href="/account/ordini" className={common.textLink}>Tutti gli ordini <ArrowRight size={14} /></Link>
+          <time dateTime={order.placedAt}>Ricevuto il {date(order.placedAt)}</time>
+        </div>
         <button type="button" className={styles.secondary} disabled={resource.refreshing || confirmation.checking}
           onClick={waitingForPayment ? confirmation.recheck : resource.reload}>
           <RefreshCw size={15} /> Aggiorna lo stato
         </button>
       </div>
-      <OrderStateBadges order={order} />
+      {progressOrder && <OrderProgress order={progressOrder} />}
       <div className={styles.detailGrid}>
         <section className={styles.orderSection}>
           <h2>Le tue scelte<span>.</span></h2>
-          <div className={styles.quoteLines}>{order.lines.map(line => <div key={line.lineId}><span>{line.title}<small>{line.quantity} × {money(line.price.unitMinor)} · {line.price.taxMode === "inclusive" ? "IVA inclusa" : "IVA esclusa"}</small>{line.personalization && <PersonalizationText value={line.personalization} />}{fulfillment.has(line.lineId) && <LineFulfillment data={fulfillment.get(line.lineId)!} quantity={line.quantity} />}</span><strong>{money(line.totals.grossMinor)}</strong></div>)}</div>
+          <div className={styles.quoteLines}>{order.lines.map(line => <div key={line.lineId}><span>{line.title}<small>{line.quantity} × {money(line.price.unitMinor)} · {line.price.taxMode === "inclusive" ? "IVA inclusa" : "IVA esclusa"}</small>{line.personalization && <PersonalizationText value={line.personalization} />}</span><strong>{money(line.totals.grossMinor)}</strong></div>)}</div>
           <dl className={styles.totals}><div><dt>Imponibile</dt><dd>{money(order.totals.netMinor)}</dd></div><div><dt>IVA</dt><dd>{money(order.totals.taxMinor)}</dd></div>{order.discount && <div><dt>Sconto incluso · {order.discount.code} ({order.discount.percent}%)</dt><dd>−{money(order.discount.amountMinor)}</dd></div>}<div><dt>Totale</dt><dd>{money(order.totals.grossMinor)}</dd></div></dl>
           <OrderAddresses billing={order.billing} shipping={order.shipping} />
           {order.fulfillmentSelections.map(selection => <p className={styles.notice} key={selection.optionPublicId}><strong>{selection.label}</strong><br />{selection.details}</p>)}
@@ -188,9 +194,4 @@ export function ShopOrderDetail({ id, paymentReturn }: { id: string; paymentRetu
       {!confirmation.showOverlay && <ShopTracking orderId={order.id} />}
     </>}
   </main>;
-}
-
-function LineFulfillment({ data, quantity }: { data: Order["fulfillment"][number]; quantity: number }) {
-  const partial = data.fulfilledQuantity > 0 && data.fulfilledQuantity < quantity;
-  return <small>{partial ? "Evasione parziale" : statusLabels[data.state]} · {data.fulfilledQuantity}/{quantity} evasi</small>;
 }

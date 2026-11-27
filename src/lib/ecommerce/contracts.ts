@@ -65,7 +65,7 @@ export const operationalStatusSchema = z.enum(["open", "in_progress", "on_hold",
 export const paymentStatusSchema = z.enum(["awaiting", "processing", "paid", "refund_pending", "partially_refunded", "refunded", "failed", "expired", "disputed", "under_review"]);
 export const fulfillmentStatusSchema = z.enum(["unfulfilled", "in_progress", "partial", "fulfilled", "cancelled"]);
 const paymentSummary = z.object({ paidMinor: integer, refundedMinor: integer, paidAt: date.optional(), method: text(80).optional(), requiresReview: z.boolean() }).strict();
-export const orderSummarySchema = z.object({ id: publicIdSchema, number: text(80), revision: integer, placedAt: date, operationalStatus: operationalStatusSchema, paymentStatus: paymentStatusSchema, fulfillmentStatus: fulfillmentStatusSchema, deliveryPhase: z.literal("shipped").optional(), totals: totalsSchema, payment: paymentSummary.optional() }).strict();
+export const orderSummarySchema = z.object({ id: publicIdSchema, number: text(80), revision: integer, placedAt: date, operationalStatus: operationalStatusSchema, paymentStatus: paymentStatusSchema, fulfillmentStatus: fulfillmentStatusSchema, deliveryPhase: z.enum(["ready_for_pickup", "shipped", "delivered"]).optional(), deliveryMode: z.enum(["shipping", "pickup", "service"]).optional(), totals: totalsSchema, payment: paymentSummary.optional() }).strict();
 export const orderSchema = orderSummarySchema.extend({ lines: z.array(orderLineSchema).min(1).max(100), discount: discountSchema.optional(), billing: billingSchema, shipping: addressSchema.optional(), fulfillmentSelections: z.array(selectionSchema).max(2), fulfillment: z.array(z.object({ lineId: publicIdSchema, state: z.enum(["unfulfilled", "preparing", "shipped", "delivered", "service_completed", "cancelled"]), fulfilledQuantity: integer.max(1000), shippedQuantity: integer.max(1000) }).strict()).max(100), termsVersion: text(80) }).strict();
 export const orderGroupSchema = z.enum(["active", "received", "cancelled"]);
 const orderProductMarkSchema = z.enum(["e-disk", "e-disk-bundle", "e-disk-disc", "e-led", ...linkerOfferKinds]);
@@ -116,6 +116,6 @@ export type Address = z.infer<typeof addressSchema>;
 export const statusLabels: Record<string, string> = {
   open: "Confermato", in_progress: "In lavorazione", on_hold: "In attesa", completed: "Completato", cancelled: "Annullato",
   awaiting: "Da pagare", processing: "Pagamento in elaborazione", paid: "Pagato", refund_pending: "Rimborso in corso", partially_refunded: "Rimborso parziale", refunded: "Rimborsato", failed: "Non riuscito", expired: "Scaduto", disputed: "Contestato", under_review: "In verifica",
-  unfulfilled: "Da evadere", partial: "Evasione parziale", fulfilled: "Evaso", planned: "Programmato", preparing: "In preparazione", shipped: "Spedito", delivered: "Consegnato", service_completed: "Servizio completato",
+  unfulfilled: "Da evadere", partial: "Evasione parziale", fulfilled: "Evaso", planned: "Programmato", preparing: "In preparazione", ready_for_pickup: "Pronto per il ritiro", shipped: "Spedito", delivered: "Consegnato", service_completed: "Servizio completato",
 };
 export const money = (cents: number) => new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" }).format(cents / 100);

@@ -1,10 +1,10 @@
 import { homepageGhostBody } from "@/components/ghost-shape";
 import styles from "./Storefront.module.css";
 
-export type OrderGhostKind = "blocked" | "payable" | "waiting" | "fulfillment" | "progress" | "shipping" | "received" | "closed";
+export type OrderGhostKind = "blocked" | "payable" | "waiting" | "confirmed" | "progress" | "pickup" | "shipping" | "service_pending" | "received" | "closed";
 const colors: Record<OrderGhostKind, string> = {
-  blocked: "#c4645e", payable: "#c78731", waiting: "#927ab9", fulfillment: "#6d9ac8",
-  progress: "#539a84", shipping: "#457fb9", received: "#72c94f", closed: "#87938c",
+  blocked: "#c4645e", payable: "#c78731", waiting: "#927ab9", confirmed: "#547fbf",
+  progress: "#539a84", pickup: "#8b7856", shipping: "#457fb9", service_pending: "#569d55", received: "#72c94f", closed: "#87938c",
 };
 
 export function OrderStatusGhost({ kind }: { kind: OrderGhostKind }) {
@@ -24,9 +24,19 @@ export function OrderStatusGhost({ kind }: { kind: OrderGhostKind }) {
       <rect x="4" y="4" width="11" height="8" rx="1" fill="#fcf5dc" stroke="#214b76" />
       <path d="m5 5 4.5 3L14 5" fill="none" stroke="#214b76" />
     </>}
-    {kind === "received" && <>
-      <circle cx="9" cy="8" r="5.5" fill="#2d6036" />
+    {(kind === "received" || kind === "confirmed" || kind === "service_pending") && <>
+      <circle cx="9" cy="8" r="5.5" fill="#327243" stroke="#f5fff3" strokeWidth=".7" />
       <path d="m6.5 8 1.5 1.5 3-3" fill="none" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+    </>}
+    {kind === "pickup" && <>
+      <rect x="3.5" y="2" width="12" height="10" rx="1.2" fill="#f1cf89" stroke="#654b31" />
+      <path d="M4 5.5h11M8 2v3.5h3V2M11.5 9h2" fill="none" stroke="#795633" strokeWidth="1" />
+    </>}
+    {(kind === "payable" || kind === "waiting") && <>
+      <circle cx="9" cy="8" r="5.3" fill={kind === "payable" ? "#805720" : "#614c89"} />
+      {kind === "payable"
+        ? <path d="M11 5.5C7 3.8 6 12 11 10.4M6 7.4h4M6 8.7h3.4" fill="none" stroke="#fff" strokeWidth=".8" strokeLinecap="round" />
+        : <path d="M9 5.5v2.7l1.6 1.2" fill="none" stroke="#fff" strokeWidth="1.1" strokeLinecap="round" />}
     </>}
     {kind === "blocked" && <>
       <circle cx="9" cy="8" r="5" fill="#873f3b" />

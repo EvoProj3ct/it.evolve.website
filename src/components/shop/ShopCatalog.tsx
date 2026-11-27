@@ -6,6 +6,7 @@ import type { PublicCatalogProduct } from "@evolve/ecommerce-server/catalog";
 import { money, type PersonalizationInput } from "@/lib/ecommerce/contracts";
 import { errorText, StorefrontError, subscribeSession } from "@/lib/ecommerce/browser";
 import { useCatalogSnapshot } from "@/lib/ecommerce/catalog-snapshot";
+import { isStorefrontProductVisible } from "@/lib/ecommerce/product-visibility";
 import { addCatalogProduct } from "@/lib/ecommerce/cart";
 import { catalogCacheAge, shopApi, useShopQueryView, useShopStore } from "@/lib/ecommerce/shop-store";
 import { configuratorHref } from "./ConfiguredPurchase";
@@ -95,12 +96,65 @@ export function ShopCatalog() {
   const resource = useShopQueryView(shopApi.useCatalogQuery(query, { refetchOnMountOrArgChange: catalogCacheAge }),
     snapshot?.endpointName === "catalog" ? snapshot.value : undefined);
   const data = resource.data;
-  return <main id="shop-content" className={common.page}><ShopPageHeader title="Oggetti, idee, connessioni" description="Le proposte disponibili, pubblicate da Evolve." /><ResourceFeedback busy={resource.busy} error={resource.error} reload={resource.reload} next="/negozio" />{data && <>{data.items.length ? <div className={styles.catalogGrid}>{data.items.map(product => <article key={product.id} className={styles.catalogCard}><Link href={`/negozio/${product.slug}`}><CatalogArtwork product={product} /><h2>{product.name}<span>.</span></h2><p>{product.description}</p></Link><div className={styles.catalogPrice}><span>{money(product.price.unitGrossCents)}<small>IVA inclusa</small></span><Link href={`/negozio/${product.slug}`} aria-label={`Scopri ${product.name}`}><ArrowUpRight size={22} /></Link></div></article>)}</div> : <p className={styles.notice}>Al momento non ci sono articoli pubblicati nello shop.</p>}<div className={styles.pagination}>{cursor && <button type="button" className={styles.secondary} onClick={() => setCursor("")}>Torna all’inizio</button>}{data.nextCursor && <button type="button" className={styles.secondary} onClick={() => setCursor(data!.nextCursor!)}>Altri oggetti <ArrowRight size={15} /></button>}</div></>}</main>;
+  const products = data?.items.filter(isStorefrontProductVisible) ?? [];
+  const nextCursor = data?.nextCursor;
+  return <main id="shop-content" className={common.page}>
+    <ShopPageHeader title="Oggetti, idee, connessioni" />
+    <ResourceFeedback busy={resource.busy} error={resource.error} reload={resource.reload} next="/negozio" />
+    {data && <>
+      {products.length > 0 ? <div className={styles.catalogGrid}>
+        {products.map(product => <article key={product.id} className={styles.catalogCard}>
+          <Link href={`/negozio/${product.slug}`}>
+            <CatalogArtwork product={product} />
+            <h2>{product.name}<span>.</span></h2>
+            <p>{product.description}</p>
+          </Link>
+          <div className={styles.catalogPrice}>
+            <span>{money(product.price.unitGrossCents)}<small>IVA inclusa</small></span>
+            <Link href={`/negozio/${product.slug}`} aria-label={`Scopri ${product.name}`}><ArrowUpRight size={22} /></Link>
+          </div>
+        </article>)}
+      </div> : <p className={styles.notice}>{cursor || nextCursor ? "Nessun articolo disponibile in questa pagina." : "Al momento non ci sono articoli pubblicati nello shop."}</p>}
+      <div className={styles.pagination}>
+        {cursor && <button type="button" className={styles.secondary} onClick={() => setCursor("")}>Torna all’inizio</button>}
+        {nextCursor && <button type="button" className={styles.secondary} onClick={() => setCursor(nextCursor)}>Altri oggetti <ArrowRight size={15} /></button>}
+      </div>
+    </>}
+  </main>;
 }
+
 export function ShopCatalogProduct({ slug }: { slug: string }) {
   const snapshot = useCatalogSnapshot("productPage", slug);
   const resource = useShopQueryView(shopApi.useProductPageQuery(slug, { refetchOnMountOrArgChange: catalogCacheAge }),
     snapshot?.endpointName === "productPage" ? snapshot.value : undefined);
-  const product = resource.data;
-  return <main id="shop-content" className={common.page}><ShopPageHeader title={product?.name || "Un oggetto, la tua idea"} description={product?.content.summary || "Scopri i dettagli della proposta Evolve."} /><ResourceFeedback busy={resource.busy} error={resource.error} reload={resource.reload} next={`/negozio/${slug}`} />{product && <><div className={styles.productGrid}><CatalogArtwork product={product} /><section className={styles.productInfo}><h2>{product.content.title || product.name}<span>.</span></h2><p>{product.description}</p><div className={styles.detailPrice}>{money(product.price.unitGrossCents)}<small>IVA inclusa{product.price.taxMode === "exclusive" && <> · {money(product.price.unitAmountCents)} IVA esclusa</>}</small></div><p className={styles.help}>Modalità: {product.fulfillmentModes.map(mode => ({ shipping: "spedizione", pickup: "ritiro", service: "servizio" })[mode]).join(", ")}. Le opzioni effettive saranno confermate al riepilogo.</p>{product.configurator ? <Link className={styles.primary} href={configuratorHref(product.configurator, product.id)}>Personalizza e acquista <ArrowRight size={17} /></Link> : <AddToCart key={`${product.id}-${product.revision}`} product={product} />}</section></div><div className={styles.productSections}>{product.content.sections.map((section, index) => <section key={`${section.heading}-${index}`}><h2>{section.heading}</h2><p>{section.text}</p></section>)}</div>{product.content.media.length > 0 && <div className={styles.mediaGrid}>{product.content.media.map(media => <figure key={media.id}><img src={media.url} alt={media.alt} width={media.width} height={media.height} loading="lazy" referrerPolicy="no-referrer" /></figure>)}</div>}</>}</main>;
+  const product = resource.data && isStorefrontProductVisible(resource.data) ? resource.data : undefined;
+  return <main id="shop-content" className={common.page}>
+    <ShopPageHeader title={product?.name || "Un oggetto, la tua idea"} />
+    <ResourceFeedback busy={resource.busy} error={resource.error} reload={resource.reload} next={`/negozio/${slug}`} />
+    {resource.data && !product && !resource.error && <p className={styles.notice}>Articolo non disponibile.</p>}
+    {product && <>
+      <div className={styles.productGrid}>
+        <CatalogArtwork product={product} />
+        <section className={styles.productInfo}>
+          <h2>{product.content.title || product.name}<span>.</span></h2>
+          <p>{product.description}</p>
+          {product.content.summary && product.content.summary !== product.description && <p>{product.content.summary}</p>}
+          <div className={styles.detailPrice}>
+            {money(product.price.unitGrossCents)}
+            <small>IVA inclusa{product.price.taxMode === "exclusive" && <> · {money(product.price.unitAmountCents)} IVA esclusa</>}</small>
+          </div>
+          <p className={styles.help}>Modalità: {product.fulfillmentModes.map(mode => ({ shipping: "spedizione", pickup: "ritiro", service: "servizio" })[mode]).join(", ")}. Le opzioni effettive saranno confermate al riepilogo.</p>
+          {product.configurator
+            ? <Link className={styles.primary} href={configuratorHref(product.configurator, product.id)}>Personalizza e acquista <ArrowRight size={17} /></Link>
+            : <AddToCart key={`${product.id}-${product.revision}`} product={product} />}
+        </section>
+      </div>
+      <div className={styles.productSections}>
+        {product.content.sections.map((section, index) => <section key={`${section.heading}-${index}`}><h2>{section.heading}</h2><p>{section.text}</p></section>)}
+      </div>
+      {product.content.media.length > 0 && <div className={styles.mediaGrid}>
+        {product.content.media.map(media => <figure key={media.id}><img src={media.url} alt={media.alt} width={media.width} height={media.height} loading="lazy" referrerPolicy="no-referrer" /></figure>)}
+      </div>}
+    </>}
+  </main>;
 }

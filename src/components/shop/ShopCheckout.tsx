@@ -117,7 +117,7 @@ export function ShopCheckout({ termsPath, termsVersion }: { termsPath: string; t
       setError(errorText(reason));
     } finally { lock.current = false; setBusy(false); }
   }
-  return <main id="shop-content" className={common.page}><ShopPageHeader title="Dai forma alle tue scelte" description="Dati, consegna e riepilogo. Il pagamento si apre dopo la conferma dell’ordine." /><ResourceFeedback busy={resource.busy} error={resource.error} reload={resource.reload} next="/checkout" />{data && <>{!cartReady ? <p className={styles.notice}>Controlla il carrello prima di continuare.<Link href="/carrello">Apri il carrello <ArrowRight size={15} /></Link></p> : !data.link.checkoutReady ? <p className={styles.notice}>{data.link.message}<Link href="/account">Vai al tuo profilo <ArrowRight size={15} /></Link></p> : <>
+  return <main id="shop-content" className={common.page}><ShopPageHeader title="Dai forma alle tue scelte" /><ResourceFeedback busy={resource.busy} error={resource.error} reload={resource.reload} next="/checkout" />{data && <>{!cartReady ? <p className={styles.notice}>Controlla il carrello prima di continuare.<Link href="/carrello">Apri il carrello <ArrowRight size={15} /></Link></p> : !data.link.checkoutReady ? <p className={styles.notice}>{data.link.message}<Link href="/account">Vai al tuo profilo <ArrowRight size={15} /></Link></p> : <>
       {error && <p className={styles.error} role="alert">{error}</p>}
       <form method="post" onSubmit={prepare} hidden={!!quote} className={styles.checkoutForm}>
         <fieldset disabled={busy || !!quote}>

@@ -110,7 +110,7 @@ export function ShopProfile() {
   const error = resource.error && shopQueryError(resource.error);
   const account = hidesPreviousData(error) ? undefined : resource.currentData?.account;
   return <main id="shop-content" className={styles.page}>
-    <ShopPageHeader title="Il tuo spazio" description={account ? `Bentornato, ${account.name}.` : "I tuoi oggetti, ordini e prossime idee."} />
+    <ShopPageHeader title="Il tuo spazio" />
     <ResourceFeedback busy={!account && resource.isFetching} error={error}
       reload={resource.refetch} />
     {account && <div className={styles.profileGrid}>

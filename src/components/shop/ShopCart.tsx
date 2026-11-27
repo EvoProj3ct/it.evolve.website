@@ -106,7 +106,7 @@ export function ShopCart() {
   }
   const ready = !!cart && cart.status === "active" && !!draft.length && !cart.requiresReview && !dirty && !!resource.data?.policy && !saving && !resource.refreshing && !guestLines.length;
   return <main id="shop-content" className={styles.page}>
-    <ShopPageHeader title="Il tuo carrello" description="Le tue scelte, pronte a prendere forma." />
+    <ShopPageHeader title="Il tuo carrello" />
     <ResourceFeedback busy={resource.busy} error={resource.error} reload={resource.reload} next="/carrello" />
     {resource.data && !cart && <ShopGuestCart />}
     {cart && guestLines.length > 0 && <ShopGuestCart importError={resource.data?.importError} retry={resource.reload} />}

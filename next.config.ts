@@ -1,7 +1,16 @@
 import type { NextConfig } from "next";
+import { E_DISK_VISIBLE } from "./src/lib/ecommerce/product-visibility";
 
 const nextConfig: NextConfig = {
   devIndicators: false,
+  async redirects() {
+    if (E_DISK_VISIBLE) return [];
+    return ["/shop/e-disk/:path*", "/utils/e-disk/:path*", "/shop/brand/e-disk.svg"].map(source => ({
+      source,
+      destination: "/negozio",
+      permanent: false,
+    }));
+  },
   async headers() {
     const privateHeaders = [
       { key: "Cache-Control", value: "private, no-store" },

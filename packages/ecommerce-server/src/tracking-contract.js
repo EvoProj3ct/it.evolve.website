@@ -105,6 +105,7 @@ function delivery(value) {
     phase = choice(value.phase, [
       "planned",
       "preparing",
+      "ready_for_pickup",
       "shipped",
       "delivered",
       "service_completed",
@@ -125,6 +126,7 @@ function delivery(value) {
       value.completedAt === undefined ? undefined : iso(value.completedAt);
   if (
     (phase === "shipped" && mode !== "shipping") ||
+    (phase === "ready_for_pickup" && mode !== "pickup") ||
     (phase === "delivered" && mode === "service") ||
     (phase === "service_completed" && mode !== "service") ||
     !!shippedAt !==

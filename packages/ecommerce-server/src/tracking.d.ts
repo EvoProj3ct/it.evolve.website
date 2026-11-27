@@ -18,6 +18,7 @@ export interface PublicTrackingDelivery {
   phase:
     | "planned"
     | "preparing"
+    | "ready_for_pickup"
     | "shipped"
     | "delivered"
     | "service_completed"

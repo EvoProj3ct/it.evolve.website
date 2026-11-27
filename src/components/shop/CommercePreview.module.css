@@ -23,10 +23,9 @@
 .previewNote > span { display: inline-flex; align-items: center; gap: 6px; color: #49633e; }
 .previewNote i { width: 5px; height: 5px; border-radius: 50%; background: #72c94f; box-shadow: 0 0 0 4px #72c94f13; }
 .previewNote > p { padding-left: 11px; border-left: 1px solid var(--preview-line); }
-.pageHeading { display: flex; align-items: flex-end; justify-content: space-between; gap: 32px; margin-block: 42px 40px; padding-bottom: 34px; border-bottom: 1px solid var(--preview-line); }
+.pageHeading { margin-block: 42px 40px; padding-bottom: 34px; border-bottom: 1px solid var(--preview-line); }
 .pageHeading h1 { font-size: clamp(54px,5.8vw,88px); font-weight: 400; line-height: 1.02; letter-spacing: -.075em; }
 .pageHeading h1 > span, .itemTitle h2 span, .emptyState h2 > span, .panelHeading h2 > span, .featuredCopy h2 > span, .savedDetails h3 > span, .summaryTop h2 > span { color: var(--preview-green); }
-.pageHeading > p { max-width: 260px; padding-bottom: 4px; color: #73806d; font-size: 13px; line-height: 1.6; }
 .textLink { display: inline-flex; align-items: center; justify-content: space-between; gap: 17px; padding: 0; border: 0; background: transparent; color: #425b3b; font-size: 11px; }
 .textLink > svg { flex: none; transition: transform .35s var(--preview-ease); }
 .textLink:hover > svg { transform: translate(2px,-2px); }
@@ -275,7 +274,6 @@
   .page { padding-top: 26px; }
   .pageHeading { margin-block: 34px; }
   .pageHeading h1 { font-size: 61px; }
-  .pageHeading > p { max-width: 200px; font-size: 12px; }
   .cartGrid { grid-template-columns: minmax(0,1fr) 280px; gap: 25px; }
   .cartItem { grid-template-columns: 100px minmax(0,1fr); gap: 15px; }
   .itemTitle { flex-wrap: wrap; gap: 8px; }
@@ -309,9 +307,8 @@
   .page { min-height: calc(100svh - 68px); padding-inline: 22px; padding-bottom: 70px; }
   .topline { gap: 15px; }
   .previewNote > p { display: none; }
-  .pageHeading { display: block; margin-block: 31px; padding-bottom: 27px; }
+  .pageHeading { margin-block: 31px; padding-bottom: 27px; }
   .pageHeading h1 { font-size: clamp(43px,9.8vw,64px); }
-  .pageHeading > p { max-width: none; margin-top: 16px; padding: 0; font-size: 12px; }
   .cartGrid { grid-template-columns: 1fr; gap: 32px; }
   .cartItem { grid-template-columns: 120px minmax(0,1fr); align-items: start; gap: 20px; padding-block: 23px; }
   .cartArtLink { margin-top: 3px; }
