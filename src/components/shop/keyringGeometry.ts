@@ -1,4 +1,4 @@
-import { keyringHoleOptions, keyringStarPoints, type KeyringLettering, type KeyringPosition, type KeyringShape } from "@evolve/ecommerce-server/keyring-design";
+import { keyringHexagonPoints, keyringHoleOptions, keyringStarPoints, type KeyringLettering, type KeyringPosition, type KeyringShape } from "@evolve/ecommerce-server/keyring-design";
 
 export const keyringHoleRadius = .16;
 const holeInset = .32;
@@ -38,6 +38,8 @@ export function keyringOutline(shape: KeyringShape) {
     points = roundedPolygon([{ x: 0, y: 1.92 }, { x: -1.91, y: -1.38 }, { x: 1.91, y: -1.38 }], .22);
   } else if (shape === "star") {
     points = roundedPolygon(keyringStarPoints, .135);
+  } else if (shape === "hexagon") {
+    points = roundedPolygon(keyringHexagonPoints, .19);
   } else {
     const x = shape === "rectangle" ? 1.9 : shape === "cube" ? 1.325 : 1.6;
     const y = shape === "square" ? 1.6 : 1.325;
@@ -93,7 +95,7 @@ export function keyringHoles(shape: KeyringShape) {
 const letteringAreas: Record<KeyringShape, readonly [width: number, height: number, centerY: number]> = {
   rectangle: [2.55, 1.45, 0], square: [2.08, 1.85, 0], circle: [1.92, 1.67, 0],
   triangle: [1.45, .78, -.45], ellipse: [2.65, 1.18, 0], heart: [1.73, 1.06, -.18],
-  star: [1.14, .78, -.015], cube: [1.65, 1.52, 0],
+  star: [1.14, .78, -.015], hexagon: [1.78, 1.48, 0], cube: [1.65, 1.52, 0],
 };
 const letteringHeights = { small: .22, medium: .34, large: .48 };
 
@@ -103,11 +105,13 @@ export function keyringLetteringLayout(shape: KeyringShape, lettering: KeyringLe
   const centerY = areaCenter - (fullHeight - areaHeight) / 2;
   const unit = letteringHeights[lettering.size];
   const vertical = lettering.orientation === "vertical";
-  const width = Math.min(areaWidth, vertical ? unit * 1.35 : Math.max(unit, text.length * unit * .87));
-  const height = Math.min(areaHeight, vertical ? Math.max(unit, text.length * unit * 1.47) : unit);
-  const travelX = (areaWidth - width) / 2;
-  const travelY = (areaHeight - height) / 2;
-  return { x: travelX * lettering.x / 100, y: centerY + travelY * lettering.y / 100, width, height, centerY, travelX, travelY };
+  const followsLongSide = vertical && (shape === "rectangle" || shape === "ellipse");
+  const width = Math.min(followsLongSide ? areaHeight : areaWidth, vertical ? unit * 1.35 : Math.max(unit, text.length * unit * .87));
+  const height = Math.min(followsLongSide ? areaWidth : areaHeight, vertical ? Math.max(unit, text.length * unit * 1.47) : unit);
+  const travelX = (areaWidth - (followsLongSide ? height : width)) / 2;
+  const travelY = (areaHeight - (followsLongSide ? width : height)) / 2;
+  const rotation = followsLongSide ? -Math.PI / 2 : 0;
+  return { x: travelX * lettering.x / 100, y: centerY + travelY * lettering.y / 100, width, height, rotation, centerY, travelX, travelY };
 }
 
 export function keyringLogoLayout(shape: KeyringShape, hasText: boolean) {

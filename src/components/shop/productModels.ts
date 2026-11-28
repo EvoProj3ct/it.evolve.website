@@ -117,9 +117,7 @@ export function createKeyring(configuration: ProductConfiguration, font: Font | 
   bore.absarc(hole.x, hole.y, keyringHoleRadius, 0, Math.PI * 2, true);
   shape.holes.push(bore);
   const depth = keyringDepth(configuration.shape);
-  const edge = new THREE.MeshStandardMaterial({ color: "#829ba3", roughness: .48, metalness: .06 });
-  // Il bordo neutro riprende il piccolo marchio: la superficie rimane del colore scelto.
-  const base = add(body, new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelSegments: 5, steps: 1, bevelSize: .02, bevelThickness: .02, curveSegments: 40 }), [primary, edge]);
+  const base = add(body, new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelSegments: 5, steps: 1, bevelSize: .02, bevelThickness: .02, curveSegments: 40 }), primary);
   let chain: KeyringChainRig | undefined;
   if (withChain) {
     const chainMetal = new THREE.MeshStandardMaterial({ color: "#b6bfbb", metalness: .92, roughness: .26 });
@@ -183,6 +181,7 @@ export function createKeyring(configuration: ProductConfiguration, font: Font | 
       const back = face === "back";
       lettering.position.set(back ? -layout.x : layout.x, layout.y, back ? -.022 : depth + .022);
       if (back) lettering.rotation.y = Math.PI;
+      if (layout.rotation) lettering.rotateZ(layout.rotation);
       body.add(lettering);
       letters[face] = lettering;
     }
@@ -193,8 +192,10 @@ export function createKeyring(configuration: ProductConfiguration, font: Font | 
       add(body, new THREE.BoxGeometry(.22, .025, .006), accent, -1.42, -.95, .154).castShadow = false;
       add(body, new THREE.BoxGeometry(.07, .025, .006), accent, -1.23, -.95, .154).castShadow = false;
     }
-    if (Math.hypot(hole.x - 1.45, hole.y + .95) > .3)
-      add(body, new THREE.CircleGeometry(.025, 16), edge, 1.45, -.95, .154).castShadow = false;
+    if (Math.hypot(hole.x - 1.45, hole.y + .95) > .3) {
+      const dot = new THREE.MeshStandardMaterial({ color: "#829ba3", roughness: .48, metalness: .06 });
+      add(body, new THREE.CircleGeometry(.025, 16), dot, 1.45, -.95, .154).castShadow = false;
+    }
   }
   const logo = configuration.logo;
   const logoLayout = keyringLogoLayout(configuration.shape, !!configuration.text.trim());

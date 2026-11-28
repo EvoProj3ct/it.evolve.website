@@ -86,10 +86,13 @@ export function productColors(product: ProductId) {
   return product === "e-linker" ? LINKER_COLORS : product === "e-led" ? LED_COLORS : SHOP_COLORS;
 }
 
-const shapeSymbols: Record<KeyringShape, string> = {
-  rectangle: "▭", square: "□", circle: "○", triangle: "△", ellipse: "⬭", heart: "♡", star: "☆", cube: "⬡",
+type SelectableKeyringShape = Exclude<KeyringShape, "cube">;
+const shapeSymbols: Record<SelectableKeyringShape, string> = {
+  rectangle: "▭", square: "□", circle: "○", triangle: "△", ellipse: "⬭", heart: "♡", star: "☆", hexagon: "⬡",
 };
-export const KEYRING_SHAPES = keyringShapes.map(id => ({ id, name: keyringShapeNames[id], symbol: shapeSymbols[id] }));
+export const KEYRING_SHAPES = keyringShapes
+  .filter((id): id is SelectableKeyringShape => id !== "cube")
+  .map(id => ({ id, name: keyringShapeNames[id], symbol: shapeSymbols[id] }));
 
 export const PRODUCTS = {
   "e-disk": {
@@ -123,8 +126,8 @@ export const PRODUCTS = {
     name: "e-linker",
     number: "02",
     category: "Il tuo portachiavi NFC personalizzato",
-    tagline: "Il tuo logo fuori.\nIl tuo mondo dentro.",
-    description: "Un portachiavi NFC con scocca in bioplastica stampata in 3D. Avvicinalo allo smartphone per condividere la tua attività, un prodotto o un ricordo.",
+    tagline: "Il tuo logo fuori,\nil tuo mondo dentro.",
+    description: "Un portachiavi NFC in bioplastica 100% riciclabile stampato in 3D. Avvicinalo allo smartphone per condividere la tua attività, un prodotto o un ricordo.",
     punchline: "Condividi ciò\nche conta",
     defaultPrimary: "#E9F0ED",
     defaultSecondary: "#263C42",

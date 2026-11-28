@@ -316,21 +316,6 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
 
           <div className={styles.configPanel}>
             {!isDisk && <>
-              <fieldset id="offerta-e-linker" className={styles.linkerOffers}>
-                <legend>Quanti portachiavi vuoi?</legend>
-                <div className={styles.linkerOfferGrid}>
-                  {([1, ...linkerBundleSizes] as const).map(size => {
-                    const kind = linkerOfferKind(size);
-                    const selected = linkerCount === size;
-                    return <button key={kind} type="button" aria-pressed={selected} onClick={() => setLinkerOffer(kind)}>
-                      <LinkerBundleArtwork size={size} primary={configuration.primary} secondary={configuration.secondary} />
-                      <span>{size === 1 ? "1 portachiavi" : `${size} portachiavi`}</span>
-                      {selected && <Check size={14} aria-hidden="true" />}
-                    </button>;
-                  })}
-                </div>
-                {linkerCount > 1 && <p className={styles.help}>Forma, colori e scritte si applicano a tutto il bundle.</p>}
-              </fieldset>
               <fieldset className={styles.controlGroup}><legend>Scegli la forma</legend><div className={styles.shapeOptions}>{KEYRING_SHAPES.map(shape => <button type="button" key={shape.id} aria-pressed={configuration.shape === shape.id} onClick={() => setConfiguration(current => ({
                 ...current, shape: shape.id, keyring: { ...current.keyring,
                   hole: keyringHoleName(shape.id, current.keyring.hole) ? current.keyring.hole : keyringHoleOptions(shape.id)[0].id },
@@ -352,6 +337,27 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
                 {invalidFaces.length > 0 && <p id="keyring-text-limit" className={styles.error} role="status">{invalidFaces.map(side =>
                   `${side === "front" ? "Fronte" : "Retro"} · massimo ${textLimit(side)} caratteri`).join(" · ")}</p>}
               </div>
+            </>}
+            <fieldset className={styles.controlGroup}><legend>Trova i tuoi colori</legend>
+              <ProductColorPicker product={product} value={configuration} onChange={(channel, hex) => setConfiguration(current => ({ ...current, [channel]: hex }))} onSwap={() => setConfiguration(current => ({ ...current, primary: current.secondary, secondary: current.primary }))} onShuffle={shuffleColors} />
+              <div className={styles.presets}><span>Abbinamenti</span><div>{presets.map(preset => <button type="button" key={preset.name} aria-pressed={configuration.primary === preset.primary && configuration.secondary === preset.secondary} onClick={() => setConfiguration(current => ({ ...current, primary: preset.primary, secondary: preset.secondary }))}><i style={swatchStyle(preset.primary)} /><i style={swatchStyle(preset.secondary)} />{preset.name}</button>)}</div></div>
+            </fieldset>
+            {!isDisk && <>
+              <fieldset id="offerta-e-linker" className={styles.linkerOffers}>
+                <legend>Quanti portachiavi vuoi?</legend>
+                <div className={styles.linkerOfferGrid}>
+                  {([1, ...linkerBundleSizes] as const).map(size => {
+                    const kind = linkerOfferKind(size);
+                    const selected = linkerCount === size;
+                    return <button key={kind} type="button" aria-pressed={selected} onClick={() => setLinkerOffer(kind)}>
+                      <LinkerBundleArtwork size={size} primary={configuration.primary} secondary={configuration.secondary} />
+                      <span>{size === 1 ? "1 portachiavi" : `${size} portachiavi`}</span>
+                      {selected && <Check size={14} aria-hidden="true" />}
+                    </button>;
+                  })}
+                </div>
+                {linkerCount > 1 && <p className={styles.help}>Forma, colori e scritte si applicano a tutto il bundle.</p>}
+              </fieldset>
               <div className={styles.controlGroup}>
                 {canAttachLogo ? <>
                   <input ref={inputRef} className={styles.fileInput} tabIndex={-1} type="file" accept=".svg,.png,.jpg,.jpeg,image/svg+xml,image/png,image/jpeg" onChange={uploadLogo} aria-label="Carica il logo per il portachiavi" />
@@ -363,13 +369,9 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
                     <button type="button" onClick={() => { uploadSequence.current++; setUploading(false); setLogoAttachment(null); setUploadError(""); }}
                       aria-label="Rimuovi il logo"><X size={15} /></button></div>}
                   {uploadError && <p className={styles.error} role="alert">{uploadError}</p>}
-                </> : <p className={styles.help}>Prendi il bundle da 20 in su per caricare il tuo logo e avere un design su misura.</p>}
+                </> : <p className={styles.logoBundleNotice}>Prendi il <strong>bundle da 20 in su</strong> per caricare il tuo logo e avere un design su misura.</p>}
               </div>
             </>}
-            <fieldset className={styles.controlGroup}><legend>Trova i tuoi colori</legend>
-              <ProductColorPicker product={product} value={configuration} onChange={(channel, hex) => setConfiguration(current => ({ ...current, [channel]: hex }))} onSwap={() => setConfiguration(current => ({ ...current, primary: current.secondary, secondary: current.primary }))} onShuffle={shuffleColors} />
-              <div className={styles.presets}><span>Abbinamenti</span><div>{presets.map(preset => <button type="button" key={preset.name} aria-pressed={configuration.primary === preset.primary && configuration.secondary === preset.secondary} onClick={() => setConfiguration(current => ({ ...current, primary: preset.primary, secondary: preset.secondary }))}><i style={swatchStyle(preset.primary)} /><i style={swatchStyle(preset.secondary)} />{preset.name}</button>)}</div></div>
-            </fieldset>
             {sceneError && <p className={styles.error} role="status">{sceneError}</p>}
             <div className={styles.configurationSummary} aria-live="polite" aria-atomic="true"><span>IL TUO {product.toUpperCase()}</span><p>{colorName(configuration.primary)} <b>+</b> {colorName(configuration.secondary)}{!isDisk && <> · {keyringDesignLabels(configuration.shape, configuration.text.trim(), configuration.keyring).join(" · ")}</>}</p></div>
             {isDisk && <fieldset id="offerta-edisk" className={styles.offerPicker}><legend>Da dove vuoi iniziare?</legend><div><button type="button" aria-pressed={diskOffer === "device"} onClick={() => setDiskOffer("device")}><span>Solo e-disk</span><small>Il giradischi nei tuoi colori</small>{diskOffer === "device" && <Check size={14} />}</button><button type="button" aria-pressed={diskOffer === "bundle"} onClick={() => setDiskOffer("bundle")}><span>Il bundle</span><small>e-disk + 3 dischi personalizzabili</small>{diskOffer === "bundle" && <Check size={14} />}</button></div></fieldset>}
@@ -407,13 +409,17 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
         </div>
       </section>
 
-      {!isDisk && <LinkerPile />}
+      {!isDisk && <section aria-labelledby="pile-title">
+        <h2 id="pile-title" className={styles.pileHeading}>Condividiti<span>.</span></h2>
+        <LinkerPile />
+      </section>}
 
-      <section className={styles.resources} aria-labelledby="resources-title">
-        <div className={styles.resourceCopy}>
-          <h2 id="resources-title">{isDisk ? <>L’oggetto è solo<br />l’inizio</> : "Condividiti"}<span>.</span></h2>
-          {isDisk && <p>Dietro ogni disco c’è la tua collezione. Apri l’app, organizza i brani e scopri come dare vita al tuo e-disk.</p>}
-        </div>
+      <section className={styles.resources} aria-labelledby={isDisk ? "resources-title" : undefined}
+        aria-label={isDisk ? undefined : "Guida e-linker"}>
+        {isDisk && <div className={styles.resourceCopy}>
+          <h2 id="resources-title">L’oggetto è solo<br />l’inizio<span>.</span></h2>
+          <p>Dietro ogni disco c’è la tua collezione. Apri l’app, organizza i brani e scopri come dare vita al tuo e-disk.</p>
+        </div>}
         <div className={styles.resourceLinks}>
           {isDisk && <Link href="/shop/e-disk/app"><Smartphone size={26} /><div><span>La tua collezione, online</span><h3>App e-disk</h3><p>Dischi, brani e giradischi. Tutto in un posto.</p></div><ArrowUpRight size={25} /></Link>}
           <Link href={`/shop/${product}/documentazione`}>
@@ -426,7 +432,16 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
         </div>
       </section>
 
-      <section className={styles.faq} aria-labelledby="faq-title"><div><h2 id="faq-title">Bella domanda<span>.</span></h2></div><div>{info.faq.map(item => <details key={item.question}><summary>{item.question}<Plus size={20} /></summary><p>{item.answer}</p></details>)}</div></section>
+      <section className={styles.faq} aria-labelledby={isDisk ? "faq-title" : undefined}
+        aria-label={isDisk ? undefined : "Domande frequenti su e-linker"}>
+        {isDisk && <div><h2 id="faq-title">Bella domanda<span>.</span></h2></div>}
+        <div>
+          {info.faq.map(item => <details key={item.question}>
+            <summary>{item.question}<Plus size={20} aria-hidden="true" /></summary>
+            <p>{item.answer}</p>
+          </details>)}
+        </div>
+      </section>
 
       <RelatedProducts current={product} />
     </main>

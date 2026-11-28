@@ -1,6 +1,6 @@
 export const keyringShapeNames = Object.freeze({
   rectangle: "Rettangolo", square: "Quadrato", circle: "Cerchio", triangle: "Triangolo",
-  ellipse: "Ellisse", heart: "Cuore", star: "Stella", cube: "Cubetto",
+  ellipse: "Ellisse", heart: "Cuore", star: "Stella", hexagon: "Esagono", cube: "Cubetto",
 });
 export const keyringShapes = Object.freeze(Object.keys(keyringShapeNames));
 export const keyringTextSizes = Object.freeze(["small", "medium", "large"]);
@@ -18,6 +18,10 @@ const corners = (x, y) => [
   option("top-right", "Angolo in alto a destra", x, y), option("top-left", "Angolo in alto a sinistra", -x, y),
   option("bottom-right", "Angolo in basso a destra", x, -y), option("bottom-left", "Angolo in basso a sinistra", -x, -y),
 ];
+const polygonSideHoles = points => points.map(({ x, y }, index) => {
+  const next = points[(index + 1) % points.length];
+  return option(`edge-${index + 1}`, `Metà lato ${index + 1}`, x + next.x, y + next.y);
+});
 const starAngles = Array.from({ length: 10 }, (_, index) => Math.PI / 2 - index * Math.PI / 5);
 export const keyringStarPoints = Object.freeze(starAngles.map((angle, index) => {
   const radius = index % 2 === 0 ? 1.95 : 1.02;
@@ -25,10 +29,14 @@ export const keyringStarPoints = Object.freeze(starAngles.map((angle, index) => 
 }));
 const starHoles = keyringStarPoints.filter((_, index) => index % 2 === 0)
   .map(({ x, y }, index) => option(`point-${index + 1}`, `Punta ${index + 1}`, x, y))
-  .concat(keyringStarPoints.map(({ x, y }, index) => {
-    const next = keyringStarPoints[(index + 1) % keyringStarPoints.length];
-    return option(`edge-${index + 1}`, `Metà lato ${index + 1}`, x + next.x, y + next.y);
-  }));
+  .concat(polygonSideHoles(keyringStarPoints));
+export const keyringHexagonPoints = Object.freeze(Array.from({ length: 6 }, (_, index) => {
+  const angle = (1 - index) * Math.PI / 3;
+  return { x: Math.cos(angle) * 1.84, y: Math.sin(angle) * 1.84 };
+}));
+const hexagonHoles = keyringHexagonPoints
+  .map(({ x, y }, index) => option(`corner-${index + 1}`, `Angolo ${index + 1}`, x, y))
+  .concat(polygonSideHoles(keyringHexagonPoints));
 const holes = {
   rectangle: [...corners(1.9, 1.325), ...sides],
   square: [...corners(1, 1), ...sides],
@@ -44,6 +52,7 @@ const holes = {
     option("bottom-point", "Punta in basso", 0, -1), sides[1], sides[3],
   ],
   star: starHoles,
+  hexagon: hexagonHoles,
   cube: [...corners(1, 1), ...sides],
 };
 export function keyringHoleOptions(shape) { return holes[shape]; }
@@ -54,7 +63,8 @@ const limits = {
   rectangle: [[18, 15, 10], [10, 7, 5]], square: [[16, 12, 8], [11, 8, 5]],
   circle: [[14, 10, 7], [10, 7, 5]], triangle: [[12, 8, 5], [7, 5, 3]],
   ellipse: [[17, 12, 8], [8, 6, 4]], heart: [[13, 9, 6], [8, 6, 4]],
-  star: [[10, 7, 5], [7, 5, 3]], cube: [[12, 9, 6], [10, 7, 5]],
+  star: [[10, 7, 5], [7, 5, 3]], hexagon: [[14, 10, 7], [10, 7, 5]],
+  cube: [[12, 9, 6], [10, 7, 5]],
 };
 export function keyringTextLimit(shape, orientation, size) {
   return limits[shape][orientation === "vertical" ? 1 : 0][keyringTextSizes.indexOf(size)];

@@ -50,7 +50,10 @@ export function ProductIllustration({ product, configuration, showChain = true, 
         </g>}
         <g mask={`url(#${id}-hole)`}>
           <g transform={back ? "translate(460 0) scale(-1 1)" : undefined}>
-            <path d={outline} transform={configuration.shape === "cube" ? "translate(16 22)" : "translate(0 5)"} fill="#829BA3" />
+            <g transform={configuration.shape === "cube" ? "translate(16 22)" : "translate(0 5)"}>
+              <path d={outline} fill={configuration.primary} />
+              <path d={outline} fill="#101914" opacity=".12" />
+            </g>
             <path d={outline} fill={configuration.primary} />
             <path d={outline} fill={`url(#${id}-surface)`} stroke="#ffffff50" strokeWidth="1.2" />
           </g>
@@ -61,6 +64,7 @@ export function ProductIllustration({ product, configuration, showChain = true, 
           x={230 - logoLayout.width * factor / 2} y={242 - (logoLayout.y + logoLayout.height / 2) * factor}
           width={logoLayout.width * factor} height={logoLayout.height * factor} preserveAspectRatio="xMidYMid meet" />}
         <text x={textX} y={textY} fill={configuration.secondary} textAnchor="middle" dominantBaseline="central"
+          transform={layout.rotation ? `rotate(${-layout.rotation * 180 / Math.PI} ${textX} ${textY})` : undefined}
           fontFamily="HelveticaLocal, Helvetica, Arial, sans-serif" fontSize={fontSize} fontWeight="400">
           {style.orientation === "vertical" ? letters.map((letter, index) =>
             <tspan key={index} x={textX} y={textY + (index - (letters.length - 1) / 2) * fontSize * 1.17}>{letter}</tspan>) : inscription}

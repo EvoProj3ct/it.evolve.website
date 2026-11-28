@@ -1,4 +1,4 @@
-export type KeyringShape = "rectangle" | "square" | "circle" | "triangle" | "ellipse" | "heart" | "star" | "cube";
+export type KeyringShape = "rectangle" | "square" | "circle" | "triangle" | "ellipse" | "heart" | "star" | "hexagon" | "cube";
 export type KeyringTextSize = "small" | "medium" | "large";
 export type KeyringTextOrientation = "horizontal" | "vertical";
 export type KeyringFace = "front" | "back";
@@ -14,6 +14,7 @@ export const keyringTextSizeNames: Readonly<Record<KeyringTextSize, string>>;
 export const keyringTextOrientationNames: Readonly<Record<KeyringTextOrientation, string>>;
 export const defaultKeyringLettering: Readonly<KeyringLettering>;
 export const keyringStarPoints: readonly KeyringPosition[];
+export const keyringHexagonPoints: readonly KeyringPosition[];
 export const keyringHoleIds: readonly string[];
 export function keyringHoleOptions(shape: KeyringShape): readonly KeyringHoleOption[];
 export function keyringHoleName(shape: KeyringShape, id: string): string | undefined;

@@ -135,8 +135,8 @@
 .ticker b { font-size: 28px; font-weight: 400; line-height: .8; }
 @keyframes ticker { to { transform: translateX(-50%); } }
 .story { padding: 110px var(--shop-gutter) 100px; }
-.story h2, .configHeading h2, .colorStudies h2, .resources h2, .faq h2, .docs h1 { margin: 0; font-size: clamp(42px, 5.3vw, 82px); font-weight: 400; line-height: 1.02; letter-spacing: -.07em; white-space: pre-line; }
-.story h2 > span, .configHeading h2 > span, .colorStudies h2 > span, .resources h2 > span, .faq h2 > span, .docs h1 > span { color: #65c342; }
+.story h2, .configHeading h2, .colorStudies h2, .pileHeading, .resources h2, .faq h2, .docs h1 { margin: 0; font-size: clamp(42px, 5.3vw, 82px); font-weight: 400; line-height: 1.02; letter-spacing: -.07em; white-space: pre-line; }
+.story h2 > span, .configHeading h2 > span, .colorStudies h2 > span, .pileHeading > span, .resources h2 > span, .faq h2 > span, .docs h1 > span { color: #65c342; }
 .configHeading > p { max-width: 365px; margin: 0 0 4px; font-size: 13px; line-height: 1.9; color: #596352; }
 .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 58px; border: 1px solid var(--shop-ink); }
 .step { min-width: 0; padding: 22px 27px 31px; background: #d5edba; }
@@ -181,6 +181,16 @@
 .textInput input { width: 100%; min-width: 0; height: 49px; padding: 0 14px; border: 0; background: transparent; color: var(--shop-ink); font-size: 17px; }
 .textInput > span { flex: none; margin-right: 12px; color: #737f6c; font-size: 9px; }
 .help { margin: 9px 0 0; color: #65745b; font-size: 10px; line-height: 1.7; }
+.logoBundleNotice {
+  margin: 0;
+  padding: 10px 13px;
+  border: 1px solid #dce8d5;
+  border-radius: 10px;
+  background: #eff5eb;
+  color: #365331;
+  font-size: 13px;
+  line-height: 1.55;
+}
 .fileInput { display: none; }
 .uploadButton { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; min-height: 45px; margin-top: 20px; padding: 9px 12px; border: 1px dashed #728f61; background: transparent; font-size: 11px; text-align: left; }
 .uploadButton > svg:last-child { margin-left: auto; }
@@ -248,7 +258,8 @@
 .studyLink:hover .studyAction > svg, .studyLink:focus-visible .studyAction > svg { transform: translate(2px,-2px); }
 .studyNote { margin: 18px 0 0; color: #778070; font-size: 9px; }
 .resources { display: grid; grid-template-columns: 1fr 1fr; gap: 9%; padding: 85px var(--shop-gutter); background: var(--shop-green); }
-.resources h2 { font-size: clamp(43px, 4.6vw, 70px); }
+.pileHeading { padding-inline: var(--shop-gutter); }
+.resources h2, .pileHeading { font-size: clamp(43px, 4.6vw, 70px); }
 .resources h2 > span { color: #fcfdfb; }
 .resourceCopy > p:last-child { max-width: 340px; margin: 25px 0 0; color: #214b22; font-size: 12px; line-height: 1.9; }
 .resourceLinks { display: flex; flex-direction: column; justify-content: center; }
@@ -430,7 +441,7 @@
 .productPage[data-product="e-linker"] .studyDetails > small { font-size: 10px; }
 .productPage[data-product="e-linker"] .studyAction { flex: none; min-height: 18px; color: #52645d; font-size: 10px; }
 .productPage[data-product="e-linker"] .resources { background: #f0f5ea; }
-.productPage[data-product="e-linker"] .resources h2 > span { color: #72c94f; }
+.productPage[data-product="e-linker"] .resourceLinks { grid-column: -2 / -1; }
 .productPage[data-product="e-linker"] .resourceLinks > a { padding: 28px; border: 1px solid #e0e8d7; border-radius: 18px; background: #fcfdfb; }
 .productPage[data-product="e-linker"] .resourceLinks > a > svg { color: #74a15b; }
 .linkerOffers { min-width: 0; margin: 0 0 24px; padding: 0; border: 0; scroll-margin-top: 160px; }
@@ -524,7 +535,7 @@
   .studyGrid figcaption { font-size: 11px; }
   .studyAction { min-height: 42px; font-size: 10px; }
   .resources { grid-template-columns: 1fr; gap: 38px; padding-block: 65px; }
-  .resources h2 { font-size: clamp(43px, 10vw, 64px); }
+  .resources h2, .pileHeading { font-size: clamp(43px, 10vw, 64px); }
   .resourceLinks > a { padding-block: 24px; }
   .resourceLinks h3 { font-size: 26px; }
   .faq { grid-template-columns: 1fr; gap: 34px; padding-block: 65px; }
