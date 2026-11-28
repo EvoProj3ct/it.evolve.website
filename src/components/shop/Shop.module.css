@@ -528,6 +528,21 @@
 .textInput > span { flex: none; margin-right: 8px; font-size: 10px; }
 .keyringLetterOptions { display: grid; gap: 8px; }
 .keyringLetterOptions label { display: grid; min-width: 0; gap: 4px; font-size: 11px; }
+.keyringSymbolPalette { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; }
+.keyringSymbolPalette button, .keyringSymbolList button {
+  display: flex; align-items: center; justify-content: center; gap: 3px; min-height: 38px;
+  border: 1px solid var(--viewer-control-border); border-radius: 7px;
+}
+.keyringSymbolPalette button:hover:not(:disabled), .keyringSymbolList button:hover, .keyringSymbolList button[aria-pressed="true"] {
+  background: var(--viewer-control-active); color: var(--viewer-control-active-text);
+}
+.keyringSymbolPalette button:disabled { opacity: .4; }
+.keyringSymbolList { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 5px; margin-top: 10px; font-size: 10px; }
+.keyringSymbolList svg { width: 21px; height: 21px; }
+.keyringSymbolSelection { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-block: 9px 7px; font-size: 12px; }
+.keyringSymbolSelection button { display: grid; place-items: center; width: 32px; min-height: 32px; border-radius: 7px; }
+.keyringSymbolSelection button:hover { background: var(--viewer-control-active); }
+.keyringSymbolHint { margin: 6px 0 0; font-size: 11px; line-height: 1.45; }
 .keyringTextLimit { margin: 0; padding: 0 15px 10px; color: var(--viewer-error); font-size: 12px; text-align: center; }
 @font-face {
   font-family: "Keyring Rounded";
@@ -565,6 +580,44 @@
 .productPage[data-product="e-linker"] .studyGrid figcaption { align-items: start; border-color: #dde4df; padding-block: 17px; font-size: 12px; }
 .productPage[data-product="e-linker"] .studyDetails > small { font-size: 10px; }
 .productPage[data-product="e-linker"] .studyAction { flex: none; min-height: 18px; color: #52645d; font-size: 10px; }
+.linkerBespoke {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(34px, 6vw, 100px);
+  padding: clamp(54px, 6vw, 100px) var(--shop-gutter);
+  border-block-start: 1px solid #e5eae6;
+  background: #fcfdfb;
+}
+.linkerBespokeCopy { grid-column: 2; grid-row: 1; }
+.linkerBespokeCopy h2 {
+  max-width: 15ch;
+  margin: 0 0 clamp(22px, 3vw, 38px);
+  font-size: clamp(40px, 4.6vw, 75px);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -.07em;
+}
+.linkerBespokeCopy h2 > span { color: #65c342; }
+.linkerBespokeCopy p {
+  max-width: 50ch;
+  margin: 0;
+  color: #50614d;
+  font-size: clamp(14px, 1.15vw, 17px);
+  line-height: 1.65;
+}
+.linkerBespokeCopy p + p { margin-top: 14px; }
+.linkerBespokeCopy strong { color: var(--shop-ink); font-weight: 600; }
+.linkerBespokeImage {
+  grid-column: 1;
+  grid-row: 1;
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #e2e8d9;
+  border-radius: 18px;
+  background: #f0f5ea;
+}
 .productPage[data-product="e-linker"] .resources { padding-block: clamp(80px, 6vw, 118px); background: #f0f5ea; }
 .productPage[data-product="e-linker"] .resources h2 > span { color: #72c94f; }
 .productPage[data-product="e-linker"] .resourceLinks > a { padding: 28px; border: 1px solid #e0e8d7; border-radius: 18px; background: #fcfdfb; }
@@ -660,6 +713,8 @@
   .keyringToolPanel { grid-column: 1; grid-row: 3; width: auto; margin: 0 12px 12px; }
   .keyringToolHeading button { width: 40px; height: 40px; }
   .keyringLetterOptions select { min-height: 44px; font-size: 16px; }
+  .keyringSymbolPalette { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .keyringSymbolPalette button, .keyringSymbolList button, .keyringSymbolSelection button { min-height: 44px; }
   .viewerTop { padding: 17px 17px 0; font-size: 8px; }
   .viewerTools { padding-inline: 15px; }
   .viewerTools > span { font-size: 9px; }
@@ -674,6 +729,8 @@
   .studyArtwork { aspect-ratio: 1.4; }
   .studyGrid figcaption { font-size: 11px; }
   .studyAction { min-height: 42px; font-size: 10px; }
+  .linkerBespoke { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .linkerBespokeCopy, .linkerBespokeImage { grid-column: auto; grid-row: auto; }
   .resources { grid-template-columns: 1fr; gap: 38px; padding-block: 65px; }
   .resources h2 { font-size: clamp(43px, 10vw, 64px); }
   .resourceLinks > a { padding-block: 24px; }

@@ -1,9 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import Link from "next/link";
 import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
-import { ArrowUpRight, BookOpen, Check, CircleDot, Download, Eraser, MoveHorizontal, Pause, Play, Plus, RotateCcw, Shapes, Smartphone, Type, Upload, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowUpRight, BookOpen, Check, CircleDot, Download, Eraser, MoveHorizontal, Pause, Play, Plus, RotateCcw, Shapes, Smartphone, Sparkles, Type, Upload, Volume2, VolumeX, X } from "lucide-react";
 import {
   cleanKeyringLettering, defaultKeyringLettering, keyringDesignLabels, keyringFontNames, keyringFonts,
   keyringHoleName, keyringHoleOptions, keyringRaisedFontName, keyringReliefNames, keyringReliefs, keyringSizesForRelief,
@@ -15,6 +16,8 @@ import { ProductMark } from "./ProductMark";
 import { LinkerBundleArtwork } from "./LinkerBundleArtwork";
 import { LinkerPile } from "./LinkerPile";
 import { LinkerStoryCarousel } from "./LinkerStoryCarousel";
+import { KeyringSymbolPanel } from "./KeyringSymbolPanel";
+import { layoutKeyringSymbols } from "./keyringSymbols";
 import { ProductColorPicker } from "./ProductColorPicker";
 import { CartoonNotes } from "./CartoonNotes";
 import { BundleDiscFields, EDiskBundle, EDiskDiscStudio, EDiskGiftIdeas, EDiskRecordDemo, type BundleDisc, type DiscSource } from "./EDiskRecords";
@@ -53,9 +56,10 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
   const [configuration, setConfiguration] = useState<ProductConfiguration>(() => defaultConfiguration(product));
   const [logoAttachment, setLogoAttachment] = useState<LogoAsset | null>(null);
   const [face, setFace] = useState<KeyringFace>("front");
-  const [canvasTool, setCanvasTool] = useState<KeyringEditor["tool"] | "shape">("rotate");
+  const [canvasTool, setCanvasTool] = useState<KeyringEditor["tool"] | "shape" | "symbol">("rotate");
   const shapeTool = useRef<HTMLButtonElement>(null);
   const textTool = useRef<HTMLButtonElement>(null);
+  const symbolTool = useRef<HTMLButtonElement>(null);
   const [viewerTheme, setViewerTheme] = useState<"light" | "dark">("dark");
   const [diskOffer, setDiskOffer] = useState<"device" | "bundle">("device");
   const [linkerOffer, setLinkerOffer] = useState<LinkerOfferKind | null>(null);
@@ -76,12 +80,16 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
   const [discSource, setDiscSource] = useState<DiscSource>("ai");
   const presets = isDisk ? DISK_PRESETS : LINKER_PRESETS;
   const previewConfiguration = useDeferredValue(configuration);
+  const symbolLayout = useMemo(() => layoutKeyringSymbols(configuration), [configuration]);
+  const placedSymbols = symbolLayout.filter(symbol => symbol !== null);
+  const unplacedSymbols = symbolLayout.length !== placedSymbols.length;
   const activeLettering = configuration.keyring[face];
   const activeRelief = activeLettering.relief ?? defaultKeyringLettering.relief;
   const availableSizes = keyringSizesForRelief(activeRelief);
   const activeText = face === "front" ? configuration.text : configuration.keyring.back.text;
-  const toolPanel = canvasTool === "shape" || canvasTool === "text" ? canvasTool : null;
-  const panelTitle = toolPanel === "shape" ? "Scegli la forma" : face === "front" ? "Scritta sul fronte" : "Scritta sul retro";
+  const toolPanel = canvasTool === "shape" || canvasTool === "text" || canvasTool === "symbol" ? canvasTool : null;
+  const faceLabel = face === "front" ? "sul fronte" : "sul retro";
+  const panelTitle = toolPanel === "shape" ? "Scegli la forma" : `${toolPanel === "symbol" ? "Simboli" : "Scritta"} ${faceLabel}`;
   const textLimit = (side: KeyringFace) => {
     const lettering = configuration.keyring[side];
     return keyringTextLimit(configuration.shape, lettering.orientation, lettering.size, lettering.relief);
@@ -115,9 +123,10 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
       hole: keyringHoleName(shape, current.keyring.hole) ? current.keyring.hole : keyringHoleOptions(shape)[0].id,
     },
   }));
-  const canvasEditor: KeyringEditor = { face, tool: canvasTool === "shape" ? "rotate" : canvasTool, onHole: changeHole, onText: changeLettering };
+  const canvasEditor: KeyringEditor = { face, tool: canvasTool === "shape" || canvasTool === "symbol" ? "rotate" : canvasTool, onHole: changeHole, onText: changeLettering };
   function closeToolPanel() {
-    (toolPanel === "shape" ? shapeTool : textTool).current?.focus();
+    const button = toolPanel === "shape" ? shapeTool : toolPanel === "symbol" ? symbolTool : textTool;
+    button.current?.focus();
     setCanvasTool("rotate");
   }
   const heroConfiguration = useMemo(() => defaultConfiguration(product), [product]);
@@ -244,8 +253,9 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
       ? { offer: diskOffer, includedRecords: diskOffer === "bundle" ? 3 : 0, ...(diskOffer === "bundle" && { discs: bundleDiscs }) }
       : { offer: linkerOffer ?? "e-linker", includedKeyrings: linkerCount };
     const { keyring, ...baseConfiguration } = configuration;
-    const blob = new Blob([JSON.stringify({ version: isDisk ? 1 : 2, product, ...offer, ...baseConfiguration,
-      ...(!isDisk && { keyring, logo: orderLogo }), note: "Copia delle scelte del configuratore." }, null, 2)], { type: "application/json" });
+    const savedKeyring = { ...keyring, symbols: placedSymbols.length ? placedSymbols : undefined };
+    const blob = new Blob([JSON.stringify({ version: isDisk ? 1 : placedSymbols.length ? 3 : 2, product, ...offer, ...baseConfiguration,
+      ...(!isDisk && { keyring: savedKeyring, logo: orderLogo }), note: "Copia delle scelte del configuratore." }, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url; link.download = `evolve-${product}-configurazione.json`; link.click();
@@ -348,6 +358,9 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
                   <button type="button" ref={textTool} aria-expanded={toolPanel === "text"}
                     aria-controls={toolPanel === "text" ? "keyring-tool-panel" : undefined}
                     onClick={() => setCanvasTool(toolPanel === "text" ? "rotate" : "text")}><Type size={15} />Scritta</button>
+                  <button type="button" ref={symbolTool} aria-expanded={toolPanel === "symbol"}
+                    aria-controls={toolPanel === "symbol" ? "keyring-tool-panel" : undefined}
+                    onClick={() => setCanvasTool(toolPanel === "symbol" ? "rotate" : "symbol")}><Sparkles size={15} aria-hidden="true" />Simboli</button>
                   <button type="button" disabled={!activeText} aria-label={face === "front" ? "Cancella la scritta sul fronte" : "Cancella la scritta sul retro"} onClick={() => changeText("")}><Eraser size={15} />Gomma</button>
                 </div>
                 {canvasTool === "hole" && <select aria-label="Posizione del foro" value={configuration.keyring.hole} onChange={event => changeHole(event.target.value)}>
@@ -365,7 +378,8 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
                       <span aria-hidden="true">{shape.symbol}</span>{shape.name}
                     </button>
                   ))}
-                </div> : <>
+                </div> : toolPanel === "symbol" ? <KeyringSymbolPanel face={face} symbols={configuration.keyring.symbols ?? []}
+                  onChange={symbols => setConfiguration(current => ({ ...current, keyring: { ...current.keyring, symbols } }))} /> : <>
                   <div className={styles.textInput}>
                     <input type="text" value={activeText} maxLength={textLimit(face)} aria-labelledby="keyring-tool-title"
                       placeholder="Il tuo nome, un’idea…" onChange={event => changeText(event.target.value)}
@@ -394,6 +408,10 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
             </div>
             {!isDisk && invalidFaces.length > 0 && <p id="keyring-text-limit" className={styles.keyringTextLimit} role="status">{invalidFaces.map(side =>
               `${side === "front" ? "Fronte" : "Retro"} · massimo ${textLimit(side)} caratteri`).join(" · ")}</p>}
+            {unplacedSymbols && <p className={styles.keyringTextLimit} role="status">
+              Spazio insufficiente per i simboli {symbolLayout.flatMap((symbol, index) => symbol ? [] : [index + 1]).join(", ")}.
+              Cambia modalità, riduci i simboli o sposta la scritta.
+            </p>}
             <div className={styles.viewerTools}><span><MoveHorizontal size={16} />{isDisk ? "Trascina per ruotare" : canvasTool === "hole" ? "Trascina il foro" : canvasTool === "text" ? (activeText.trim() ? "Trascina la scritta" : "Inserisci una scritta per spostarla") : "Ruota liberamente in 3D"}</span><div>{isDisk && <button type="button" onClick={() => setRecordPlaying(current => !current)} aria-label={recordPlaying ? "Metti in pausa la rotazione dell’anteprima" : "Riprendi la rotazione dell’anteprima"}>{recordPlaying ? <Pause size={16} /> : <Play size={16} />}</button>}<button type="button" onClick={() => setViewReset(value => value + 1)} aria-label="Ripristina la vista 3D"><RotateCcw size={16} /></button></div></div>
             <div className={styles.viewerCaption}>{isDisk && <span>Anteprima dimostrativa</span>}<span>Designed by Evolve ↗</span></div>
           </div>
@@ -434,7 +452,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
               </div>
             </>}
             {sceneError && <p className={styles.error} role="status">{sceneError}</p>}
-            <div className={styles.configurationSummary} aria-live="polite" aria-atomic="true"><span>IL TUO {product.toUpperCase()}</span><p>{colorName(configuration.primary)} <b>+</b> {colorName(configuration.secondary)}{!isDisk && <> · {keyringDesignLabels(configuration.shape, configuration.text.trim(), configuration.keyring).join(" · ")}</>}</p></div>
+            <div className={styles.configurationSummary} aria-live="polite" aria-atomic="true"><span>IL TUO {product.toUpperCase()}</span><p>{colorName(configuration.primary)} <b>+</b> {colorName(configuration.secondary)}{!isDisk && <> · {keyringDesignLabels(configuration.shape, configuration.text.trim(), { ...configuration.keyring, symbols: placedSymbols }).join(" · ")}</>}</p></div>
             {isDisk && <fieldset id="offerta-edisk" className={styles.offerPicker}><legend>Da dove vuoi iniziare?</legend><div><button type="button" aria-pressed={diskOffer === "device"} onClick={() => setDiskOffer("device")}><span>Solo e-disk</span><small>Il giradischi nei tuoi colori</small>{diskOffer === "device" && <Check size={14} />}</button><button type="button" aria-pressed={diskOffer === "bundle"} onClick={() => setDiskOffer("bundle")}><span>Il bundle</span><small>e-disk + 3 dischi personalizzabili</small>{diskOffer === "bundle" && <Check size={14} />}</button></div></fieldset>}
             {isDisk && diskOffer === "bundle" && <BundleDiscFields discs={bundleDiscs} onChange={setBundleDiscs} />}
             {isDisk ? <ConfiguredPurchase key={diskOffer} kind={diskOffer === "bundle" ? "e-disk-bundle" : "e-disk"} buttonClass={styles.requestButton}
@@ -452,23 +470,36 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
                   })),
                 } : { kind: "e-disk", secondaryColor: configuration.secondary },
               })} /> :
-              linkerOffer && <ConfiguredPurchase key={linkerOffer} kind={linkerOffer} buttonClass={styles.requestButton} disabled={(canAttachLogo && uploading) || invalidFaces.length > 0}
+              linkerOffer && <ConfiguredPurchase key={linkerOffer} kind={linkerOffer} buttonClass={styles.requestButton} disabled={(canAttachLogo && uploading) || invalidFaces.length > 0 || unplacedSymbols}
                 prepare={() => ({
                   color: configuration.primary,
                   inscription: configuration.text.trim() || undefined,
                   logoAsset: orderLogo,
                   details: { kind: linkerOffer, secondaryColor: configuration.secondary, shape: configuration.shape,
                     hole: configuration.keyring.hole,
+                    ...(placedSymbols.length > 0 && { symbols: placedSymbols }),
                     front: configuration.text.trim() ? configuration.keyring.front : undefined,
                     back: configuration.keyring.back.text.trim()
                       ? { ...configuration.keyring.back, text: configuration.keyring.back.text.trim() } : undefined },
                 })} />}
             <button type="button" onClick={download} className={styles.downloadButton}
-              disabled={!isDisk && (invalidFaces.length > 0 || (canAttachLogo && uploading))}><Download size={15} /> Salva la tua configurazione</button>
+              disabled={!isDisk && (invalidFaces.length > 0 || unplacedSymbols || (canAttachLogo && uploading))}><Download size={15} /> Salva la tua configurazione</button>
             {!isDisk && <Link href="/contact" prefetch={false} className={styles.downloadButton}>Vuoi qualcosa che non trovi qui? Parliamone. <ArrowUpRight size={15} /></Link>}
           </div>
         </div>
       </section>
+
+      {!isDisk && <section className={styles.linkerBespoke} aria-labelledby="linker-bespoke-title">
+        <div className={styles.linkerBespokeCopy}>
+          <h2 id="linker-bespoke-title">Disegnato su misura per te<span>.</span></h2>
+          <p>Dal <strong>bundle da 20 portachiavi</strong>, un designer specializzato Evolve rielabora il logo che hai caricato per valorizzarlo nella stampa 3D. Il disegno può dare forma a tutto il portachiavi.</p>
+          <p>Dopo l’ordine riceverai una proposta in <strong>I tuoi Design</strong>, la sezione del profilo in arrivo. Da lì potrai approvarla o chiedere correzioni.</p>
+          <p>Le prime <strong>due revisioni sono incluse</strong>. Potrai chiederne altre senza limiti, con un piccolo supplemento per ciascuna.</p>
+        </div>
+        <Image className={styles.linkerBespokeImage} src="/shop/e-linker-design-su-misura.webp"
+          alt="Due e-linker su misura, a forma di pneumatico e di racchetta da tennis, accanto ai rispettivi bozzetti"
+          width={1536} height={1024} sizes="(max-width: 860px) 90vw, (max-width: 1600px) 42vw, 700px" />
+      </section>}
 
       <section className={styles.resources} aria-labelledby="resources-title">
         <div className={styles.resourceCopy}>

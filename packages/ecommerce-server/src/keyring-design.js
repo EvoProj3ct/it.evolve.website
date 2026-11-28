@@ -14,6 +14,18 @@ export const keyringFontNames = Object.freeze({
 });
 export const keyringFonts = Object.freeze(Object.keys(keyringFontNames));
 export const keyringRaisedFontName = "Helvetica Bold";
+export const keyringSymbolNames = Object.freeze({
+  star: "Stella", smile: "Smile", thumb: "Pollice in su", arcade: "Mangiapunti arcade",
+  ghost: "Fantasmino", heart: "Cuore · Mi piace", instagram: "Instagram", nfc: "NFC",
+  linkedin: "LinkedIn", user: "Profilo", link: "Collegamento",
+});
+export const keyringSymbolKinds = Object.freeze(Object.keys(keyringSymbolNames));
+export const keyringSymbolModeNames = Object.freeze({ outline: "Contorno", fill: "Riempimento", cut: "Formina" });
+export const keyringSymbolModes = Object.freeze(Object.keys(keyringSymbolModeNames));
+export const keyringSymbolFaces = Object.freeze(["front", "back"]);
+export const keyringSymbolLimit = 4;
+export const keyringSymbolWidths = Object.freeze({ small: .43, medium: .61, large: .81 });
+export const keyringSymbolRadius = (size) => keyringSymbolWidths[size] * .63 + .02;
 export const defaultKeyringLettering = Object.freeze({ size: "medium", orientation: "horizontal", relief: "flat", font: "helvetica", x: 0, y: 0 });
 const availableSizes = Object.freeze({
   flat: keyringTextSizes, raised: Object.freeze(["large"]), recessed: Object.freeze(["small", "medium"]),
@@ -70,6 +82,155 @@ export function keyringHoleOptions(shape) { return holes[shape]; }
 export function keyringHoleName(shape, id) { return holes[shape].find(option => option.id === id)?.label; }
 export const keyringHoleIds = Object.freeze([...new Set(Object.values(holes).flatMap(options => options.map(option => option.id)))]);
 
+export const keyringHoleRadius = .16;
+const holeInset = .32;
+const outlineCache = new Map();
+const mix = (from, to, fraction) => ({
+  x: from.x + (to.x - from.x) * fraction,
+  y: from.y + (to.y - from.y) * fraction,
+});
+
+function roundedPolygon(points, radius) {
+  return points.flatMap((point, index) => {
+    const previous = points[(index + points.length - 1) % points.length];
+    const next = points[(index + 1) % points.length];
+    const start = mix(point, previous, radius / Math.hypot(point.x - previous.x, point.y - previous.y));
+    const end = mix(point, next, radius / Math.hypot(point.x - next.x, point.y - next.y));
+    return Array.from({ length: 9 }, (_, step) => {
+      const t = step / 8;
+      return mix(mix(start, point, t), mix(point, end, t), t);
+    });
+  });
+}
+
+function heartOutline() {
+  const curves = [
+    [{ x: .13, y: .72 }, { x: .42, y: 1.37 }, { x: .92, y: 1.37 }],
+    [{ x: 1.44, y: 1.37 }, { x: 1.86, y: 1.04 }, { x: 1.86, y: .55 }],
+    [{ x: 1.86, y: -.09 }, { x: 1.1, y: -.66 }, { x: .09, y: -1.32 }],
+    [{ x: .052, y: -1.345 }, { x: .028, y: -1.36 }, { x: 0, y: -1.36 }],
+  ];
+  let start = { x: 0, y: .72 };
+  const rightSide = [start];
+  for (const [first, second, end] of curves) {
+    for (let step = 1; step <= 12; step++) {
+      const t = step / 12;
+      const middle = mix(first, second, t);
+      const nearStart = mix(mix(start, first, t), middle, t);
+      const nearEnd = mix(middle, mix(second, end, t), t);
+      rightSide.push(mix(nearStart, nearEnd, t));
+    }
+    start = end;
+  }
+  return rightSide.concat(rightSide.slice(1, -1).reverse().map(({ x, y }) => ({ x: -x, y })));
+}
+
+export function keyringOutline(shape) {
+  const cached = outlineCache.get(shape);
+  if (cached) return cached;
+  let points;
+  if (shape === "heart") {
+    points = heartOutline();
+  } else if (shape === "circle" || shape === "ellipse") {
+    points = Array.from({ length: 80 }, (_, index) => {
+      const angle = index * Math.PI / 40;
+      return { x: (shape === "ellipse" ? 2 : 1.8) * Math.cos(angle), y: (shape === "ellipse" ? 1.24 : 1.8) * Math.sin(angle) };
+    });
+  } else if (shape === "triangle") {
+    points = roundedPolygon([{ x: 0, y: 1.92 }, { x: -1.91, y: -1.38 }, { x: 1.91, y: -1.38 }], .22);
+  } else if (shape === "star") {
+    points = roundedPolygon(keyringStarPoints, .135);
+  } else if (shape === "hexagon") {
+    points = roundedPolygon(keyringHexagonPoints, .19);
+  } else {
+    const x = shape === "rectangle" ? 1.9 : shape === "cube" ? 1.325 : 1.6;
+    const y = shape === "square" ? 1.6 : 1.325;
+    points = roundedPolygon([{ x: -x, y: -y }, { x, y: -y }, { x, y }, { x: -x, y }], shape === "cube" ? .21 : .4);
+  }
+  outlineCache.set(shape, points);
+  return points;
+}
+
+export const keyringDepth = (shape) => shape === "cube" ? 2.65 : .13;
+const cross = (ax, ay, bx, by) => ax * by - ay * bx;
+const holeCache = new Map();
+
+function createHolePositions(shape) {
+  const points = keyringOutline(shape);
+  const edges = points.map((point, index) => {
+    const next = points[(index + 1) % points.length];
+    return { ...point, dx: next.x - point.x, dy: next.y - point.y };
+  });
+  return keyringHoleOptions(shape).map(option => {
+    const length = Math.hypot(option.x, option.y);
+    const dx = option.x / length, dy = option.y / length;
+    let edgeDistance = Infinity;
+    for (const edge of edges) {
+      const determinant = cross(dx, dy, edge.dx, edge.dy);
+      if (Math.abs(determinant) < 1e-9) continue;
+      const distance = cross(edge.x, edge.y, edge.dx, edge.dy) / determinant;
+      const along = cross(edge.x, edge.y, dx, dy) / determinant;
+      if (distance > 0 && along >= -1e-8 && along <= 1 + 1e-8) edgeDistance = Math.min(edgeDistance, distance);
+    }
+    let distance = edgeDistance - holeInset;
+    // At acute corners keep the same clearance to both edges.
+    for (; distance > 0; distance -= .015) {
+      const x = dx * distance, y = dy * distance;
+      const clear = edges.every(edge => {
+        const t = Math.max(0, Math.min(1, ((x - edge.x) * edge.dx + (y - edge.y) * edge.dy) / (edge.dx ** 2 + edge.dy ** 2)));
+        return Math.hypot(x - edge.x - t * edge.dx, y - edge.y - t * edge.dy) >= holeInset;
+      });
+      if (clear) break;
+    }
+    return { id: option.id, x: dx * distance, y: dy * distance, dx, dy, reach: edgeDistance - distance };
+  });
+}
+
+export function keyringHoles(shape) {
+  const cached = holeCache.get(shape);
+  if (cached) return cached;
+  const holes = createHolePositions(shape);
+  holeCache.set(shape, holes);
+  return holes;
+}
+
+export function keyringSymbolFitsSurface(shape, holeId, symbol) {
+  const { x, y } = symbol;
+  const centerX = x / 100, centerY = y / 100;
+  const radius = keyringSymbolRadius(symbol.size);
+  const cut = symbol.mode === "cut";
+  if (cut && (symbol.size !== "small" || symbol.relief !== "flat" || Math.hypot(centerX, centerY) < .81 + radius))
+    return false;
+  const holes = keyringHoles(shape);
+  const hole = holes.find(point => point.id === holeId) ?? holes[0];
+  if (Math.hypot(centerX - hole.x, centerY - hole.y) < keyringHoleRadius + radius + .14) return false;
+  const outline = keyringOutline(shape);
+  let inside = false;
+  let edgeDistance = Infinity;
+  for (let index = 0; index < outline.length; index++) {
+    const a = outline[index], b = outline[(index + 1) % outline.length];
+    const dx = b.x - a.x, dy = b.y - a.y;
+    const lengthSquared = dx * dx + dy * dy;
+    if (!lengthSquared) continue;
+    const position = Math.max(0, Math.min(1, ((centerX - a.x) * dx + (centerY - a.y) * dy) / lengthSquared));
+    edgeDistance = Math.min(edgeDistance, Math.hypot(centerX - a.x - dx * position, centerY - a.y - dy * position));
+    if ((a.y > centerY) !== (b.y > centerY) && centerX < a.x + dx * (centerY - a.y) / dy) inside = !inside;
+  }
+  return inside && edgeDistance >= radius + .1 && (!cut || edgeDistance <= radius + .28);
+}
+
+export function keyringSymbolsOverlap(a, b) {
+  return (a.face === b.face || a.mode === "cut" || b.mode === "cut") &&
+    Math.hypot(a.x - b.x, a.y - b.y) / 100 < keyringSymbolRadius(a.size) + keyringSymbolRadius(b.size) + .08;
+}
+
+function symbolPositionLabel(symbol) {
+  const x = symbol.face === "back" ? -symbol.x : symbol.x;
+  const vertical = symbol.y > 25 ? "in alto" : symbol.y < -25 ? "in basso" : "";
+  const horizontal = x > 25 ? "a destra" : x < -25 ? "a sinistra" : "";
+  return [vertical, horizontal].filter(Boolean).join(" ") || "al centro";
+}
+
 const limits = {
   rectangle: [[18, 15, 10], [10, 7, 5]], square: [[16, 12, 8], [11, 8, 5]],
   circle: [[14, 10, 7], [10, 7, 5]], triangle: [[12, 8, 5], [7, 5, 3]],
@@ -103,5 +264,10 @@ export function keyringDesignLabels(shape, inscription, details) {
     hole && `Foro · ${hole}`,
     faceLabel("Fronte", inscription, details.front),
     faceLabel("Retro", details.back?.text, details.back),
+    ...((details.symbols ?? []).map((symbol, index) => [
+      `Simbolo ${index + 1}`, keyringSymbolNames[symbol.kind], keyringSymbolModeNames[symbol.mode],
+      keyringTextSizeNames[symbol.size], symbol.mode !== "cut" && keyringReliefNames[symbol.relief],
+      `${symbol.face === "front" ? "Fronte" : "Retro"} ${symbolPositionLabel(symbol)}`,
+    ].filter(Boolean).join(" · "))),
   ].filter(Boolean);
 }

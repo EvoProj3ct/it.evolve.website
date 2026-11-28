@@ -2,6 +2,7 @@ import { useId } from "react";
 import type { KeyringFace } from "@evolve/ecommerce-server/keyring-design";
 import type { ProductConfiguration, ProductId } from "./products";
 import { keyringHoleRadius, keyringHoles, keyringLetterSpacing, keyringLetteringLayout, keyringLogoLayout, keyringOutline, keyringTypeface } from "./keyringGeometry";
+import { keyringSymbolArtwork, layoutKeyringSymbols, symbolCoversPoint, symbolView } from "./keyringSymbols";
 import styles from "./Shop.module.css";
 
 export function ProductIllustration({ product, configuration, showChain = true, face = "front", highlightHole = false }: {
@@ -28,13 +29,21 @@ export function ProductIllustration({ product, configuration, showChain = true, 
   const fontSize = Math.min(layout.width * factor / (style.orientation === "vertical" ? 1 : Math.max(1, letters.length * .64)),
     layout.height * factor / (style.orientation === "vertical" ? Math.max(1, letters.length * stackStep) : .84));
   const textX = 230 + layout.x * factor, textY = 242 - layout.y * factor;
+  const symbols = product === "e-linker" ? layoutKeyringSymbols(configuration).filter(symbol => symbol !== null) : [];
+  const showDot = !back && configuration.shape === "rectangle" &&
+    !symbols.some(symbol => (symbol.mode === "cut" || symbol.face === "front") && symbolCoversPoint(symbol, 1.45, -.95));
   return (
     <svg className={styles.productIllustration} viewBox="0 0 640 460" fill="none" aria-hidden="true">
       {product === "e-linker" && <defs>
         <linearGradient id={`${id}-surface`} x1="50%" y1="0" x2="50%" y2="100%"><stop stopColor="#ffffff" stopOpacity=".32" /><stop offset=".5" stopColor="#ffffff" stopOpacity="0" /><stop offset="1" stopColor="#101914" stopOpacity=".06" /></linearGradient>
         <linearGradient id={`${id}-metal`} x1="0" y1="0" x2="1" y2="1"><stop stopColor="#7b8583" /><stop offset=".35" stopColor="#f2f5f3" /><stop offset=".7" stopColor="#a1aba6" /><stop offset="1" stopColor="#687571" /></linearGradient>
         <filter id={`${id}-shadow`} x="-40%" y="-30%" width="180%" height="190%"><feDropShadow dx="0" dy="24" stdDeviation="18" floodColor="#30432a" floodOpacity=".12" /></filter>
-        <mask id={`${id}-hole`} maskUnits="userSpaceOnUse" x="0" y="0" width="500" height="460"><rect width="500" height="460" fill="white" /><circle cx={holeX} cy={holeY} r={keyringHoleRadius * factor} fill="black" /></mask>
+        <mask id={`${id}-hole`} maskUnits="userSpaceOnUse" x="0" y="0" width="500" height="460">
+          <rect width="500" height="460" fill="white" />
+          <circle cx={holeX} cy={holeY} r={keyringHoleRadius * factor} fill="black" />
+          {symbols.map((symbol, index) => symbol.mode === "cut" && <path key={index}
+            d={keyringSymbolArtwork[symbol.kind].outline} fill="black" transform={symbolView(symbol, face, 230, 242, factor).transform} />)}
+        </mask>
       </defs>}
       {product === "e-disk" ? <g transform="translate(50 65) rotate(-9 270 170)">
         <rect x="20" y="48" width="500" height="300" rx="24" fill={configuration.primary} stroke="#101914" strokeWidth="5" />
@@ -71,7 +80,18 @@ export function ProductIllustration({ product, configuration, showChain = true, 
           {style.orientation === "vertical" ? letters.map((letter, index) =>
             <tspan key={index} x={textX} y={textY + (index - (letters.length - 1) / 2) * fontSize * stackStep}>{letter}</tspan>) : inscription}
         </text>
-        {!back && configuration.shape === "rectangle" && <circle cx="337" cy="312" r="3" fill="#829BA3" />}
+        {symbols.map((symbol, index) => {
+          if (symbol.mode === "cut" || symbol.face !== face) return null;
+          const { outline, details } = keyringSymbolArtwork[symbol.kind];
+          const { transform, strokeWidth } = symbolView(symbol, face, 230, 242, factor);
+          return <g key={index} transform={transform} className={styles.keyringIllustrationText} data-relief={symbol.relief}>
+            {symbol.mode === "outline" ? <>
+              <path d={outline} stroke={configuration.secondary} strokeWidth={strokeWidth} strokeLinejoin="round" />
+              {details && <path d={details} fill={configuration.secondary} fillRule="evenodd" />}
+            </> : <path d={`${outline} ${details ?? ""}`} fill={configuration.secondary} fillRule="evenodd" />}
+          </g>;
+        })}
+        {showDot && <circle cx="337" cy="312" r="3" fill="#829BA3" />}
       </g>}
     </svg>
   );

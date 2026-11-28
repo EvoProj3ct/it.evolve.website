@@ -7,6 +7,8 @@ import type { ProductConfiguration } from "./products";
 import { keyringDepth, keyringHoleRadius, keyringHoles, keyringLetterSpacing, keyringLetterStackStep, keyringLetteringLayout,
   keyringLogoLayout, keyringOutline, keyringTypeface, type KeyringTypeface } from "./keyringGeometry";
 import type { KeyringChainRig } from "./KeyringChainPhysics";
+import { layoutKeyringSymbols, symbolCoversPoint } from "./keyringSymbols";
+import { keyringSymbolShapes } from "./keyringSymbolMesh";
 
 export type RecordAppearance = { title: string; color: string };
 export type ProductModel = {
@@ -128,6 +130,7 @@ function createRecess(primary: THREE.MeshStandardMaterial, lettering: THREE.Grou
   walls.color = primary.color;
   walls.side = THREE.BackSide;
   const outline = new Path2D();
+  const symbolOutlines: Path2D[] = [];
   const transform = new THREE.Matrix4();
   const center = resolution / 2;
   const scale = resolution / span;
@@ -135,6 +138,9 @@ function createRecess(primary: THREE.MeshStandardMaterial, lettering: THREE.Grou
     paint.resetTransform();
     paint.fillStyle = "#fff";
     paint.fillRect(0, 0, resolution, resolution);
+    paint.setTransform(scale, 0, 0, -scale, center, center);
+    paint.fillStyle = "#000";
+    for (const symbol of symbolOutlines) paint.fill(symbol, "evenodd");
     lettering.updateMatrix();
     text.updateMatrix();
     const m = transform.multiplyMatrices(lettering.matrix, text.matrix).elements;
@@ -143,7 +149,28 @@ function createRecess(primary: THREE.MeshStandardMaterial, lettering: THREE.Grou
     paint.fill(outline, "evenodd");
     mask.needsUpdate = true;
   };
-  return { cap, walls, outline, redraw };
+  return { cap, walls, outline, symbolOutlines, redraw };
+}
+
+const keyringRecessDepth = .036;
+
+function traceRecess(target: Path2D, shapes: THREE.Shape[], x: number, y: number, mirror = 1) {
+  for (const shape of shapes) {
+    const points = shape.extractPoints(12);
+    for (const contour of [points.shape, ...points.holes]) {
+      if (!contour.length) continue;
+      target.moveTo(contour[0].x * mirror + x, contour[0].y + y);
+      for (const point of contour.slice(1)) target.lineTo(point.x * mirror + x, point.y + y);
+      target.closePath();
+    }
+  }
+}
+
+function addRecessWalls(parent: THREE.Group, shapes: THREE.Shape[], material: THREE.Material, x = 0, y = 0) {
+  const walls = new THREE.ExtrudeGeometry(shapes, { depth: keyringRecessDepth, curveSegments: 12, bevelEnabled: false });
+  walls.groups = walls.groups.filter(group => group.materialIndex === 1);
+  for (const group of walls.groups) group.materialIndex = 0;
+  add(parent, walls, [material], x, y, -keyringRecessDepth).castShadow = false;
 }
 
 export function createKeyring(configuration: ProductConfiguration, fonts: ReadonlyMap<KeyringTypeface, Font>, primary: THREE.MeshStandardMaterial, secondary: THREE.MeshStandardMaterial, onError: (message: string) => void, withChain = true): ProductModel {
@@ -160,6 +187,17 @@ export function createKeyring(configuration: ProductConfiguration, fonts: Readon
   const bore = new THREE.Path();
   bore.absarc(hole.x, hole.y, keyringHoleRadius, 0, Math.PI * 2, true);
   shape.holes.push(bore);
+  const symbols = layoutKeyringSymbols(configuration).filter(symbol => symbol !== null);
+  for (const symbol of symbols) {
+    if (symbol.mode !== "cut") continue;
+    const mirror = symbol.face === "back" ? -1 : 1;
+    for (const silhouette of keyringSymbolShapes(symbol)) {
+      const holePath = new THREE.Path(silhouette.getPoints().map(point =>
+        new THREE.Vector2(symbol.x / 100 + point.x * mirror, symbol.y / 100 + point.y)));
+      holePath.closePath();
+      shape.holes.push(holePath);
+    }
+  }
   const depth = keyringDepth(configuration.shape);
   const base = add(body, new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelSegments: 5, steps: 1, bevelSize: .02, bevelThickness: .02, curveSegments: 40 }), primary);
   let chain: KeyringChainRig | undefined;
@@ -200,15 +238,18 @@ export function createKeyring(configuration: ProductConfiguration, fonts: Readon
     const back = face === "back";
     const inscription = (back ? configuration.keyring.back.text : configuration.text).trim();
     const font = fonts.get(keyringTypeface(style));
-    if (!inscription || !font) continue;
+    const surfaceSymbols = symbols.filter(symbol => symbol.face === face && symbol.mode !== "cut");
+    if ((!inscription || !font) && !surfaceSymbols.length) continue;
     const vertical = style.orientation === "vertical";
     const raised = style.relief === "raised";
     const text = new THREE.Group();
     const lettering = new THREE.Group();
-    const recess = style.relief === "recessed" ? createRecess(primary, lettering, text) : undefined;
-    const cutDepth = .036;
+    const textRecessed = !!inscription && !!font && style.relief === "recessed";
+    const recess = textRecessed || surfaceSymbols.some(symbol => symbol.relief === "recessed")
+      ? createRecess(primary, lettering, text) : undefined;
+    const textRecess = textRecessed ? recess : undefined;
     let cursor = 0;
-    for (const character of inscription) {
+    if (font) for (const character of inscription) {
       const glyph = font.data.glyphs[character] ?? font.data.glyphs["?"];
       if (glyph.o?.trim()) {
         const material = !back && inscription === "e-linker." && character === "." ? new THREE.MeshStandardMaterial({ color: "#72c94f", roughness: .45 }) : secondary;
@@ -223,21 +264,10 @@ export function createKeyring(configuration: ProductConfiguration, fonts: Readon
         }
         const x = (vertical ? 0 : cursor) - origin.x;
         const y = (vertical ? -cursor : 0) - origin.y;
-        add(text, geometry, material, x, y, recess ? -cutDepth : 0).castShadow = raised;
-        if (recess) {
-          const walls = new THREE.ExtrudeGeometry(shapes, { depth: cutDepth, curveSegments: 12, bevelEnabled: false });
-          walls.groups = walls.groups.filter(group => group.materialIndex === 1);
-          for (const group of walls.groups) group.materialIndex = 0;
-          add(text, walls, [recess.walls], x, y, -cutDepth).castShadow = false;
-          for (const shape of shapes) {
-            const points = shape.extractPoints(12);
-            for (const contour of [points.shape, ...points.holes]) {
-              if (!contour.length) continue;
-              recess.outline.moveTo(contour[0].x + x, contour[0].y + y);
-              for (const point of contour.slice(1)) recess.outline.lineTo(point.x + x, point.y + y);
-              recess.outline.closePath();
-            }
-          }
+        add(text, geometry, material, x, y, textRecess ? -keyringRecessDepth : 0).castShadow = raised;
+        if (textRecess) {
+          addRecessWalls(text, shapes, textRecess.walls, x, y);
+          traceRecess(textRecess.outline, shapes, x, y);
         }
       }
       cursor += vertical ? keyringLetterStackStep : glyph.ha / font.data.resolution + keyringLetterSpacing;
@@ -247,17 +277,39 @@ export function createKeyring(configuration: ProductConfiguration, fonts: Readon
       fitXY(text, layout.width, layout.height, 0);
       text.position.z = 0;
       lettering.add(text);
-      const z = .02 + (recess ? 0 : raised ? -.002 : .001);
+      const z = .02 + (textRecess ? 0 : raised ? -.002 : .001);
       lettering.position.set(back ? -layout.x : layout.x, layout.y, back ? -z : depth + z);
       if (back) lettering.rotation.y = Math.PI;
       if (layout.rotation) lettering.rotateZ(layout.rotation);
       body.add(lettering);
       letters[face] = lettering;
-      if (recess) {
-        caps[face] = recess.cap;
-        updateRecess[face] = recess.redraw;
-        recess.redraw();
+    }
+    for (const symbol of surfaceSymbols) {
+      const shapes = keyringSymbolShapes(symbol);
+      const surface = new THREE.Group();
+      const embossed = symbol.relief === "raised";
+      const engraved = symbol.relief === "recessed" ? recess : undefined;
+      const z = .02 + (engraved ? 0 : embossed ? -.002 : .001);
+      surface.position.set(symbol.x / 100, symbol.y / 100, back ? -z : depth + z);
+      if (back) surface.rotation.y = Math.PI;
+      body.add(surface);
+      const geometry = embossed
+        ? new THREE.ExtrudeGeometry(shapes, { depth: .075, bevelEnabled: false, curveSegments: 12 })
+        : new THREE.ShapeGeometry(shapes, 12);
+      add(surface, geometry, secondary, 0, 0, engraved ? -keyringRecessDepth : 0).castShadow = embossed;
+      if (engraved) {
+        addRecessWalls(surface, shapes, engraved.walls);
+        for (const shape of shapes) {
+          const symbolOutline = new Path2D();
+          traceRecess(symbolOutline, [shape], symbol.x / 100, symbol.y / 100, back ? -1 : 1);
+          engraved.symbolOutlines.push(symbolOutline);
+        }
       }
+    }
+    if (recess) {
+      caps[face] = recess.cap;
+      updateRecess[face] = recess.redraw;
+      recess.redraw();
     }
   }
   if (caps.front !== primary || caps.back !== primary) {
@@ -271,7 +323,8 @@ export function createKeyring(configuration: ProductConfiguration, fonts: Readon
     base.material = [caps.back, caps.front, primary];
   }
   if (configuration.shape === "rectangle") {
-    if (Math.hypot(hole.x - 1.45, hole.y + .95) > .3) {
+    if (Math.hypot(hole.x - 1.45, hole.y + .95) > .3 &&
+        !symbols.some(symbol => (symbol.mode === "cut" || symbol.face === "front") && symbolCoversPoint(symbol, 1.45, -.95))) {
       const dot = new THREE.MeshStandardMaterial({ color: "#829ba3", roughness: .48, metalness: .06 });
       add(body, new THREE.CircleGeometry(.025, 16), dot, 1.45, -.95, .154).castShadow = false;
     }

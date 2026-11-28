@@ -6,6 +6,7 @@ import {
 } from "./schema-kit.js";
 import { linkerOfferKinds } from "./keyring-offers.js";
 import { keyringFonts, keyringHoleIds, keyringMaxTextLength, keyringReliefs, keyringShapes, keyringTextOrientations, keyringTextSizes } from "./keyring-design.js";
+import { keyringSymbolFaces, keyringSymbolKinds, keyringSymbolLimit, keyringSymbolModes } from "./keyring-design.js";
 
 // Technical ceilings, not shop commercial settings. Checkout must use its lower configured cap.
 export const COMMERCE_LIMITS = Object.freeze({
@@ -65,6 +66,15 @@ export const configurationDetails = () => f.object({
   hole: f.choice(keyringHoleIds, opt),
   front: f.object(keyringLetteringFields(), opt),
   back: f.object({ ...keyringLetteringFields(), text: f.text(keyringMaxTextLength) }, opt),
+  symbols: f.array(f.object({
+    kind: f.choice(keyringSymbolKinds),
+    mode: f.choice(keyringSymbolModes),
+    face: f.choice(keyringSymbolFaces),
+    size: f.choice(keyringTextSizes),
+    relief: f.choice(keyringReliefs),
+    x: f.integer(200, { min: -200 }),
+    y: f.integer(200, { min: -200 }),
+  }), keyringSymbolLimit, { ...opt, min: 1, default: undefined }),
   dedication: f.text(80, opt),
   trackUrl: f.text(512, opt),
   effect: f.choice(["flow", "steady", "breathe", "pulse"], opt),

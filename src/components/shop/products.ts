@@ -1,5 +1,5 @@
 import type { ProductId } from "@/lib/ecommerce/product-visibility";
-import { defaultKeyringLettering, keyringHoleOptions, keyringShapeNames, keyringShapes, type KeyringLettering, type KeyringShape } from "@evolve/ecommerce-server/keyring-design";
+import { defaultKeyringLettering, keyringHoleOptions, keyringShapeNames, keyringShapes, type KeyringLettering, type KeyringShape, type KeyringSymbolChoice } from "@evolve/ecommerce-server/keyring-design";
 import { shopPaymentFaq } from "./shopPaymentFaq";
 
 export type { ProductId } from "@/lib/ecommerce/product-visibility";
@@ -11,7 +11,7 @@ export type ProductConfiguration = {
   shape: KeyringShape;
   text: string;
   logo: LogoAsset | null;
-  keyring: { hole: string; front: KeyringLettering; back: KeyringLettering & { text: string } };
+  keyring: { hole: string; front: KeyringLettering; back: KeyringLettering & { text: string }; symbols?: readonly KeyringSymbolChoice[] };
 };
 
 // Palette dimostrativa: non rappresenta ancora la disponibilità dei filamenti.
