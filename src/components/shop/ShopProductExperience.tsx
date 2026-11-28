@@ -53,6 +53,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
   const [logoAttachment, setLogoAttachment] = useState<LogoAsset | null>(null);
   const [face, setFace] = useState<KeyringFace>("front");
   const [canvasTool, setCanvasTool] = useState<KeyringEditor["tool"]>("rotate");
+  const [viewerTheme, setViewerTheme] = useState<"light" | "cad">("light");
   const [diskOffer, setDiskOffer] = useState<"device" | "bundle">("device");
   const [linkerOffer, setLinkerOffer] = useState<LinkerOfferKind | null>(null);
   const [bundleDiscs, setBundleDiscs] = useState<BundleDisc[]>(() =>
@@ -289,8 +290,17 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
           {isDisk && <p>Due colori. Trenta possibilità per ognuno. Trova la combinazione che vorresti sul tuo tavolo.</p>}
         </div>
         <div className={styles.configGrid}>
-          <div className={styles.viewer}>
-            <div className={styles.viewerTop}><span><i /> {product}</span><span>360°</span></div>
+          <div className={styles.viewer} data-theme={isDisk ? undefined : viewerTheme}>
+            <div className={styles.viewerTop}>
+              <span><i /> {product}</span>
+              <div className={styles.viewerTopActions}>
+                <span>360°</span>
+                {!isDisk && <div className={styles.viewerTheme} role="group" aria-label="Sfondo dell’anteprima">
+                  <button type="button" aria-pressed={viewerTheme === "light"} onClick={() => setViewerTheme("light")}>Chiaro</button>
+                  <button type="button" aria-label="CAD scuro" aria-pressed={viewerTheme === "cad"} onClick={() => setViewerTheme("cad")}>CAD</button>
+                </div>}
+              </div>
+            </div>
             <div className={styles.configScene}>
               <ProductScene product={product} configuration={previewConfiguration} playing={isDisk && recordPlaying}
                 reset={viewReset} onError={setSceneError} keyringEditor={isDisk ? undefined : canvasEditor} />
@@ -409,17 +419,11 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
         </div>
       </section>
 
-      {!isDisk && <section aria-labelledby="pile-title">
-        <h2 id="pile-title" className={styles.pileHeading}>Condividiti<span>.</span></h2>
-        <LinkerPile />
-      </section>}
-
-      <section className={styles.resources} aria-labelledby={isDisk ? "resources-title" : undefined}
-        aria-label={isDisk ? undefined : "Guida e-linker"}>
-        {isDisk && <div className={styles.resourceCopy}>
-          <h2 id="resources-title">L’oggetto è solo<br />l’inizio<span>.</span></h2>
-          <p>Dietro ogni disco c’è la tua collezione. Apri l’app, organizza i brani e scopri come dare vita al tuo e-disk.</p>
-        </div>}
+      <section className={styles.resources} aria-labelledby="resources-title">
+        <div className={styles.resourceCopy}>
+          <h2 id="resources-title">{isDisk ? <>L’oggetto è solo<br />l’inizio</> : "Condividiti"}<span>.</span></h2>
+          {isDisk && <p>Dietro ogni disco c’è la tua collezione. Apri l’app, organizza i brani e scopri come dare vita al tuo e-disk.</p>}
+        </div>
         <div className={styles.resourceLinks}>
           {isDisk && <Link href="/shop/e-disk/app"><Smartphone size={26} /><div><span>La tua collezione, online</span><h3>App e-disk</h3><p>Dischi, brani e giradischi. Tutto in un posto.</p></div><ArrowUpRight size={25} /></Link>}
           <Link href={`/shop/${product}/documentazione`}>
@@ -431,6 +435,8 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
           </Link>
         </div>
       </section>
+
+      {!isDisk && <LinkerPile />}
 
       <section className={styles.faq} aria-labelledby={isDisk ? "faq-title" : undefined}
         aria-label={isDisk ? undefined : "Domande frequenti su e-linker"}>
