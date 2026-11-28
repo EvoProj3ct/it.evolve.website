@@ -8,6 +8,7 @@ import { money } from "@/lib/ecommerce/contracts";
 import { removeGuestLine, setGuestQuantity, useGuestCart } from "@/lib/ecommerce/guest-cart";
 import { PersonalizationText } from "./ShopPersonalization";
 import { CartProductArtwork } from "./ShopPreviewShared";
+import { ShopCartFaq } from "./ShopCartFaq";
 import styles from "./CommercePreview.module.css";
 import live from "./Storefront.module.css";
 
@@ -60,6 +61,7 @@ export function ShopGuestCart({ importError, retry }: { importError?: unknown; r
           </div>
         </li>)}
       </ul>
+      {!pendingImport && <ShopCartFaq />}
       <Link href="/shop/e-linker" className={styles.continueLink}>Continua a esplorare <ArrowUpRight size={16} /></Link>
     </section>
     <aside className={styles.cartAside}>

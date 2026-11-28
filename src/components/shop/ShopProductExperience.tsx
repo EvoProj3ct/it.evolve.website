@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
-import { ArrowUpRight, BookOpen, Check, CircleDot, Download, Eraser, MoveHorizontal, Pause, Play, Plus, RotateCcw, Smartphone, Type, Upload, Volume2, VolumeX, X } from "lucide-react";
+import { ArrowUpRight, BookOpen, Check, CircleDot, Download, Eraser, MoveHorizontal, Pause, Play, Plus, RotateCcw, Shapes, Smartphone, Type, Upload, Volume2, VolumeX, X } from "lucide-react";
 import {
   cleanKeyringLettering, defaultKeyringLettering, keyringDesignLabels, keyringFontNames, keyringFonts,
   keyringHoleName, keyringHoleOptions, keyringRaisedFontName, keyringReliefNames, keyringReliefs, keyringSizesForRelief,
@@ -53,7 +53,9 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
   const [configuration, setConfiguration] = useState<ProductConfiguration>(() => defaultConfiguration(product));
   const [logoAttachment, setLogoAttachment] = useState<LogoAsset | null>(null);
   const [face, setFace] = useState<KeyringFace>("front");
-  const [canvasTool, setCanvasTool] = useState<KeyringEditor["tool"]>("rotate");
+  const [canvasTool, setCanvasTool] = useState<KeyringEditor["tool"] | "shape">("rotate");
+  const shapeTool = useRef<HTMLButtonElement>(null);
+  const textTool = useRef<HTMLButtonElement>(null);
   const [viewerTheme, setViewerTheme] = useState<"light" | "dark">("dark");
   const [diskOffer, setDiskOffer] = useState<"device" | "bundle">("device");
   const [linkerOffer, setLinkerOffer] = useState<LinkerOfferKind | null>(null);
@@ -78,6 +80,8 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
   const activeRelief = activeLettering.relief ?? defaultKeyringLettering.relief;
   const availableSizes = keyringSizesForRelief(activeRelief);
   const activeText = face === "front" ? configuration.text : configuration.keyring.back.text;
+  const toolPanel = canvasTool === "shape" || canvasTool === "text" ? canvasTool : null;
+  const panelTitle = toolPanel === "shape" ? "Scegli la forma" : face === "front" ? "Scritta sul fronte" : "Scritta sul retro";
   const textLimit = (side: KeyringFace) => {
     const lettering = configuration.keyring[side];
     return keyringTextLimit(configuration.shape, lettering.orientation, lettering.size, lettering.relief);
@@ -103,7 +107,19 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
   const changeHole = (hole: string) => setConfiguration(current =>
     current.keyring.hole === hole || !keyringHoleName(current.shape, hole) ? current
       : { ...current, keyring: { ...current.keyring, hole } });
-  const canvasEditor: KeyringEditor = { face, tool: canvasTool, onHole: changeHole, onText: changeLettering };
+  const changeShape = (shape: ProductConfiguration["shape"]) => setConfiguration(current => ({
+    ...current,
+    shape,
+    keyring: {
+      ...current.keyring,
+      hole: keyringHoleName(shape, current.keyring.hole) ? current.keyring.hole : keyringHoleOptions(shape)[0].id,
+    },
+  }));
+  const canvasEditor: KeyringEditor = { face, tool: canvasTool === "shape" ? "rotate" : canvasTool, onHole: changeHole, onText: changeLettering };
+  function closeToolPanel() {
+    (toolPanel === "shape" ? shapeTool : textTool).current?.focus();
+    setCanvasTool("rotate");
+  }
   const heroConfiguration = useMemo(() => defaultConfiguration(product), [product]);
   const [heroPlaying, setHeroPlaying] = useState(true);
   const [heroSoundOn, setHeroSoundOn] = useState(false);
@@ -314,8 +330,10 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
               </div>
             </div>
             <div className={styles.configScene}>
-              <ProductScene product={product} configuration={previewConfiguration} playing={isDisk && recordPlaying}
-                reset={viewReset} onError={setSceneError} keyringEditor={isDisk ? undefined : canvasEditor} />
+              <div className={styles.configViewport}>
+                <ProductScene product={product} configuration={previewConfiguration} playing={isDisk && recordPlaying}
+                  reset={viewReset} onError={setSceneError} keyringEditor={isDisk ? undefined : canvasEditor} />
+              </div>
               {!isDisk && <div className={styles.keyringCanvasTools}>
                 <div role="group" aria-label="Faccia del portachiavi">
                   <button type="button" aria-pressed={face === "front"} onClick={() => setFace("front")}>Fronte</button>
@@ -323,52 +341,64 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
                 </div>
                 <div role="group" aria-label="Strumenti dell’anteprima">
                   <button type="button" aria-pressed={canvasTool === "rotate"} onClick={() => setCanvasTool("rotate")}><RotateCcw size={15} />Ruota</button>
+                  <button type="button" ref={shapeTool} aria-expanded={toolPanel === "shape"}
+                    aria-controls={toolPanel === "shape" ? "keyring-tool-panel" : undefined}
+                    onClick={() => setCanvasTool(toolPanel === "shape" ? "rotate" : "shape")}><Shapes size={15} aria-hidden="true" />Forma</button>
                   <button type="button" aria-pressed={canvasTool === "hole"} onClick={() => setCanvasTool("hole")}><CircleDot size={15} />Foro</button>
-                  <button type="button" aria-pressed={canvasTool === "text"} onClick={() => setCanvasTool("text")}><Type size={15} />Scritta</button>
+                  <button type="button" ref={textTool} aria-expanded={toolPanel === "text"}
+                    aria-controls={toolPanel === "text" ? "keyring-tool-panel" : undefined}
+                    onClick={() => setCanvasTool(toolPanel === "text" ? "rotate" : "text")}><Type size={15} />Scritta</button>
                   <button type="button" disabled={!activeText} aria-label={face === "front" ? "Cancella la scritta sul fronte" : "Cancella la scritta sul retro"} onClick={() => changeText("")}><Eraser size={15} />Gomma</button>
                 </div>
                 {canvasTool === "hole" && <select aria-label="Posizione del foro" value={configuration.keyring.hole} onChange={event => changeHole(event.target.value)}>
                   {keyringHoleOptions(configuration.shape).map(option => <option key={option.id} value={option.id}>{option.label}</option>)}
                 </select>}
               </div>}
+              {!isDisk && toolPanel && <section id="keyring-tool-panel" className={styles.keyringToolPanel} aria-labelledby="keyring-tool-title">
+                <div className={styles.keyringToolHeading}>
+                  <h3 id="keyring-tool-title">{panelTitle}</h3>
+                  <button type="button" aria-label="Chiudi il pannello" onClick={closeToolPanel}><X size={16} aria-hidden="true" /></button>
+                </div>
+                {toolPanel === "shape" ? <div className={styles.shapeOptions}>
+                  {KEYRING_SHAPES.map(shape => (
+                    <button type="button" key={shape.id} aria-pressed={configuration.shape === shape.id} onClick={() => changeShape(shape.id)}>
+                      <span aria-hidden="true">{shape.symbol}</span>{shape.name}
+                    </button>
+                  ))}
+                </div> : <>
+                  <div className={styles.textInput}>
+                    <input type="text" value={activeText} maxLength={textLimit(face)} aria-labelledby="keyring-tool-title"
+                      placeholder="Il tuo nome, un’idea…" onChange={event => changeText(event.target.value)}
+                      aria-invalid={invalidFaces.includes(face) || undefined} aria-describedby={invalidFaces.includes(face) ? "keyring-text-limit" : undefined} />
+                    <span>{activeText.length}/{textLimit(face)}</span>
+                  </div>
+                  <div className={styles.keyringLetterOptions}>
+                    <label>Rilievo<select value={activeRelief} onChange={event => changeRelief(event.target.value as KeyringRelief)}>
+                      {keyringReliefs.map(value => <option key={value} value={value}>{keyringReliefNames[value]}</option>)}
+                    </select></label>
+                    <label>Carattere<select value={activeLettering.font ?? defaultKeyringLettering.font} disabled={activeRelief === "raised"}
+                      onChange={event => changeLettering(face, { font: event.target.value as KeyringFont })}>
+                      {activeRelief === "raised" ? <option value="helvetica">{keyringRaisedFontName}</option> : keyringFonts.map(value =>
+                        <option key={value} value={value}>{keyringFontNames[value]}</option>)}
+                    </select></label>
+                    <label>Orientamento<select value={activeLettering.orientation} onChange={event => changeLettering(face, { orientation: event.target.value as KeyringTextOrientation })}>
+                      {keyringTextOrientations.map(value => <option key={value} value={value}>{keyringTextOrientationNames[value]}</option>)}
+                    </select></label>
+                    <label>Grandezza<select value={activeLettering.size} disabled={availableSizes.length === 1}
+                      onChange={event => changeLettering(face, { size: event.target.value as KeyringTextSize })}>
+                      {availableSizes.map(value => <option key={value} value={value}>{keyringTextSizeNames[value]}</option>)}
+                    </select></label>
+                  </div>
+                </>}
+              </section>}
             </div>
+            {!isDisk && invalidFaces.length > 0 && <p id="keyring-text-limit" className={styles.keyringTextLimit} role="status">{invalidFaces.map(side =>
+              `${side === "front" ? "Fronte" : "Retro"} · massimo ${textLimit(side)} caratteri`).join(" · ")}</p>}
             <div className={styles.viewerTools}><span><MoveHorizontal size={16} />{isDisk ? "Trascina per ruotare" : canvasTool === "hole" ? "Trascina il foro" : canvasTool === "text" ? (activeText.trim() ? "Trascina la scritta" : "Inserisci una scritta per spostarla") : "Ruota liberamente in 3D"}</span><div>{isDisk && <button type="button" onClick={() => setRecordPlaying(current => !current)} aria-label={recordPlaying ? "Metti in pausa la rotazione dell’anteprima" : "Riprendi la rotazione dell’anteprima"}>{recordPlaying ? <Pause size={16} /> : <Play size={16} />}</button>}<button type="button" onClick={() => setViewReset(value => value + 1)} aria-label="Ripristina la vista 3D"><RotateCcw size={16} /></button></div></div>
             <div className={styles.viewerCaption}>{isDisk && <span>Anteprima dimostrativa</span>}<span>Designed by Evolve ↗</span></div>
           </div>
 
           <div className={styles.configPanel}>
-            {!isDisk && <>
-              <fieldset className={styles.controlGroup}><legend>Scegli la forma</legend><div className={styles.shapeOptions}>{KEYRING_SHAPES.map(shape => <button type="button" key={shape.id} aria-pressed={configuration.shape === shape.id} onClick={() => setConfiguration(current => ({
-                ...current, shape: shape.id, keyring: { ...current.keyring,
-                  hole: keyringHoleName(shape.id, current.keyring.hole) ? current.keyring.hole : keyringHoleOptions(shape.id)[0].id },
-              }))}><span aria-hidden="true">{shape.symbol}</span>{shape.name}</button>)}</div></fieldset>
-              <div className={styles.controlGroup}>
-                <label className={styles.fieldLabel} htmlFor="keyring-text">{face === "front" ? "Scritta sul fronte" : "Scritta sul retro"}</label>
-                <div className={styles.keyringLetterOptions}>
-                  <label>Rilievo<select value={activeRelief} onChange={event => changeRelief(event.target.value as KeyringRelief)}>
-                    {keyringReliefs.map(value => <option key={value} value={value}>{keyringReliefNames[value]}</option>)}
-                  </select></label>
-                  <label>Carattere<select value={activeLettering.font ?? defaultKeyringLettering.font} disabled={activeRelief === "raised"}
-                    onChange={event => changeLettering(face, { font: event.target.value as KeyringFont })}>
-                    {activeRelief === "raised" ? <option value="helvetica">{keyringRaisedFontName}</option> : keyringFonts.map(value =>
-                      <option key={value} value={value}>{keyringFontNames[value]}</option>)}
-                  </select></label>
-                  <label>Orientamento<select value={activeLettering.orientation} onChange={event => changeLettering(face, { orientation: event.target.value as KeyringTextOrientation })}>
-                    {keyringTextOrientations.map(value => <option key={value} value={value}>{keyringTextOrientationNames[value]}</option>)}
-                  </select></label>
-                  <label>Grandezza<select value={activeLettering.size} disabled={availableSizes.length === 1}
-                    onChange={event => changeLettering(face, { size: event.target.value as KeyringTextSize })}>
-                    {availableSizes.map(value => <option key={value} value={value}>{keyringTextSizeNames[value]}</option>)}
-                  </select></label>
-                </div>
-                <div className={styles.textInput}><input id="keyring-text" type="text" value={activeText} maxLength={textLimit(face)}
-                  placeholder="Il tuo nome, un’idea…" onChange={event => changeText(event.target.value)}
-                  aria-invalid={invalidFaces.includes(face) || undefined} aria-describedby={invalidFaces.length ? "keyring-text-limit" : undefined} />
-                  <span>{activeText.length}/{textLimit(face)}</span></div>
-                {invalidFaces.length > 0 && <p id="keyring-text-limit" className={styles.error} role="status">{invalidFaces.map(side =>
-                  `${side === "front" ? "Fronte" : "Retro"} · massimo ${textLimit(side)} caratteri`).join(" · ")}</p>}
-              </div>
-            </>}
             <fieldset className={styles.controlGroup}><legend>Trova i tuoi colori</legend>
               <ProductColorPicker product={product} value={configuration} onChange={(channel, hex) => setConfiguration(current => ({ ...current, [channel]: hex }))} onSwap={() => setConfiguration(current => ({ ...current, primary: current.secondary, secondary: current.primary }))} onShuffle={shuffleColors} />
               <div className={styles.presets}><span>Abbinamenti</span><div>{presets.map(preset => <button type="button" key={preset.name} aria-pressed={configuration.primary === preset.primary && configuration.secondary === preset.secondary} onClick={() => setConfiguration(current => ({ ...current, primary: preset.primary, secondary: preset.secondary }))}><i style={swatchStyle(preset.primary)} /><i style={swatchStyle(preset.secondary)} />{preset.name}</button>)}</div></div>

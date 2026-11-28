@@ -12,6 +12,7 @@ import { useStorefrontResource } from "./useStorefrontResource";
 import { CartProductArtwork, ResourceFeedback, ShopPageHeader } from "./ShopPreviewShared";
 import { PersonalizationText } from "./ShopPersonalization";
 import { ShopGuestCart } from "./ShopGuestCart";
+import { ShopCartFaq } from "./ShopCartFaq";
 import styles from "./CommercePreview.module.css";
 import live from "./Storefront.module.css";
 
@@ -137,6 +138,7 @@ export function ShopCart() {
       })}</ul> : <div className={styles.emptyState}><span className={styles.emptyIcon}><ShoppingBag size={30} strokeWidth={1} /></span><h2>Spazio alla prossima idea<span>.</span></h2><Link className={styles.textLink} href="/shop/e-linker">Esplora gli oggetti <ArrowUpRight size={16} /></Link></div>}
       {changed && <label className={live.check}><input type="checkbox" checked={reviewed} onChange={event => setReviewed(event.target.checked)} disabled={saving} /><span>Ho controllato i prodotti aggiornati e confermo i nuovi prezzi e le schede.</span></label>}
       {(dirty || changed) && <div className={live.saveBar}><p>Le modifiche saranno applicate al salvataggio. I totali mostrati si riferiscono all’ultimo salvataggio.</p><button type="button" className={live.primary} onClick={() => void save()} disabled={!canSave}>{saving ? "Salvataggio…" : "Salva carrello"}<Save size={16} /></button></div>}
+      <ShopCartFaq />
       <Link href="/shop/e-linker" className={styles.continueLink}>Continua a esplorare <ArrowUpRight size={16} /></Link>
     </section><aside className={styles.cartAside}><div className={styles.summaryCard}><div className={styles.summaryTop}><h2>Riepilogo<span>.</span></h2><ShoppingBag size={22} strokeWidth={1.3} /></div><dl className={styles.summaryCosts}><div><dt>Imponibile</dt><dd>{cart.previewTotals ? money(cart.previewTotals.netMinor) : "—"}</dd></div><div><dt>IVA</dt><dd>{cart.previewTotals ? money(cart.previewTotals.taxMinor) : "—"}</dd></div><div><dt>Consegna</dt><dd>Al riepilogo finale</dd></div></dl><div className={styles.summaryTotal}><span>Anteprima articoli</span><strong>{cart.previewTotals ? money(cart.previewTotals.grossMinor) : "—"}</strong></div>{ready ? <Link href="/checkout" className={live.primary}>Procedi al riepilogo <ArrowRight size={17} /></Link> : <button type="button" className={styles.checkoutButton} disabled>Procedi al riepilogo <ArrowRight size={17} /></button>}<p className={styles.summaryNote}>Consegna e totale definitivo vengono confermati nel riepilogo.</p>{resource.data?.policyError && <p className={live.lineWarning}>{resource.data.policyError}</p>}</div></aside></div>}
   </main>;

@@ -176,7 +176,8 @@
   letter-spacing: normal;
 }
 .viewerTheme button:hover, .viewerTheme button[aria-pressed="true"] { background: var(--viewer-control-active); color: var(--viewer-control-active-text); }
-.configScene { height: clamp(320px, min(36vw, calc(100svh - 290px)), 560px); }
+.configScene { --config-scene-height: clamp(320px, min(36vw, calc(100svh - 290px)), 560px); height: var(--config-scene-height); }
+.configViewport { position: relative; min-width: 0; height: 100%; }
 .viewerTools { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 0 20px 15px; }
 .viewerTools > span { display: inline-flex; align-items: center; gap: 8px; font-size: 10px; }
 .viewerTools > div { display: flex; gap: 8px; }
@@ -186,14 +187,7 @@
 .viewerCaption > :only-child { margin-inline-start: auto; }
 .configPanel { min-width: 0; }
 .controlGroup { min-width: 0; margin: 0 0 30px; padding: 0; border: 0; }
-.controlGroup legend, .fieldLabel { display: flex; align-items: center; gap: 12px; width: 100%; margin-bottom: 20px; font-size: 15px; font-weight: 600; letter-spacing: -.035em; }
-.shapeOptions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
-.shapeOptions button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; min-height: 83px; padding: 6px 2px; border: 1px solid #aebfa2; background: transparent; font-size: 9px; transition: background .18s; }
-.shapeOptions button > span { font-family: Arial, sans-serif; font-size: 34px; line-height: 1; }
-.shapeOptions button[aria-pressed="true"] { border-color: var(--shop-ink); background: #d1e8ba; box-shadow: inset 0 0 0 1px var(--shop-ink); }
-.textInput { display: flex; align-items: center; gap: 10px; border: 1px solid #aebfa2; background: var(--shop-paper); }
-.textInput input { width: 100%; min-width: 0; height: 49px; padding: 0 14px; border: 0; background: transparent; color: var(--shop-ink); font-size: 17px; }
-.textInput > span { flex: none; margin-right: 12px; color: #737f6c; font-size: 9px; }
+.controlGroup legend { display: flex; align-items: center; gap: 12px; width: 100%; margin-bottom: 20px; font-size: 15px; font-weight: 600; letter-spacing: -.035em; }
 .help { margin: 9px 0 0; color: #65745b; font-size: 10px; line-height: 1.7; }
 .logoBundleNotice {
   margin: 0;
@@ -294,24 +288,26 @@
 .faq details[open] summary > svg { transform: rotate(45deg); }
 .faq details p { margin: 0 30px 25px 0; color: #5d6a56; font-size: 12px; line-height: 1.9; }
 .faqAnswer a { text-decoration: underline; text-underline-offset: 3px; }
+.faq.cartFaq { display: block; max-width: 560px; margin-top: 26px; padding: 0; }
+.faq.cartFaq summary { min-height: 51px; padding-block: 12px; }
 @media (prefers-reduced-motion: no-preference) {
-  .productPage[data-product="e-linker"] .faq details[open] > .faqAnswer {
+  :is(.productPage[data-product="e-linker"] .faq, .cartFaq) details[open] > .faqAnswer {
     animation: faqReveal .24s ease-out;
   }
   @supports selector(::details-content) and (transition-behavior: allow-discrete) {
-    .productPage[data-product="e-linker"] .faq details::details-content {
+    :is(.productPage[data-product="e-linker"] .faq, .cartFaq) details::details-content {
       display: grid;
       grid-template-rows: 0fr;
       opacity: 0;
       transition: grid-template-rows .32s cubic-bezier(.22, 1, .36, 1), opacity .24s ease,
         content-visibility .32s allow-discrete;
     }
-    .productPage[data-product="e-linker"] .faq details[open]::details-content {
+    :is(.productPage[data-product="e-linker"] .faq, .cartFaq) details[open]::details-content {
       grid-template-rows: 1fr;
       opacity: 1;
     }
-    .productPage[data-product="e-linker"] .faqAnswer { min-block-size: 0; overflow: hidden; }
-    .productPage[data-product="e-linker"] .faq details[open] > .faqAnswer { animation: none; }
+    :is(.productPage[data-product="e-linker"] .faq, .cartFaq) .faqAnswer { min-block-size: 0; overflow: hidden; }
+    :is(.productPage[data-product="e-linker"] .faq, .cartFaq) details[open] > .faqAnswer { animation: none; }
   }
 }
 @keyframes faqReveal {
@@ -431,6 +427,7 @@
   --viewer-control-text: #40543b;
   --viewer-control-active: #e3efdc;
   --viewer-control-active-text: #2c5728;
+  --viewer-error: #9b3935;
   border-color: #e4ecdc;
   background:
     linear-gradient(to right, var(--viewer-grid) 1px, transparent 1px) center / 28px 28px,
@@ -447,6 +444,7 @@
   --viewer-control-text: #d6e7d9;
   --viewer-control-active: #284331;
   --viewer-control-active-text: #f2faef;
+  --viewer-error: #ffb2ac;
   border-color: var(--viewer-control-border);
   color: var(--viewer-control-text);
   color-scheme: dark;
@@ -459,23 +457,23 @@
 }
 .viewer[data-theme="dark"] .viewerTools button:hover { background: var(--viewer-control-active); }
 .viewer[data-theme="dark"] .sceneLoading { color: inherit; }
-.productPage[data-product="e-linker"] .shapeOptions { gap: 7px; }
-.productPage[data-product="e-linker"] .shapeOptions button { min-height: 76px; border-color: #e0e7d8; border-radius: 13px; color: #74826a; }
-.productPage[data-product="e-linker"] .shapeOptions button[aria-pressed="true"] { border-color: #b9d4a6; background: #f0f6eb; color: #3a6a2d; box-shadow: none; }
-.productPage[data-product="e-linker"] .shapeOptions button > span { font-size: 29px; }
-.productPage[data-product="e-linker"] .textInput { border-color: #dfe7d7; border-radius: 11px; }
-.productPage[data-product="e-linker"] .configScene { position: relative; }
+.productPage[data-product="e-linker"] .configScene {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: max(285px, calc(var(--config-scene-height) - 48px)) auto;
+  height: auto;
+}
 .keyringCanvasTools {
-  position: absolute;
-  inset: auto 12px 10px;
+  grid-column: 1 / -1;
+  grid-row: 2;
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
   gap: 6px;
-  pointer-events: none;
+  padding: 6px 12px 10px;
 }
-.keyringCanvasTools > div { display: flex; gap: 3px; padding: 3px; border: 1px solid var(--viewer-control-border); border-radius: 12px; background: var(--viewer-control-bg); pointer-events: auto; }
+.keyringCanvasTools > div { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; max-width: 100%; padding: 3px; border: 1px solid var(--viewer-control-border); border-radius: 12px; background: var(--viewer-control-bg); }
 .keyringCanvasTools button {
   display: inline-flex;
   align-items: center;
@@ -488,27 +486,49 @@
   color: var(--viewer-control-text);
   font-size: 11px;
 }
-.keyringCanvasTools button:hover, .keyringCanvasTools button[aria-pressed="true"] { background: var(--viewer-control-active); color: var(--viewer-control-active-text); }
+.keyringCanvasTools button:hover, .keyringCanvasTools button[aria-pressed="true"], .keyringCanvasTools button[aria-expanded="true"] { background: var(--viewer-control-active); color: var(--viewer-control-active-text); }
 .keyringCanvasTools button:disabled { cursor: default; }
 .keyringCanvasTools select, .keyringLetterOptions select {
-  min-height: 43px;
+  min-height: 36px;
   max-width: 100%;
   padding: 6px 24px 6px 10px;
-  border: 1px solid #dce6d4;
-  border-radius: 11px;
-  background: #fcfdfb;
-  color: #40543b;
-  font: inherit;
-  font-size: 13px;
-}
-.keyringCanvasTools select {
-  pointer-events: auto;
-  border-color: var(--viewer-control-border);
+  border: 1px solid var(--viewer-control-border);
+  border-radius: 8px;
   background: var(--viewer-control-bg);
   color: var(--viewer-control-text);
+  font: inherit;
+  font-size: 12px;
 }
-.keyringLetterOptions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
-.keyringLetterOptions label { display: grid; min-width: 0; gap: 6px; color: #50634a; font-size: 11px; }
+.keyringCanvasTools select { min-height: 43px; }
+.keyringToolPanel {
+  grid-column: 2;
+  grid-row: 1;
+  width: clamp(170px, 18vw, 226px);
+  min-height: 0;
+  margin: 10px 12px 8px 0;
+  padding: 11px;
+  overflow: auto;
+  border: 1px solid var(--viewer-control-border);
+  border-radius: 12px;
+  background: var(--viewer-control-bg);
+  color: var(--viewer-control-text);
+  scrollbar-width: thin;
+}
+.keyringToolHeading { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+.keyringToolHeading h3 { margin: 0; font-size: 13px; font-weight: 600; }
+.keyringToolHeading button { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 7px; }
+.keyringToolHeading button:hover { background: var(--viewer-control-active); }
+.shapeOptions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.shapeOptions button { display: grid; justify-items: center; align-content: center; gap: 4px; min-height: 51px; padding: 4px 2px; border: 1px solid var(--viewer-control-border); border-radius: 8px; font-size: 11px; }
+.shapeOptions button > span { font: 23px/1 Arial, sans-serif; }
+.shapeOptions button:hover, .shapeOptions button[aria-pressed="true"] { background: var(--viewer-control-active); color: var(--viewer-control-active-text); }
+.shapeOptions button[aria-pressed="true"] { border-color: #709563; }
+.textInput { display: flex; align-items: center; gap: 4px; margin-bottom: 10px; border: 1px solid var(--viewer-control-border); border-radius: 8px; }
+.textInput input { width: 100%; min-width: 0; height: 40px; padding: 0 8px; background: transparent; color: inherit; font-size: 16px; }
+.textInput > span { flex: none; margin-right: 8px; font-size: 10px; }
+.keyringLetterOptions { display: grid; gap: 8px; }
+.keyringLetterOptions label { display: grid; min-width: 0; gap: 4px; font-size: 11px; }
+.keyringTextLimit { margin: 0; padding: 0 15px 10px; color: var(--viewer-error); font-size: 12px; text-align: center; }
 @font-face {
   font-family: "Keyring Rounded";
   src: url("/fonts/helvetica-rounded-bold-5871d05ead8de.otf") format("opentype");
@@ -577,7 +597,7 @@
   .heroDescription { font-size: 12px; }
   .sticker { width: 80px; height: 80px; font-size: 18px; }
   .configGrid { grid-template-columns: minmax(0,1fr) minmax(280px,340px); gap: 30px; }
-  .configScene { height: clamp(300px, calc(100svh - 290px), 380px); }
+  .configScene { --config-scene-height: clamp(300px, calc(100svh - 290px), 380px); }
   .step { padding: 18px; }
   .step h3 { font-size: 21px; }
   .studyGrid { gap: 14px; }
@@ -631,23 +651,21 @@
   .configHeading > p { max-width: 420px; font-size: 12px; }
   .configGrid { grid-template-columns: 1fr; gap: 34px; }
   .viewer { position: relative; top: auto; }
-  .configScene { --mobile-scene-height: clamp(280px, 72vw, 450px); height: var(--mobile-scene-height); }
+  .configScene { --config-scene-height: clamp(280px, 72vw, 450px); }
   .productPage[data-product="e-linker"] .configScene {
-    display: grid;
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: var(--mobile-scene-height) auto;
-    height: auto;
+    grid-template-rows: var(--config-scene-height) auto;
   }
-  .productPage[data-product="e-linker"] .configScene > .sceneLoading { position: static; }
-  .keyringCanvasTools { position: static; padding: 8px 12px 12px; pointer-events: auto; }
-  .keyringCanvasTools > div { max-width: 100%; flex-wrap: wrap; justify-content: center; }
+  .keyringCanvasTools { padding: 8px 12px 12px; }
+  .keyringToolPanel { grid-column: 1; grid-row: 3; width: auto; margin: 0 12px 12px; }
+  .keyringToolHeading button { width: 40px; height: 40px; }
+  .keyringLetterOptions select { min-height: 44px; font-size: 16px; }
   .viewerTop { padding: 17px 17px 0; font-size: 8px; }
   .viewerTools { padding-inline: 15px; }
   .viewerTools > span { font-size: 9px; }
   .viewerTools button { width: 42px; height: 42px; }
   .viewerCaption { padding: 12px 15px; font-size: 7px; }
   .controlGroup { margin-bottom: 29px; }
-  .shapeOptions button { min-height: 86px; font-size: 10px; }
   .presets button { min-height: 42px; }
   .uploadButton { min-height: 48px; }
   .colorStudies { padding-top: 65px; padding-bottom: 65px; }
@@ -710,7 +728,6 @@
   .headerAccount > span { max-width: 51px; }
   .productHeader { gap: 18px; }
   .sectionLinks a { padding-inline: 8px; }
-  .shapeOptions button { font-size: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .linkerStoryControls > .linkerStoryPlayback { display: none; }
