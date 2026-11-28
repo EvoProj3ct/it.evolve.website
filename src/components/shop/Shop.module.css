@@ -410,19 +410,19 @@
   box-shadow: 0 18px 70px #233a1810;
 }
 .productPage[data-product="e-linker"] .viewer[data-theme="cad"] {
-  --viewer-grid: #83b9df28;
-  --viewer-center: #293b4b;
-  --viewer-edge: #101b25;
-  --viewer-control-border: #405c70;
-  --viewer-control-bg: #152430f5;
-  --viewer-control-text: #d1e5f2;
-  --viewer-control-active: #32516a;
-  --viewer-control-active-text: #f0f8ff;
+  --viewer-grid: #72c94f1a;
+  --viewer-center: #18241c;
+  --viewer-edge: var(--shop-ink);
+  --viewer-control-border: #354a39;
+  --viewer-control-bg: #142019f5;
+  --viewer-control-text: #d6e7d9;
+  --viewer-control-active: #284331;
+  --viewer-control-active-text: #f2faef;
   border-color: var(--viewer-control-border);
-  color: #d1e5f2;
+  color: var(--viewer-control-text);
   color-scheme: dark;
 }
-.viewer[data-theme="cad"] .viewerTop i { background: #8ed4ff; }
+.viewer[data-theme="cad"] .viewerTop i { background: var(--shop-green); }
 .viewer[data-theme="cad"] .viewerTools button, .viewer[data-theme="cad"] .viewerCaption {
   border-color: var(--viewer-control-border);
   background: var(--viewer-control-bg);
