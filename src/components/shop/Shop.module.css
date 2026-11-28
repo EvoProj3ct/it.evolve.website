@@ -293,6 +293,7 @@
 .faq summary > svg { flex: none; transition: transform .2s; }
 .faq details[open] summary > svg { transform: rotate(45deg); }
 .faq details p { margin: 0 30px 25px 0; color: #5d6a56; font-size: 12px; line-height: 1.9; }
+.faqAnswer a { text-decoration: underline; text-underline-offset: 3px; }
 @media (prefers-reduced-motion: no-preference) {
   .productPage[data-product="e-linker"] .faq details[open] > .faqAnswer {
     animation: faqReveal .24s ease-out;

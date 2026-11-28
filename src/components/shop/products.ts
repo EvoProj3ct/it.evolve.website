@@ -149,10 +149,26 @@ export const PRODUCTS = {
       { question: "Che cosa contiene e-linker?", answer: "Un tag NFC all’interno del portachiavi stampato in 3D. Avvicinandolo a uno smartphone compatibile puoi aprire il collegamento scelto: la tua attività, un prodotto oppure un contenuto personale." },
       { question: "Come posso usarlo per la mia attività?", answer: "Puoi collegarlo al sito, ai social, al menu, al catalogo o alla pagina di un prodotto. All’esterno ci sono il tuo logo e i tuoi colori; all’interno, un accesso diretto a ciò che vuoi far scoprire." },
       { question: "Posso regalarlo con un ricordo personale?", answer: "Sì: il collegamento può portare a un album, a un video o a una dedica online. I contenuti rimangono nella pagina collegata; il tag custodisce il collegamento, non i file. Per i ricordi privati scegli una destinazione con le impostazioni di accesso adatte." },
-      { question: "Che cosa posso personalizzare?", answer: "Scegli forma, colori, foro e scritte. Dal bundle da 20 puoi anche allegare il logo. La destinazione NFC si concorda con Evolve." },
+      {
+        question: "Che cosa posso personalizzare?",
+        answer: "Scegli forma, colori, foro e scritte. Dal bundle da 20 puoi anche allegare il logo. Al link puoi pensarci dopo. Con uno smartphone compatibile puoi impostarlo e cambiarlo tutte le volte che vuoi dal nostro sito.",
+        link: { href: "/shop/e-linker/configura", label: "Configura e-linker" },
+      },
       { question: "Quale formato uso per il logo?", answer: "Dal bundle da 20 puoi allegare un file SVG, PNG o JPG fino a 2 MB. Se usi un SVG, converti prima eventuali testi in tracciati. Il nostro team userà il logo per preparare il design." },
       { question: "Il modello è pronto per la stampa?", answer: "L’anteprima serve a scegliere l’aspetto del portachiavi. Spessori, dimensioni, leggibilità del testo e lavorabilità del logo vengono verificati insieme prima della produzione." },
-      { question: "Come richiedo il mio e-linker?", answer: "Puoi acquistare le offerte disponibili direttamente dal configuratore. Per un progetto su misura, salva la configurazione e usa il link ai contatti." },
+      {
+        question: "Come richiedo il mio e-linker?",
+        answer: "Puoi acquistare le offerte disponibili direttamente dal configuratore. Se non trovi la forma che cerchi, contattaci. Le personalizzazioni oltre le possibilità del configuratore sono disponibili per ordini da 20 pezzi in su.",
+        link: { href: "/contact", label: "Vai ai contatti" },
+      },
+      {
+        question: "Come posso pagare?",
+        answer: "Al checkout Stripe trovi i metodi disponibili per il tuo ordine tra carte di credito e debito, PayPal, Apple Pay e Google Pay. I dati sensibili del pagamento sono gestiti dal servizio di pagamento scelto.",
+      },
+      {
+        question: "Il pagamento è sicuro?",
+        answer: "Sì. Il pagamento avviene sulla pagina protetta di Stripe. Evolve non raccoglie né conserva il numero completo della carta, il codice di sicurezza o le credenziali del tuo conto. Riceviamo l’esito della transazione per aggiornare l’ordine.",
+      },
     ],
   },
   "e-led": {

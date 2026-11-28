@@ -464,7 +464,12 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
           <div>
             {info.faq.map(item => <details key={item.question}>
               <summary>{item.question}<Plus size={20} aria-hidden="true" /></summary>
-              <div className={styles.faqAnswer}><p>{item.answer}</p></div>
+              <div className={styles.faqAnswer}>
+                <p>
+                  {item.answer}
+                  {"link" in item && <> <Link href={item.link.href}>{item.link.label}</Link></>}
+                </p>
+              </div>
             </details>)}
           </div>
         </section>
