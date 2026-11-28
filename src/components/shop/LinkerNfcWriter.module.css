@@ -1,0 +1,74 @@
+.page {
+  min-height: calc(100svh - 74px);
+  padding: calc(var(--product-nav-height) + clamp(32px, 6vw, 88px)) var(--shop-gutter) clamp(58px, 7vw, 104px);
+  background: #fff;
+}
+.content { width: min(100%, 570px); margin-inline: auto; }
+.back { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 25px; color: #52694b; font-size: 13px; }
+.back:hover { color: var(--shop-ink); }
+.heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+.heading h1 {
+  margin: 0;
+  font-family: "HelveticaLocal", Helvetica, Arial, sans-serif;
+  font-size: clamp(44px, 7vw, 72px);
+  font-weight: 400;
+  line-height: 1.02;
+  letter-spacing: -.065em;
+}
+.heading h1 > span { color: var(--shop-green); }
+.mark { width: clamp(55px, 12vw, 88px); flex: none; }
+.form {
+  display: grid;
+  gap: 13px;
+  padding: clamp(18px, 4.5vw, 32px);
+  border: 1px solid #e0e8dc;
+  border-radius: 19px;
+  box-shadow: 0 12px 38px #1c332308;
+}
+.form > label { font-size: 14px; font-weight: 600; }
+.form .field {
+  width: 100%;
+  min-width: 0;
+  min-height: 54px;
+  padding: 10px 13px;
+  border: 1px solid #cbd8c6;
+  border-radius: 10px;
+  background: #fcfdfb;
+  color: var(--shop-ink);
+  font-size: 16px;
+}
+.field:focus-visible { outline: 2px solid #549238; outline-offset: 2px; }
+.field[aria-invalid="true"] { border-color: #b76050; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 3px; }
+.hint { margin: 0; color: #52644d; font-size: 12px; line-height: 1.6; }
+.feedback:empty { margin-top: -13px; }
+.feedback p {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  padding: 11px 13px;
+  border-radius: 9px;
+  background: #f0f5ec;
+  color: #314a31;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.feedback p[data-kind="error"], .feedback p[data-kind="invalid"] { background: #fff1ed; color: #843e31; }
+.feedback svg { flex: none; }
+.handoff {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 13px;
+  margin-bottom: 17px;
+  padding: 16px;
+  border: 1px solid #dce6d7;
+  border-radius: 14px;
+  background: #f5f8f2;
+}
+.handoff > svg { color: #4c7441; }
+.handoff h2 { margin: 0; font-size: 15px; font-weight: 650; }
+.handoff p { margin: 5px 0 12px; color: #465942; font-size: 13px; line-height: 1.6; }
+.copyFeedback { color: #355632; font-size: 12px; overflow-wrap: anywhere; }
+.copyFeedback:not(:empty) { margin-top: 8px; }
+.copyFeedback > span { display: block; user-select: all; }
