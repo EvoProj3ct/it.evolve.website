@@ -7,7 +7,7 @@ import { cartLineKey, money, type Cart, type CheckoutOptions } from "@/lib/ecomm
 import { errorText, StorefrontError, subscribeSession } from "@/lib/ecommerce/browser";
 import { importGuestCart, saveAccountCart } from "@/lib/ecommerce/cart";
 import { useGuestCart } from "@/lib/ecommerce/guest-cart";
-import { cachedShopData, shopApi, shopReads, useShopStore, type ShopStore } from "@/lib/ecommerce/shop-store";
+import { cachedShopData, shopApi, shopQueryError, shopReads, useShopStore, type ShopStore } from "@/lib/ecommerce/shop-store";
 import { useStorefrontResource } from "./useStorefrontResource";
 import { CartProductArtwork, ResourceFeedback, ShopPageHeader } from "./ShopPreviewShared";
 import { PersonalizationText } from "./ShopPersonalization";
@@ -15,13 +15,15 @@ import { ShopGuestCart } from "./ShopGuestCart";
 import styles from "./CommercePreview.module.css";
 import live from "./Storefront.module.css";
 
+const guestCartResource = { cart: null, policy: null, policyError: "", importError: null };
+
 async function readCart(store: ShopStore, signal: AbortSignal, refresh: boolean) {
   let accountCart: Cart;
   try {
     accountCart = await shopReads.cart(store, refresh);
   } catch (error) {
     if (!(error instanceof StorefrontError) || error.code !== "LOGIN_REQUIRED") throw error;
-    return { cart: null, policy: null, policyError: "", importError: null };
+    return guestCartResource;
   }
   signal.throwIfAborted();
   const { cart, importError } = await importGuestCart(accountCart, signal);
@@ -43,9 +45,14 @@ export function ShopCart() {
   const store = useShopStore();
   const load = useCallback((signal: AbortSignal, refresh: boolean) => readCart(store, signal, refresh), [store]);
   const state = store.getState();
-  const cachedCart = cachedShopData(shopApi.endpoints.cart.select()(state));
+  const cartQuery = shopApi.endpoints.cart.select()(state);
+  const cachedCart = cachedShopData(cartQuery);
+  const cartReadError = cartQuery.error && shopQueryError(cartQuery.error);
+  const knownGuest = cartReadError instanceof StorefrontError && cartReadError.code === "LOGIN_REQUIRED";
   const cachedPolicy = cachedShopData(shopApi.endpoints.checkoutOptions.select()(state)) ?? null;
-  const resource = useStorefrontResource(load, cachedCart ? { cart: cachedCart, policy: cachedPolicy, policyError: "", importError: null } : undefined);
+  const cached = cachedCart ? { cart: cachedCart, policy: cachedPolicy, policyError: "", importError: null }
+    : knownGuest ? guestCartResource : undefined;
+  const resource = useStorefrontResource(load, cached);
   const { reload } = resource;
   const guestLines = useGuestCart();
   const [edit, setEdit] = useState<{ cart: Cart; draft: DraftLine[]; reviewed: boolean }>();

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import type { ProductId } from "./products";
 import styles from "./Shop.module.css";
+import controls from "./Storefront.module.css";
 
 const SECTIONS = {
   "e-disk": [
@@ -28,7 +29,12 @@ export function ProductDocumentation({ product }: { product: Exclude<ProductId, 
   return (
     <main id="shop-content" className={styles.docs}>
       <h1>Dentro {product}<span>.</span></h1>
-      <p className={styles.docsLead}>{isDisk ? "L’oggetto, l’app e i tuoi dischi. Tutto quello che serve per capire come si incontrano." : "Il tuo brand, un prodotto, un ricordo: il portachiavi NFC che apre un collegamento con un gesto. Poi forme, logo e colori lo rendono tuo."}</p>
+      <div className={styles.docsIntro}>
+        <p className={styles.docsLead}>{isDisk ? "L’oggetto, l’app e i tuoi dischi. Tutto quello che serve per capire come si incontrano." : "Il tuo brand, un prodotto, un ricordo: il portachiavi NFC che apre un collegamento con un gesto. Poi forme, logo e colori lo rendono tuo."}</p>
+        {!isDisk && <Link className={controls.primary} href="/shop/e-linker/configura">
+          Configura e-linker <ArrowUpRight size={17} aria-hidden="true" />
+        </Link>}
+      </div>
       <div className={styles.docsGrid}>
         <nav className={styles.docsIndex} aria-label={`Indice guida ${product}`}><span>In questa guida</span>{SECTIONS[product].map(section => <a key={section.id} href={`#${section.id}`}>{section.title}</a>)}<Link href={`/shop/${product}#configura`}>← Torna al configuratore</Link></nav>
         <div className={styles.docsBody}>
@@ -42,7 +48,7 @@ export function ProductDocumentation({ product }: { product: Exclude<ProductId, 
             <section id="audio"><h2>La musica segue il tuo dispositivo.</h2><p>Puoi ascoltare dal telefono o dal computer, oppure usare cuffie o una cassa collegata al sistema. Il collegamento BLE al giradischi serve per i tag e i comandi; l’audio passa dall’uscita multimediale del tuo dispositivo.</p><p>Per una cassa Bluetooth, abbinala dalle impostazioni del telefono o del computer e selezionala come uscita audio. Le possibilità di selezione direttamente nella pagina dipendono dal browser.</p><p className={styles.docsNote}>Il modello dello shop è un’anteprima dimostrativa del prodotto. Colori, finiture, dimensioni e disponibilità vengono confermati con Evolve.</p></section>
           </> : <>
             <section id="inizia"><h2>Un piccolo oggetto. Un accesso diretto.</h2><p>e-linker è un portachiavi stampato in 3D con un tag NFC al suo interno. Avvicinandolo a uno smartphone compatibile, il tag può aprire il collegamento scelto. Il tuo logo e i tuoi colori rendono riconoscibile l’oggetto; il link gli dà una destinazione.</p><p>Scegli la base fra le forme piane del configuratore. Trascina il modello per osservarlo in 3D; le quattro frecce, Q/E e Home permettono di ruotarlo e ripristinare la vista da tastiera.</p></section>
-            <section id="nfc"><h2>Che cosa vuoi far scoprire?</h2><p>Per la tua attività puoi scegliere sito, social, menu, catalogo o una pagina di contatto. Per un prodotto, una scheda o un video di presentazione. Per un amico, un album di foto, una dedica o un ricordo online.</p><p>Il tag apre un link: immagini, musica e video rimangono nel servizio che li ospita. Per un ricordo personale, imposta nella pagina di destinazione chi può accedere al contenuto.</p><p>Indica il collegamento desiderato nella richiesta a Evolve: definiamo la destinazione e la predisposizione NFC insieme alla personalizzazione del portachiavi.</p></section>
+            <section id="nfc"><h2>Che cosa vuoi far scoprire?</h2><p>Per la tua attività puoi scegliere sito, social, menu, catalogo o una pagina di contatto. Per un prodotto, una scheda o un video di presentazione. Per un amico, un album di foto, una dedica o un ricordo online.</p><p>Il tag apre un link: immagini, musica e video rimangono nel servizio che li ospita. Per un ricordo personale, imposta nella pagina di destinazione chi può accedere al contenuto.</p><p>Per salvare o cambiare il link sul tuo e-linker, usa il pulsante «Configura e-linker» e avvicina il portachiavi al telefono quando richiesto.</p></section>
             <section id="testo"><h2>Lascia un segno, in rilievo.</h2><p>Il testo si adatta allo spazio disponibile nella forma scelta. Il configuratore indica il limite di caratteri per ogni faccia.</p><p>Nomi brevi e lettere ben distinte sono più leggibili su un piccolo oggetto.</p><p>La dimensione minima delle lettere e gli spessori effettivamente stampabili vengono verificati prima della produzione.</p></section>
             <section id="logo">
               <h2>Il tuo logo, preparato bene.</h2>

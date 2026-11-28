@@ -3,8 +3,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Provider } from "react-redux";
 import { subscribeSession } from "@/lib/ecommerce/browser";
-import { subscribeCartChanges } from "@/lib/ecommerce/cart";
-import { cacheShopEntries, makeShopStore, shopApi, subscribeShopPreferences } from "@/lib/ecommerce/shop-store";
+import { cacheAccountCart, subscribeCartChanges } from "@/lib/ecommerce/cart";
+import { makeShopStore, shopApi, subscribeShopPreferences } from "@/lib/ecommerce/shop-store";
 
 export function ShopStoreProvider({ children }: { children: ReactNode }) {
   const [store] = useState(makeShopStore);
@@ -17,10 +17,7 @@ export function ShopStoreProvider({ children }: { children: ReactNode }) {
         store.dispatch(shopApi.util.invalidateTags(["Cart"]));
         return;
       }
-      void cacheShopEntries(store, [
-        { endpointName: "cart", arg: undefined, value: cart },
-        { endpointName: "cartCount", arg: undefined, value: { quantity: cart.items.reduce((sum, item) => sum + item.quantity, 0) } },
-      ]);
+      void cacheAccountCart(store, cart);
     });
     const stopPreferences = subscribeShopPreferences(tag => {
       store.dispatch(shopApi.util.invalidateTags(tag === "Profile" ? [tag, "CustomerLink"] : [tag]));

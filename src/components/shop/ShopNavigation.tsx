@@ -76,7 +76,8 @@ export function ProductNavigation({ product }: { product: ProductId }) {
     window.addEventListener("hashchange", readHash);
     return () => window.removeEventListener("hashchange", readHash);
   }, [pathname]);
-  const selected = pathname.endsWith("/documentazione") ? "guide" : pathname.endsWith("/app") ? "app" : section;
+  const selected = pathname === "/shop/e-linker/configura" ? null
+    : pathname.endsWith("/documentazione") ? "guide" : pathname.endsWith("/app") ? "app" : section;
   const highlighted = hovered ?? selected;
   const tabs = [
     { id: "scopri", label: "Scopri", href: root },

@@ -112,6 +112,7 @@ export async function drawLinkerCarpet(playground: HTMLDivElement, surface: HTML
   const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const moving = new Set<Piece>();
   let width = 0, height = 0, drawingHeight = 0, size = 0, pixels = 1;
+  let canvasHeight = 0;
   let pieces: Piece[] = [];
   let capacity = 0;
   let visible = true;
@@ -135,8 +136,18 @@ export async function drawLinkerCarpet(playground: HTMLDivElement, surface: HTML
   function keepInside(piece: Piece) {
     const xMargin = piece.width * .24;
     const yMargin = piece.width * (.62 * Math.abs(Math.sin(piece.angle)) + .4 * Math.abs(Math.cos(piece.angle))) + 2;
-    piece.x = clamp(piece.x, -xMargin, width + xMargin);
-    piece.y = clamp(piece.y, yMargin, drawingHeight - yMargin);
+    const x = clamp(piece.x, -xMargin, width + xMargin);
+    const y = clamp(piece.y, yMargin, drawingHeight - yMargin);
+    const changed = x !== piece.x || y !== piece.y;
+    piece.x = x;
+    piece.y = y;
+    return changed;
+  }
+
+  function paintPieces() {
+    paint.setTransform(1, 0, 0, 1, 0, 0);
+    paint.clearRect(0, 0, canvas.width, canvas.height);
+    for (const piece of pieces) mark(piece);
   }
 
   function draw(time: number) {
@@ -158,9 +169,7 @@ export async function drawLinkerCarpet(playground: HTMLDivElement, surface: HTML
       }
     }
 
-    paint.setTransform(1, 0, 0, 1, 0, 0);
-    paint.clearRect(0, 0, canvas.width, canvas.height);
-    for (const piece of pieces) mark(piece);
+    paintPieces();
     lastFrame = moving.size ? time : 0;
     if (moving.size) queueFrame();
   }
@@ -169,19 +178,29 @@ export async function drawLinkerCarpet(playground: HTMLDivElement, surface: HTML
     if (signal.aborted) return;
     const bounds = surface.getBoundingClientRect();
     const newWidth = bounds.width, newHeight = bounds.height;
-    const newDrawingHeight = canvas.getBoundingClientRect().height;
+    const newDrawingHeight = playground.getBoundingClientRect().bottom - bounds.top;
     if (!newWidth || !newHeight || !newDrawingHeight) return;
     const resetPile = width !== newWidth || height !== newHeight;
     if (!resetPile && drawingHeight === newDrawingHeight) return;
+    const shrank = newDrawingHeight < drawingHeight;
     width = newWidth;
     height = newHeight;
     drawingHeight = newDrawingHeight;
-    pixels = Math.min(window.devicePixelRatio || 1, 1.65);
-    canvas.width = Math.round(width * pixels);
-    canvas.height = Math.round(drawingHeight * pixels);
+    const resizeCanvas = resetPile || drawingHeight > canvasHeight;
+    if (resizeCanvas) {
+      // Leave room for animated FAQ expansion without reallocating on every frame.
+      canvasHeight = Math.ceil(drawingHeight / 160) * 160;
+      pixels = Math.min(window.devicePixelRatio || 1, 1.65);
+      canvas.width = Math.round(width * pixels);
+      canvas.height = Math.round(canvasHeight * pixels);
+      canvas.style.height = `${canvasHeight}px`;
+    }
     if (!resetPile) {
-      pieces.forEach(keepInside);
-      queueFrame();
+      let moved = false;
+      if (shrank) {
+        for (const piece of pieces) if (keepInside(piece)) moved = true;
+      }
+      if ((resizeCanvas || moved) && visible && !document.hidden) paintPieces();
       return;
     }
     size = clamp(width * .06, 54, 92);
@@ -362,10 +381,10 @@ export async function drawLinkerCarpet(playground: HTMLDivElement, surface: HTML
     visible = entry.isIntersecting;
     if (visible) queueFrame();
   });
-  observer.observe(canvas);
+  observer.observe(playground);
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(surface);
-  resizeObserver.observe(canvas);
+  resizeObserver.observe(playground);
   resize();
 
   return () => {

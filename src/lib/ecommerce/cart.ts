@@ -2,7 +2,7 @@ import type { PublicCatalogProduct } from "@evolve/ecommerce-server/catalog";
 import { cartSchema, type Cart, type PersonalizationInput, type SaveCart } from "./contracts";
 import { StorefrontError, storefrontMutate } from "./browser";
 import { addGuestLine, readGuestCart, removeGuestLine } from "./guest-cart";
-import { shopApi, shopReads, type ShopStore } from "./shop-store";
+import { cacheShopEntries, shopApi, shopReads, type ShopStore } from "./shop-store";
 
 const cartEvent = "evolve:storefront-cart";
 
@@ -19,11 +19,22 @@ export function subscribeCartChanges(callback: (cart?: Cart) => void) {
 
 export function cartChanged(cart?: Cart) {
   window.dispatchEvent(new CustomEvent(cartEvent, { detail: cart }));
+  broadcastCartChange();
+}
+
+function broadcastCartChange() {
   if (typeof BroadcastChannel !== "undefined") {
     const channel = new BroadcastChannel(cartEvent);
     channel.postMessage("changed");
     channel.close();
   }
+}
+
+export function cacheAccountCart(store: ShopStore, cart: Cart) {
+  return cacheShopEntries(store, [
+    { endpointName: "cart", arg: undefined, value: cart },
+    { endpointName: "cartCount", arg: undefined, value: { quantity: cart.items.reduce((sum, item) => sum + item.quantity, 0) } },
+  ]);
 }
 
 export async function saveAccountCart(input: SaveCart, notify = true) {
@@ -57,7 +68,11 @@ export async function addCatalogProduct(
   }
   signal?.throwIfAborted();
   try {
-    return await addToAccountCart(current, line);
+    const saved = await addToAccountCart(current, line);
+    void shopReads.checkoutOptions(store).catch(() => {});
+    await cacheAccountCart(store, saved);
+    broadcastCartChange();
+    return saved;
   } catch (error) {
     if (error instanceof StorefrontError && ["CATALOG_CHANGED", "PERSONALIZATION_CHANGED", "PRODUCT_NOT_FOUND"].includes(error.code))
       store.dispatch(shopApi.util.invalidateTags(["Catalog"]));
@@ -80,7 +95,7 @@ function addToAccountCart(current: Cart, line: SaveCart["items"][number]) {
     personalizationId: item.personalizationId,
   }));
   if (!found) items.push(line);
-  return saveAccountCart({ cartPublicId: current.id, expectedRevision: current.revision, items });
+  return saveAccountCart({ cartPublicId: current.id, expectedRevision: current.revision, items }, false);
 }
 
 export async function importGuestCart(cart: Cart, signal: AbortSignal) {

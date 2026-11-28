@@ -21,17 +21,37 @@ function roundedPolygon(points: readonly KeyringPosition[], radius: number) {
   });
 }
 
+function heartOutline() {
+  const curves = [
+    [{ x: .13, y: .72 }, { x: .42, y: 1.37 }, { x: .92, y: 1.37 }],
+    [{ x: 1.44, y: 1.37 }, { x: 1.86, y: 1.04 }, { x: 1.86, y: .55 }],
+    [{ x: 1.86, y: -.09 }, { x: 1.1, y: -.66 }, { x: .09, y: -1.32 }],
+    [{ x: .052, y: -1.345 }, { x: .028, y: -1.36 }, { x: 0, y: -1.36 }],
+  ] as const;
+  let start = { x: 0, y: .72 };
+  const rightSide = [start];
+  for (const [first, second, end] of curves) {
+    for (let step = 1; step <= 12; step++) {
+      const t = step / 12;
+      const middle = mix(first, second, t);
+      const nearStart = mix(mix(start, first, t), middle, t);
+      const nearEnd = mix(middle, mix(second, end, t), t);
+      rightSide.push(mix(nearStart, nearEnd, t));
+    }
+    start = end;
+  }
+  return rightSide.concat(rightSide.slice(1, -1).reverse().map(({ x, y }) => ({ x: -x, y })));
+}
+
 export function keyringOutline(shape: KeyringShape) {
   const cached = outlineCache.get(shape);
   if (cached) return cached;
   let points: KeyringPosition[];
-  if (shape === "circle" || shape === "ellipse" || shape === "heart") {
+  if (shape === "heart") {
+    points = heartOutline();
+  } else if (shape === "circle" || shape === "ellipse") {
     points = Array.from({ length: 80 }, (_, index) => {
       const angle = index * Math.PI / 40;
-      if (shape === "heart") return {
-        x: 1.87 * Math.sin(angle) ** 3,
-        y: .095 * (2.5 + 13 * Math.cos(angle) - 5 * Math.cos(2 * angle) - 2 * Math.cos(3 * angle) - Math.cos(4 * angle)),
-      };
       return { x: (shape === "ellipse" ? 2 : 1.8) * Math.cos(angle), y: (shape === "ellipse" ? 1.24 : 1.8) * Math.sin(angle) };
     });
   } else if (shape === "triangle") {

@@ -1,4 +1,4 @@
-.playground { --pile-inset: clamp(24px, 2vw, 38px); position: relative; isolation: isolate; }
+.playground { --pile-inset: clamp(24px, 2vw, 38px); position: relative; isolation: isolate; overflow: clip; }
 .carpet { padding-block: var(--pile-inset); background: var(--shop-paper, #fcfdfb); }
 .surface {
   display: block;
@@ -19,7 +19,7 @@
 .artwork {
   position: absolute;
   z-index: 1;
-  inset: var(--pile-inset) 0 0;
+  inset: var(--pile-inset) 0 auto;
   width: 100%;
   height: calc(100% - var(--pile-inset));
   pointer-events: none;
