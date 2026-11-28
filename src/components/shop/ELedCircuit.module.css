@@ -26,7 +26,8 @@
 
 .board, .word { width: 100%; }
 .word { position: relative; }
-.diagram { display: block; width: 100%; overflow: visible; }
+.diagram { display: block; width: 100%; height: auto; overflow: visible; }
+.diagram[data-vertical="true"] { display: none; }
 
 .signs {
   filter: grayscale(.96) brightness(.57);
@@ -37,7 +38,7 @@ g[data-live="true"] > .signs {
   filter: hue-rotate(var(--hue)) drop-shadow(0 0 5px color-mix(in srgb, var(--ink) 63%, transparent));
 }
 
-.cable, .mobileLead {
+.cable {
   fill: none;
   stroke: color-mix(in srgb, var(--ink) 49%, #1b2424);
   stroke-width: 2.5;
@@ -47,17 +48,17 @@ g[data-live="true"] > .signs {
   transition: stroke .22s ease, filter .22s ease;
 }
 
-.cable[data-live="true"], .mobileLead[data-live="true"] {
+.cable[data-live="true"] {
   stroke: var(--ink);
   filter: drop-shadow(0 0 3px var(--ink));
 }
 
-.mobileLead { display: none; }
 .switches { position: absolute; inset: 0; pointer-events: none; }
 
 .joint {
   position: absolute;
   top: var(--y);
+  left: var(--x);
   display: grid;
   place-items: center;
   width: clamp(37px, 3.6vw, 53px);
@@ -74,6 +75,8 @@ g[data-live="true"] > .signs {
 }
 
 .joint svg { fill: transparent; stroke: currentColor; stroke-width: 2.9; stroke-linecap: round; }
+.jointSymbol { transform-origin: 16px 16px; }
+.jointSymbol[data-vertical="true"] { transform: rotate(-90deg); }
 .joint:hover { transform: translate(-50%, calc(-50% - 2px)) rotate(-4deg); }
 .joint[aria-checked="false"] { transform: translate(-50%, -50%) rotate(8deg); }
 .joint[data-live="true"] { box-shadow: 0 4px 0 #131d17, 0 0 13px color-mix(in srgb, var(--ink) 44%, transparent); }
@@ -118,19 +121,19 @@ g[data-live="true"] > .signs {
 .circuit[data-powered="true"] .battery { box-shadow: 0 5px 0 #729840, 0 0 21px #a3ff6e5b; }
 
 @media (max-width: 700px) {
-  .circuit { min-height: clamp(320px, 112vw, 440px); }
-  .mobileLead { display: block; }
-  .switches { position: relative; inset: auto; height: 54px; }
-  .joint { top: 50%; width: min(42px, 13%); height: 44px; }
-  .feed::before {
-    position: absolute;
-    top: -7px;
-    left: var(--battery-x);
-    width: 2px;
-    height: 14px;
-    background: #9bff80;
-    content: "";
+  .circuit { min-height: 0; padding-block: 28px 36px; }
+  .circuit::before {
+    background: radial-gradient(ellipse at 50% 15%, #71ff7130, transparent 25%),
+      radial-gradient(ellipse at 50% 43%, #4ddfff2b, transparent 26%),
+      radial-gradient(ellipse at 50% 64%, #cf80ff2c, transparent 25%),
+      radial-gradient(ellipse at 50% 87%, #ff65882c, transparent 24%);
   }
-  .battery { left: max(25px, var(--battery-x)); }
-  .battery svg { width: 15px; }
+  .board { position: relative; max-width: 400px; }
+  .diagram[data-vertical="false"] { display: none; }
+  .diagram[data-vertical="true"] { display: block; }
+  .joint { top: var(--mobile-y); left: var(--mobile-x); width: 44px; height: 44px; }
+  .jointSymbol { transform: rotate(-90deg); }
+  .feed { position: absolute; inset: 0; height: auto; pointer-events: none; }
+  .battery { top: var(--mobile-battery-y); left: 50%; width: 66px; transform: translate(-50%, -50%) rotate(-5deg); pointer-events: auto; }
+  .battery svg { width: 17px; }
 }

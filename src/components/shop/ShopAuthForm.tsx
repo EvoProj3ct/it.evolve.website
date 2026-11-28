@@ -103,7 +103,6 @@ export function ShopAuthForm({ action, legal, nextPath }: { action: AuthAction; 
   }
 
   return <main id="shop-content" className={styles.authPage}>
-    <div className={styles.authStory} aria-hidden="true"><ShopAuthArcade /></div>
     <section className={styles.authPanel} aria-labelledby="auth-title"><Link className={styles.back} href="/shop/e-linker" prefetch={false}>Torna agli oggetti</Link><h1 id="auth-title">{info.title}</h1>
       <p ref={feedback} tabIndex={-1} className={error ? styles.error : styles.success} role={error ? "alert" : "status"}>{error || message}</p>
       {action === "register" && !legal.registrationReady && <p className={styles.notice}>La registrazione non è ancora disponibile. Riprova più tardi.</p>}
@@ -136,5 +135,6 @@ export function ShopAuthForm({ action, legal, nextPath }: { action: AuthAction; 
       <nav className={styles.authLinks} aria-label="Account">{action === "login" ? <span>Non hai ancora un account? <Link href={`/account/register${returnQuery}`} prefetch={false}>Registrati <ArrowUpRight size={13} /></Link></span> : <Link href={`/account/login${returnQuery}`} prefetch={false}>Vai all’accesso <ArrowRight size={14} /></Link>}{action === "login" && <Link href={`/account/resend-verification${returnQuery}`} prefetch={false}>Verifica la tua email</Link>}</nav>
       {["register", "change-password", "reset-password"].includes(action) && <p className={styles.attribution}>Il controllo delle password compromesse usa Pwned Passwords di <a href="https://haveibeenpwned.com/Passwords" target="_blank" rel="noreferrer">Have I Been Pwned</a>.</p>}
     </section>
+    <div className={styles.authStory} aria-hidden="true"><ShopAuthArcade /></div>
   </main>;
 }

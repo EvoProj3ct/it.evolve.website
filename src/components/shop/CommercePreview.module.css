@@ -326,19 +326,21 @@
   .summaryTop > svg { display: block; }
   .profileNudge { margin-top: 7px; }
   .continueLink { margin-top: 23px; }
-  .profileGrid { grid-template-columns: 1fr; gap: 27px; }
-  .profileSidebar { position: static; }
+  .profilePage .pageHeading h1 { overflow-wrap: anywhere; }
+  .profileGrid { grid-template-columns: minmax(0, 1fr); gap: 27px; }
+  .profileSidebar { position: static; min-width: 0; }
   .profileIdentity { align-items: center; gap: 12px; padding-bottom: 20px; }
+  .profileIdentity > div { min-width: 0; overflow-wrap: anywhere; }
   .avatar { width: 41px; height: 41px; font-size: 13px; }
   .profileIdentity strong { margin: 0; font-size: 13px; }
   .profileIdentity > div > span { font-size: 10px; }
-  .profileNav { display: flex; gap: 6px; margin-top: 15px; margin-inline: -22px; padding: 0 22px 5px; overflow-x: auto; scrollbar-width: none; }
-  .profileNav::-webkit-scrollbar { display: none; }
-  .profileNav > button { flex: none; gap: 8px; min-height: 42px; padding: 0 12px; white-space: nowrap; }
-  .profileNav > button > svg { width: 16px; }
+  .profileNav { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-top: 15px; }
+  .profileNav > button { min-width: 0; gap: 8px; min-height: 44px; padding: 6px 9px; line-height: 1.25; }
+  .profileNav > button > svg { flex: none; width: 16px; }
   .profileNav > button > small { min-width: 12px; }
   .sidebarHelp { display: none; }
   .profilePanel { min-height: 410px; }
+  .profilePanel .panelHeading { flex-wrap: wrap; gap: 8px 15px; }
   .featuredOrder { padding: 25px 23px 22px; }
   .featuredCopy h2 { font-size: clamp(27px,5.4vw,36px); }
   .featuredOrder .featuredArt { top: 27px; right: -7px; width: 48%; }

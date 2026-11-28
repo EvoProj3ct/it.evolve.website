@@ -1,7 +1,7 @@
-.authPage { display: grid; grid-template-columns: 1.05fr 1fr; min-height: calc(100svh - 74px); color: #101914; background: #fcfdfb; font-family: HelveticaLocal, Helvetica, Arial, sans-serif; }
-.authStory { display: grid; place-items: center; min-width: 0; min-height: 620px; padding: clamp(20px, 4vw, 70px); background: radial-gradient(ellipse at 50% 32%, #e0ebd8, #f1f6ed 72%); }
+.authPage { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); grid-template-areas: "arcade form"; min-height: calc(100svh - 74px); color: #101914; background: #fcfdfb; font-family: HelveticaLocal, Helvetica, Arial, sans-serif; }
+.authStory { grid-area: arcade; display: grid; place-items: center; min-width: 0; min-height: 620px; padding: clamp(20px, 4vw, 70px); background: radial-gradient(ellipse at 50% 32%, #e0ebd8, #f1f6ed 72%); }
 .authStory > svg { display: block; width: min(100%, 700px); height: auto; }
-.authPanel { align-self: center; width: 100%; max-width: 540px; margin: 0 auto; padding: 60px clamp(26px,5vw,75px); }
+.authPanel { grid-area: form; align-self: center; width: 100%; max-width: 540px; margin: 0 auto; padding: 60px clamp(26px,5vw,75px); }
 .authPanel h1 { margin: 30px 0 0; font-size: clamp(32px,3.2vw,45px); font-weight: 400; line-height: 1.05; letter-spacing: -.055em; }
 .back { color: #7f8f74; font-size: 10px; }
 .form { display: grid; gap: 21px; max-width: 620px; margin-top: 24px; }
@@ -356,10 +356,12 @@
   .detailGrid { gap: 28px; }
 }
 @media (max-width: 700px) {
-  .authPage { grid-template-columns: 1fr; min-height: calc(100svh - 68px); }
-  .authStory { display: none; }
-  .authPanel { max-width: 490px; padding: 35px 25px 65px; }
-  .authPanel h1 { font-size: 39px; }
+  .authPage { grid-template-columns: minmax(0, 1fr); grid-template-areas: "form" "arcade"; grid-template-rows: 1fr auto; min-height: calc(100svh - 68px); }
+  .authStory { min-height: 0; padding: 18px 22px 26px; }
+  .authStory > svg { width: min(100%, 340px); }
+  .authPanel { align-self: start; max-width: 490px; padding: 30px 25px 42px; }
+  .authPanel h1 { margin-top: 22px; font-size: 39px; }
+  .authPanel .form input:not([type="checkbox"]):not([type="radio"]) { font-size: 16px; }
   .productGrid, .detailGrid { grid-template-columns: 1fr; gap: 27px; }
   .productInfo { padding-top: 0; }
   .productInfo h2 { font-size: 33px; }
@@ -369,10 +371,19 @@
   .lineSymbol > svg { width: 23px; }
   .saveBar { align-items: flex-start; flex-direction: column; }
   .saveBar .primary { width: 100%; }
-  .sidebarLink { flex: none; min-height: 42px; padding: 0 10px; font-size: 11px; white-space: nowrap; }
+  .sidebarLink { min-width: 0; min-height: 44px; gap: 8px; padding: 6px 9px; font-size: 11px; line-height: 1.25; }
   .customerStatus { margin-bottom: 28px; padding: 20px; }
 
 
+  .profileOverview { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  .profileOverview > section { min-width: 0; }
+  .overviewRank { gap: 12px; padding: 13px; }
+  .overviewRankIdentity { gap: 10px; }
+  .overviewRankIdentity strong, .orderCount dt { overflow-wrap: anywhere; }
+  .overviewRankGhost { width: 46px; height: 44px; }
+  .overviewRankTrack { min-width: 0; }
+  .orderCounts { gap: 9px; }
+  .orderCount { grid-template-columns: minmax(0, 1fr); }
   .realOrder { grid-template-columns: minmax(0, 1fr) auto; gap: 11px; padding: 13px; }
   .orderCardBody { grid-column: 1 / -1; grid-row: 2; }
   .orderProductCircle { width: 32px; }

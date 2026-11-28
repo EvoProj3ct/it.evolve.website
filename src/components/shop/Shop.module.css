@@ -674,11 +674,11 @@
   .docsBody h2 { font-size: 27px; }
   .docsBody p, .docsBody li { font-size: 12px; }
   .productPage[data-product="e-linker"] .hero { padding-top: calc(28px + var(--product-nav-height)); padding-bottom: 24px; }
-  .productPage[data-product="e-linker"] .heroGrid { gap: 20px; }
-  .productPage[data-product="e-linker"] .heroCopy { padding-bottom: 8px; }
+  .productPage[data-product="e-linker"] .heroGrid { gap: 8px; }
+  .productPage[data-product="e-linker"] .heroCopy { padding-bottom: 0; }
   .productPage[data-product="e-linker"] .productTitle { font-size: clamp(77px,22vw,145px); }
   .productPage[data-product="e-linker"] .heroTagline { font-size: clamp(30px,7vw,44px); }
-  .productPage[data-product="e-linker"] .heroVisual { height: clamp(340px,78vw,490px); }
+  .productPage[data-product="e-linker"] .heroVisual { height: clamp(340px,78vw,490px); margin-top: -16px; }
   .productPage[data-product="e-linker"] .steps { gap: 30px; }
   .productPage[data-product="e-linker"] .linkerStoryTrack { --story-gap: 20px; grid-auto-columns: min(88%, 460px); }
   .linkerStoryTrack > .step { grid-template-columns: minmax(0, 1fr) minmax(80px, 32%); }
