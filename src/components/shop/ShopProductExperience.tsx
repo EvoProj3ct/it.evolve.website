@@ -2,12 +2,13 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useDeferredValue, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
+import { Fragment, useDeferredValue, useEffect, useMemo, useRef, useState, type ChangeEvent, type CSSProperties } from "react";
 import { ArrowUpRight, BookOpen, Check, CircleDot, Download, Eraser, MoveHorizontal, Pause, Play, Plus, RotateCcw, Smartphone, Type, Upload, Volume2, VolumeX, X } from "lucide-react";
 import {
-  cleanKeyringLettering, keyringDesignLabels, keyringHoleName, keyringHoleOptions, keyringTextLimit,
-  keyringTextOrientationNames, keyringTextOrientations, keyringTextSizeNames, keyringTextSizes,
-  type KeyringFace, type KeyringLettering, type KeyringTextOrientation, type KeyringTextSize,
+  cleanKeyringLettering, defaultKeyringLettering, keyringDesignLabels, keyringFontNames, keyringFonts,
+  keyringHoleName, keyringHoleOptions, keyringRaisedFontName, keyringReliefNames, keyringReliefs, keyringSizesForRelief,
+  keyringTextLimit, keyringTextOrientationNames, keyringTextOrientations, keyringTextSizeNames,
+  type KeyringFace, type KeyringFont, type KeyringLettering, type KeyringRelief, type KeyringTextOrientation, type KeyringTextSize,
 } from "@evolve/ecommerce-server/keyring-design";
 import { isLinkerOfferKind, linkerBundleSize, linkerBundleSizes, linkerOfferKind, type LinkerOfferKind } from "@evolve/ecommerce-server/keyring-offers";
 import { ProductMark } from "./ProductMark";
@@ -53,7 +54,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
   const [logoAttachment, setLogoAttachment] = useState<LogoAsset | null>(null);
   const [face, setFace] = useState<KeyringFace>("front");
   const [canvasTool, setCanvasTool] = useState<KeyringEditor["tool"]>("rotate");
-  const [viewerTheme, setViewerTheme] = useState<"light" | "cad">("light");
+  const [viewerTheme, setViewerTheme] = useState<"light" | "dark">("dark");
   const [diskOffer, setDiskOffer] = useState<"device" | "bundle">("device");
   const [linkerOffer, setLinkerOffer] = useState<LinkerOfferKind | null>(null);
   const [bundleDiscs, setBundleDiscs] = useState<BundleDisc[]>(() =>
@@ -74,16 +75,26 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
   const presets = isDisk ? DISK_PRESETS : LINKER_PRESETS;
   const previewConfiguration = useDeferredValue(configuration);
   const activeLettering = configuration.keyring[face];
+  const activeRelief = activeLettering.relief ?? defaultKeyringLettering.relief;
+  const availableSizes = keyringSizesForRelief(activeRelief);
   const activeText = face === "front" ? configuration.text : configuration.keyring.back.text;
   const textLimit = (side: KeyringFace) => {
     const lettering = configuration.keyring[side];
-    return keyringTextLimit(configuration.shape, lettering.orientation, lettering.size);
+    return keyringTextLimit(configuration.shape, lettering.orientation, lettering.size, lettering.relief);
   };
   const invalidFaces = (["front", "back"] as const).filter(side =>
     (side === "front" ? configuration.text : configuration.keyring.back.text).trim().length > textLimit(side));
   const changeLettering = (side: KeyringFace, patch: Partial<KeyringLettering>) => setConfiguration(current => ({
     ...current, keyring: { ...current.keyring, [side]: { ...current.keyring[side], ...patch } },
   }));
+  const changeRelief = (relief: KeyringRelief) => {
+    const sizes = keyringSizesForRelief(relief);
+    changeLettering(face, {
+      relief,
+      size: sizes.includes(activeLettering.size) ? activeLettering.size : sizes[sizes.length - 1],
+      ...(relief === "raised" && { font: defaultKeyringLettering.font }),
+    });
+  };
   const changeText = (value: string) => {
     const text = cleanKeyringLettering(value);
     setConfiguration(current => face === "front" ? { ...current, text }
@@ -243,6 +254,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
     </section>
   );
 
+  const ProductEnd = isDisk ? Fragment : LinkerPile;
   return (
     <main id="shop-content" className={styles.productPage} data-product={product}>
       <section ref={heroRef} className={styles.hero} aria-labelledby="product-title">
@@ -297,7 +309,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
                 <span>360°</span>
                 {!isDisk && <div className={styles.viewerTheme} role="group" aria-label="Sfondo dell’anteprima">
                   <button type="button" aria-pressed={viewerTheme === "light"} onClick={() => setViewerTheme("light")}>Chiaro</button>
-                  <button type="button" aria-label="CAD scuro" aria-pressed={viewerTheme === "cad"} onClick={() => setViewerTheme("cad")}>CAD</button>
+                  <button type="button" aria-pressed={viewerTheme === "dark"} onClick={() => setViewerTheme("dark")}>Scuro</button>
                 </div>}
               </div>
             </div>
@@ -333,11 +345,20 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
               <div className={styles.controlGroup}>
                 <label className={styles.fieldLabel} htmlFor="keyring-text">{face === "front" ? "Scritta sul fronte" : "Scritta sul retro"}</label>
                 <div className={styles.keyringLetterOptions}>
+                  <label>Rilievo<select value={activeRelief} onChange={event => changeRelief(event.target.value as KeyringRelief)}>
+                    {keyringReliefs.map(value => <option key={value} value={value}>{keyringReliefNames[value]}</option>)}
+                  </select></label>
+                  <label>Carattere<select value={activeLettering.font ?? defaultKeyringLettering.font} disabled={activeRelief === "raised"}
+                    onChange={event => changeLettering(face, { font: event.target.value as KeyringFont })}>
+                    {activeRelief === "raised" ? <option value="helvetica">{keyringRaisedFontName}</option> : keyringFonts.map(value =>
+                      <option key={value} value={value}>{keyringFontNames[value]}</option>)}
+                  </select></label>
                   <label>Orientamento<select value={activeLettering.orientation} onChange={event => changeLettering(face, { orientation: event.target.value as KeyringTextOrientation })}>
                     {keyringTextOrientations.map(value => <option key={value} value={value}>{keyringTextOrientationNames[value]}</option>)}
                   </select></label>
-                  <label>Grandezza<select value={activeLettering.size} onChange={event => changeLettering(face, { size: event.target.value as KeyringTextSize })}>
-                    {keyringTextSizes.map(value => <option key={value} value={value}>{keyringTextSizeNames[value]}</option>)}
+                  <label>Grandezza<select value={activeLettering.size} disabled={availableSizes.length === 1}
+                    onChange={event => changeLettering(face, { size: event.target.value as KeyringTextSize })}>
+                    {availableSizes.map(value => <option key={value} value={value}>{keyringTextSizeNames[value]}</option>)}
                   </select></label>
                 </div>
                 <div className={styles.textInput}><input id="keyring-text" type="text" value={activeText} maxLength={textLimit(face)}
@@ -429,27 +450,27 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
           <Link href={`/shop/${product}/documentazione`}>
             <BookOpen size={26} />
             <div><span>Da dove si comincia?</span><h3>Dentro {product}</h3>
-              <p>{isDisk ? "Primi passi, NFC e collegamenti." : "Come cominciare a utilizzare e-linker in pochi secondi"}</p>
+              <p>{isDisk ? "Primi passi, NFC e collegamenti." : "Come configurare e-linker in pochi secondi"}</p>
             </div>
             <ArrowUpRight size={25} />
           </Link>
         </div>
       </section>
 
-      {!isDisk && <LinkerPile />}
+      <ProductEnd>
+        <section className={styles.faq} aria-labelledby={isDisk ? "faq-title" : undefined}
+          aria-label={isDisk ? undefined : "Domande frequenti su e-linker"}>
+          {isDisk && <div><h2 id="faq-title">Bella domanda<span>.</span></h2></div>}
+          <div>
+            {info.faq.map(item => <details key={item.question}>
+              <summary>{item.question}<Plus size={20} aria-hidden="true" /></summary>
+              <p>{item.answer}</p>
+            </details>)}
+          </div>
+        </section>
 
-      <section className={styles.faq} aria-labelledby={isDisk ? "faq-title" : undefined}
-        aria-label={isDisk ? undefined : "Domande frequenti su e-linker"}>
-        {isDisk && <div><h2 id="faq-title">Bella domanda<span>.</span></h2></div>}
-        <div>
-          {info.faq.map(item => <details key={item.question}>
-            <summary>{item.question}<Plus size={20} aria-hidden="true" /></summary>
-            <p>{item.answer}</p>
-          </details>)}
-        </div>
-      </section>
-
-      <RelatedProducts current={product} />
+        <RelatedProducts current={product} />
+      </ProductEnd>
     </main>
   );
 }

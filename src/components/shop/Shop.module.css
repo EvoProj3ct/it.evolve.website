@@ -409,7 +409,7 @@
     radial-gradient(ellipse at 50% 50%, var(--viewer-center), var(--viewer-edge));
   box-shadow: 0 18px 70px #233a1810;
 }
-.productPage[data-product="e-linker"] .viewer[data-theme="cad"] {
+.productPage[data-product="e-linker"] .viewer[data-theme="dark"] {
   --viewer-grid: #72c94f1a;
   --viewer-center: #18241c;
   --viewer-edge: var(--shop-ink);
@@ -422,14 +422,14 @@
   color: var(--viewer-control-text);
   color-scheme: dark;
 }
-.viewer[data-theme="cad"] .viewerTop i { background: var(--shop-green); }
-.viewer[data-theme="cad"] .viewerTools button, .viewer[data-theme="cad"] .viewerCaption {
+.viewer[data-theme="dark"] .viewerTop i { background: var(--shop-green); }
+.viewer[data-theme="dark"] .viewerTools button, .viewer[data-theme="dark"] .viewerCaption {
   border-color: var(--viewer-control-border);
   background: var(--viewer-control-bg);
   color: var(--viewer-control-text);
 }
-.viewer[data-theme="cad"] .viewerTools button:hover { background: var(--viewer-control-active); }
-.viewer[data-theme="cad"] .sceneLoading { color: inherit; }
+.viewer[data-theme="dark"] .viewerTools button:hover { background: var(--viewer-control-active); }
+.viewer[data-theme="dark"] .sceneLoading { color: inherit; }
 .productPage[data-product="e-linker"] .shapeOptions { gap: 7px; }
 .productPage[data-product="e-linker"] .shapeOptions button { min-height: 76px; border-color: #e0e7d8; border-radius: 13px; color: #74826a; }
 .productPage[data-product="e-linker"] .shapeOptions button[aria-pressed="true"] { border-color: #b9d4a6; background: #f0f6eb; color: #3a6a2d; box-shadow: none; }
@@ -480,6 +480,29 @@
 }
 .keyringLetterOptions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
 .keyringLetterOptions label { display: grid; min-width: 0; gap: 6px; color: #50634a; font-size: 11px; }
+@font-face {
+  font-family: "Keyring Rounded";
+  src: url("/fonts/helvetica-rounded-bold-5871d05ead8de.otf") format("opentype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Keyring Condensed";
+  src: url("/fonts/helvetica-compressed-5871d14b6903a.otf") format("opentype");
+  font-display: swap;
+}
+@font-face {
+  font-family: "Keyring Mono";
+  src: url("../../app/fonts/GeistMono-latin-variable.woff2") format("woff2");
+  font-display: swap;
+}
+.keyringIllustrationText { font-family: "HelveticaLocal", Helvetica, Arial, sans-serif; font-weight: 400; }
+.keyringIllustrationText[data-typeface="bold"] { font-weight: 700; }
+.keyringIllustrationText[data-typeface="rounded"] { font-family: "Keyring Rounded", Helvetica, sans-serif; }
+.keyringIllustrationText[data-typeface="condensed"] { font-family: "Keyring Condensed", Helvetica, sans-serif; }
+.keyringIllustrationText[data-typeface="inter"] { font-family: var(--fonts-body), sans-serif; }
+.keyringIllustrationText[data-typeface="mono"] { font-family: "Keyring Mono", monospace; }
+.keyringIllustrationText[data-relief="raised"] { filter: drop-shadow(.8px 1.4px .5px #10191470); }
+.keyringIllustrationText[data-relief="recessed"] { filter: drop-shadow(0 -.6px .2px #10191465); }
 .scene[data-edit-tool="hole"], .scene[data-edit-tool="text"] { cursor: crosshair; }
 .productPage[data-product="e-linker"] .uploadButton { border-color: #ccdabc; border-radius: 11px; color: #6a7c5d; }
 .productPage[data-product="e-linker"] .requestButton { border-radius: 28px; }
@@ -493,8 +516,9 @@
 .productPage[data-product="e-linker"] .studyGrid figcaption { align-items: start; border-color: #dde4df; padding-block: 17px; font-size: 12px; }
 .productPage[data-product="e-linker"] .studyDetails > small { font-size: 10px; }
 .productPage[data-product="e-linker"] .studyAction { flex: none; min-height: 18px; color: #52645d; font-size: 10px; }
-.productPage[data-product="e-linker"] .resources { background: #f0f5ea; }
+.productPage[data-product="e-linker"] .resources { padding-block: clamp(80px, 6vw, 118px); background: #f0f5ea; }
 .productPage[data-product="e-linker"] .resources h2 > span { color: #72c94f; }
+.productPage[data-product="e-linker"] .resourceLinks { align-self: start; margin-top: clamp(25px, 3.3vw, 62px); }
 .productPage[data-product="e-linker"] .resourceLinks > a { padding: 28px; border: 1px solid #e0e8d7; border-radius: 18px; background: #fcfdfb; }
 .productPage[data-product="e-linker"] .resourceLinks > a > svg { color: #74a15b; }
 .linkerOffers { min-width: 0; margin: 0 0 24px; padding: 0; border: 0; scroll-margin-top: 160px; }
@@ -614,6 +638,7 @@
   .productPage[data-product="e-linker"] .linkerStoryTrack { grid-auto-columns: min(88%, 460px); gap: 20px; }
   .linkerStoryTrack > .step { grid-template-columns: minmax(0, 1fr) minmax(80px, 32%); }
   .productPage[data-product="e-linker"] .stepGraphic { height: auto; }
+  .productPage[data-product="e-linker"] .resourceLinks { margin-top: 0; }
   .productPage[data-product="e-linker"] .resourceLinks > a { padding: 23px; }
 }
 @media (max-width: 600px) {

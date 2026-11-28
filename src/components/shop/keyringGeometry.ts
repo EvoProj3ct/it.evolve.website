@@ -1,4 +1,4 @@
-import { keyringHexagonPoints, keyringHoleOptions, keyringStarPoints, type KeyringLettering, type KeyringPosition, type KeyringShape } from "@evolve/ecommerce-server/keyring-design";
+import { defaultKeyringLettering, keyringHexagonPoints, keyringHoleOptions, keyringStarPoints, type KeyringFont, type KeyringLettering, type KeyringPosition, type KeyringShape } from "@evolve/ecommerce-server/keyring-design";
 
 export const keyringHoleRadius = .16;
 const holeInset = .32;
@@ -98,16 +98,23 @@ const letteringAreas: Record<KeyringShape, readonly [width: number, height: numb
   star: [1.14, .78, -.015], hexagon: [1.78, 1.48, 0], cube: [1.65, 1.52, 0],
 };
 const letteringHeights = { small: .22, medium: .34, large: .48 };
+export const keyringLetterSpacing = -.015;
+export const keyringLetterStackStep = .94;
+export type KeyringTypeface = KeyringFont | "bold";
+
+export function keyringTypeface(lettering: KeyringLettering): KeyringTypeface {
+  return lettering.relief === "raised" ? "bold" : lettering.font ?? defaultKeyringLettering.font;
+}
 
 export function keyringLetteringLayout(shape: KeyringShape, lettering: KeyringLettering, text: string, hasLogo = false) {
   const [areaWidth, fullHeight, areaCenter] = letteringAreas[shape];
   const areaHeight = fullHeight * (hasLogo ? .45 : 1);
   const centerY = areaCenter - (fullHeight - areaHeight) / 2;
-  const unit = letteringHeights[lettering.size];
+  const unit = lettering.relief === "raised" ? .62 : letteringHeights[lettering.size];
   const vertical = lettering.orientation === "vertical";
   const followsLongSide = vertical && (shape === "rectangle" || shape === "ellipse");
-  const width = Math.min(followsLongSide ? areaHeight : areaWidth, vertical ? unit * 1.35 : Math.max(unit, text.length * unit * .87));
-  const height = Math.min(followsLongSide ? areaWidth : areaHeight, vertical ? Math.max(unit, text.length * unit * 1.47) : unit);
+  const width = Math.min(followsLongSide ? areaHeight : areaWidth, vertical ? unit * 1.35 : Math.max(unit, text.length * unit * .84));
+  const height = Math.min(followsLongSide ? areaWidth : areaHeight, vertical ? Math.max(unit, text.length * unit * 1.32) : unit);
   const travelX = (areaWidth - (followsLongSide ? height : width)) / 2;
   const travelY = (areaHeight - (followsLongSide ? width : height)) / 2;
   const rotation = followsLongSide ? -Math.PI / 2 : 0;

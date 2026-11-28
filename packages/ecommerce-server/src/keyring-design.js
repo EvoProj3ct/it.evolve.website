@@ -7,7 +7,18 @@ export const keyringTextSizes = Object.freeze(["small", "medium", "large"]);
 export const keyringTextOrientations = Object.freeze(["horizontal", "vertical"]);
 export const keyringTextSizeNames = Object.freeze({ small: "Piccola", medium: "Media", large: "Grande" });
 export const keyringTextOrientationNames = Object.freeze({ horizontal: "Orizzontale", vertical: "Verticale" });
-export const defaultKeyringLettering = Object.freeze({ size: "medium", orientation: "horizontal", x: 0, y: 0 });
+export const keyringReliefNames = Object.freeze({ flat: "Al piano", raised: "Altorilievo", recessed: "Bassorilievo" });
+export const keyringReliefs = Object.freeze(Object.keys(keyringReliefNames));
+export const keyringFontNames = Object.freeze({
+  helvetica: "Helvetica", rounded: "Helvetica Rounded", condensed: "Helvetica Compressa", inter: "Inter", mono: "Geist Mono",
+});
+export const keyringFonts = Object.freeze(Object.keys(keyringFontNames));
+export const keyringRaisedFontName = "Helvetica Bold";
+export const defaultKeyringLettering = Object.freeze({ size: "medium", orientation: "horizontal", relief: "flat", font: "helvetica", x: 0, y: 0 });
+const availableSizes = Object.freeze({
+  flat: keyringTextSizes, raised: Object.freeze(["large"]), recessed: Object.freeze(["small", "medium"]),
+});
+export const keyringSizesForRelief = (relief = defaultKeyringLettering.relief) => availableSizes[relief];
 
 const option = (id, label, x, y) => ({ id, label, x, y });
 const sides = [
@@ -66,8 +77,10 @@ const limits = {
   star: [[10, 7, 5], [7, 5, 3]], hexagon: [[14, 10, 7], [10, 7, 5]],
   cube: [[12, 9, 6], [10, 7, 5]],
 };
-export function keyringTextLimit(shape, orientation, size) {
-  return limits[shape][orientation === "vertical" ? 1 : 0][keyringTextSizes.indexOf(size)];
+export const keyringMaxTextLength = 20;
+export function keyringTextLimit(shape, orientation, size, relief = defaultKeyringLettering.relief) {
+  const original = limits[shape][orientation === "vertical" ? 1 : 0][keyringTextSizes.indexOf(size)];
+  return original + (relief === "raised" ? 0 : orientation === "horizontal" && size !== "large" ? 2 : 1);
 }
 export const keyringLetteringPattern = /^[A-Za-zÀ-ÖØ-öø-ÿ0-9 .!?&+@#'_-]+$/u;
 export function cleanKeyringLettering(text) {
@@ -75,7 +88,15 @@ export function cleanKeyringLettering(text) {
 }
 
 export function keyringDesignLabels(shape, inscription, details) {
-  const faceLabel = (label, text, style) => text && `${label} «${text}»${style ? ` · ${keyringTextOrientationNames[style.orientation].toLowerCase()}, ${keyringTextSizeNames[style.size].toLowerCase()}` : ""}`;
+  const faceLabel = (label, text, style) => {
+    if (!text) return undefined;
+    const attributes = style && [
+      keyringTextOrientationNames[style.orientation].toLowerCase(), keyringTextSizeNames[style.size].toLowerCase(),
+      style.relief && keyringReliefNames[style.relief],
+      style.relief === "raised" ? keyringRaisedFontName : style.font && keyringFontNames[style.font],
+    ].filter(Boolean);
+    return attributes?.length ? `${label} «${text}» · ${attributes.join(", ")}` : `${label} «${text}»`;
+  };
   const hole = details.hole && keyringHoleName(shape, details.hole);
   return [
     keyringShapeNames[shape],

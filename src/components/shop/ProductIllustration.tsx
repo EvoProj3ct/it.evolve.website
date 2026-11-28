@@ -1,7 +1,7 @@
 import { useId } from "react";
 import type { KeyringFace } from "@evolve/ecommerce-server/keyring-design";
 import type { ProductConfiguration, ProductId } from "./products";
-import { keyringHoleRadius, keyringHoles, keyringLetteringLayout, keyringLogoLayout, keyringOutline } from "./keyringGeometry";
+import { keyringHoleRadius, keyringHoles, keyringLetterSpacing, keyringLetteringLayout, keyringLogoLayout, keyringOutline, keyringTypeface } from "./keyringGeometry";
 import styles from "./Shop.module.css";
 
 export function ProductIllustration({ product, configuration, showChain = true, face = "front", highlightHole = false }: {
@@ -24,8 +24,9 @@ export function ProductIllustration({ product, configuration, showChain = true, 
   const layout = keyringLetteringLayout(configuration.shape, style, inscription, !!logo);
   const logoLayout = keyringLogoLayout(configuration.shape, !!inscription);
   const letters = [...inscription];
+  const stackStep = 1.06;
   const fontSize = Math.min(layout.width * factor / (style.orientation === "vertical" ? 1 : Math.max(1, letters.length * .64)),
-    layout.height * factor / (style.orientation === "vertical" ? Math.max(1, letters.length * 1.17) : .84));
+    layout.height * factor / (style.orientation === "vertical" ? Math.max(1, letters.length * stackStep) : .84));
   const textX = 230 + layout.x * factor, textY = 242 - layout.y * factor;
   return (
     <svg className={styles.productIllustration} viewBox="0 0 640 460" fill="none" aria-hidden="true">
@@ -65,11 +66,12 @@ export function ProductIllustration({ product, configuration, showChain = true, 
           width={logoLayout.width * factor} height={logoLayout.height * factor} preserveAspectRatio="xMidYMid meet" />}
         <text x={textX} y={textY} fill={configuration.secondary} textAnchor="middle" dominantBaseline="central"
           transform={layout.rotation ? `rotate(${-layout.rotation * 180 / Math.PI} ${textX} ${textY})` : undefined}
-          fontFamily="HelveticaLocal, Helvetica, Arial, sans-serif" fontSize={fontSize} fontWeight="400">
+          className={styles.keyringIllustrationText} data-typeface={keyringTypeface(style)} data-relief={style.relief}
+          fontSize={fontSize} letterSpacing={style.orientation === "horizontal" ? keyringLetterSpacing * fontSize : undefined}>
           {style.orientation === "vertical" ? letters.map((letter, index) =>
-            <tspan key={index} x={textX} y={textY + (index - (letters.length - 1) / 2) * fontSize * 1.17}>{letter}</tspan>) : inscription}
+            <tspan key={index} x={textX} y={textY + (index - (letters.length - 1) / 2) * fontSize * stackStep}>{letter}</tspan>) : inscription}
         </text>
-        {!back && configuration.shape === "rectangle" && <><path d="M124 312h14m6 0h5" stroke="#72C94F" strokeWidth="3" strokeLinecap="round" /><circle cx="337" cy="312" r="3" fill="#829BA3" /></>}
+        {!back && configuration.shape === "rectangle" && <circle cx="337" cy="312" r="3" fill="#829BA3" />}
       </g>}
     </svg>
   );

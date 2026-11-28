@@ -1,17 +1,22 @@
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
-import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry.js";
 import { SVGLoader } from "three/examples/jsm/loaders/SVGLoader.js";
 import type { Font } from "three/examples/jsm/loaders/FontLoader.js";
 import type { KeyringFace } from "@evolve/ecommerce-server/keyring-design";
 import type { ProductConfiguration } from "./products";
-import { keyringDepth, keyringHoleRadius, keyringHoles, keyringLetteringLayout, keyringLogoLayout, keyringOutline } from "./keyringGeometry";
+import { keyringDepth, keyringHoleRadius, keyringHoles, keyringLetterSpacing, keyringLetterStackStep, keyringLetteringLayout,
+  keyringLogoLayout, keyringOutline, keyringTypeface, type KeyringTypeface } from "./keyringGeometry";
 import type { KeyringChainRig } from "./KeyringChainPhysics";
 
 export type RecordAppearance = { title: string; color: string };
 export type ProductModel = {
   group: THREE.Group; record?: THREE.Group; setRecordAppearance?: (appearance?: RecordAppearance) => void; chain?: KeyringChainRig;
-  keyring?: { body: THREE.Group; depth: number; letters: Partial<Record<KeyringFace, THREE.Group>> };
+  keyring?: {
+    body: THREE.Group;
+    depth: number;
+    letters: Partial<Record<KeyringFace, THREE.Group>>;
+    updateRecess: Partial<Record<KeyringFace, () => void>>;
+  };
 };
 
 function add(parent: THREE.Object3D, geometry: THREE.BufferGeometry, material: THREE.Material | THREE.Material[], x = 0, y = 0, z = 0) {
@@ -102,7 +107,46 @@ function fitXY(object: THREE.Object3D, width: number, height: number, y: number,
   object.position.z = .152;
 }
 
-export function createKeyring(configuration: ProductConfiguration, font: Font | null, primary: THREE.MeshStandardMaterial, secondary: THREE.MeshStandardMaterial, onError: (message: string) => void, withChain = true): ProductModel {
+function createRecess(primary: THREE.MeshStandardMaterial, lettering: THREE.Group, text: THREE.Group) {
+  const canvas = document.createElement("canvas");
+  const resolution = 1024;
+  const span = 5;
+  canvas.width = resolution;
+  canvas.height = resolution;
+  const paint = canvas.getContext("2d");
+  if (!paint) return;
+  const mask = new THREE.CanvasTexture(canvas);
+  mask.repeat.setScalar(1 / span);
+  mask.offset.setScalar(.5);
+  mask.generateMipmaps = false;
+  mask.minFilter = THREE.LinearFilter;
+  const cap = primary.clone();
+  cap.color = primary.color;
+  cap.alphaMap = mask;
+  cap.alphaTest = .5;
+  const walls = primary.clone();
+  walls.color = primary.color;
+  walls.side = THREE.BackSide;
+  const outline = new Path2D();
+  const transform = new THREE.Matrix4();
+  const center = resolution / 2;
+  const scale = resolution / span;
+  const redraw = () => {
+    paint.resetTransform();
+    paint.fillStyle = "#fff";
+    paint.fillRect(0, 0, resolution, resolution);
+    lettering.updateMatrix();
+    text.updateMatrix();
+    const m = transform.multiplyMatrices(lettering.matrix, text.matrix).elements;
+    paint.setTransform(m[0] * scale, -m[1] * scale, m[4] * scale, -m[5] * scale, center + m[12] * scale, center - m[13] * scale);
+    paint.fillStyle = "#000";
+    paint.fill(outline, "evenodd");
+    mask.needsUpdate = true;
+  };
+  return { cap, walls, outline, redraw };
+}
+
+export function createKeyring(configuration: ProductConfiguration, fonts: ReadonlyMap<KeyringTypeface, Font>, primary: THREE.MeshStandardMaterial, secondary: THREE.MeshStandardMaterial, onError: (message: string) => void, withChain = true): ProductModel {
   const group = new THREE.Group();
   const body = new THREE.Group();
   body.rotation.x = -Math.PI / 2;
@@ -149,49 +193,84 @@ export function createKeyring(configuration: ProductConfiguration, font: Font | 
     chain = { body, outline: shape, depth, anchor: new THREE.Vector3(...at(reach - .01)), links, ring };
   }
   const letters: Partial<Record<KeyringFace, THREE.Group>> = {};
+  const updateRecess: Partial<Record<KeyringFace, () => void>> = {};
+  const caps = { front: primary, back: primary };
   for (const face of ["front", "back"] as const) {
     const style = configuration.keyring[face];
-    const inscription = face === "front" ? configuration.text : configuration.keyring.back.text;
-    if (!inscription.trim() || !font) continue;
-    const safeText = [...inscription.trim()].filter(character => font.data.glyphs[character]).join("");
+    const back = face === "back";
+    const inscription = (back ? configuration.keyring.back.text : configuration.text).trim();
+    const font = fonts.get(keyringTypeface(style));
+    if (!inscription || !font) continue;
     const vertical = style.orientation === "vertical";
+    const raised = style.relief === "raised";
     const text = new THREE.Group();
+    const lettering = new THREE.Group();
+    const recess = style.relief === "recessed" ? createRecess(primary, lettering, text) : undefined;
+    const cutDepth = .036;
     let cursor = 0;
-    for (const character of safeText) {
-      const glyph = font.data.glyphs[character];
+    for (const character of inscription) {
+      const glyph = font.data.glyphs[character] ?? font.data.glyphs["?"];
       if (glyph.o?.trim()) {
-        const material = face === "front" && safeText === "e-linker." && character === "." ? new THREE.MeshStandardMaterial({ color: "#72c94f", roughness: .45 }) : secondary;
-        const geometry = new TextGeometry(character, { font, size: 1, depth: .018, curveSegments: 12, bevelEnabled: true, bevelThickness: .002, bevelSize: .002, bevelSegments: 2 });
+        const material = !back && inscription === "e-linker." && character === "." ? new THREE.MeshStandardMaterial({ color: "#72c94f", roughness: .45 }) : secondary;
+        const shapes = font.generateShapes(character, 1);
+        const geometry = raised
+          ? new THREE.ExtrudeGeometry(shapes, { depth: .075, curveSegments: 12, bevelEnabled: true, bevelThickness: .003, bevelSize: .003, bevelSegments: 2 })
+          : new THREE.ShapeGeometry(shapes, 12);
+        const origin = new THREE.Vector3();
         if (vertical) {
           geometry.computeBoundingBox();
-          const center = geometry.boundingBox!.getCenter(new THREE.Vector3());
-          geometry.translate(-center.x, -center.y, 0);
+          geometry.boundingBox!.getCenter(origin);
         }
-        const letter = add(text, geometry, material, vertical ? 0 : cursor, vertical ? -cursor : 0);
-        letter.castShadow = false;
+        const x = (vertical ? 0 : cursor) - origin.x;
+        const y = (vertical ? -cursor : 0) - origin.y;
+        add(text, geometry, material, x, y, recess ? -cutDepth : 0).castShadow = raised;
+        if (recess) {
+          const walls = new THREE.ExtrudeGeometry(shapes, { depth: cutDepth, curveSegments: 12, bevelEnabled: false });
+          walls.groups = walls.groups.filter(group => group.materialIndex === 1);
+          for (const group of walls.groups) group.materialIndex = 0;
+          add(text, walls, [recess.walls], x, y, -cutDepth).castShadow = false;
+          for (const shape of shapes) {
+            const points = shape.extractPoints(12);
+            for (const contour of [points.shape, ...points.holes]) {
+              if (!contour.length) continue;
+              recess.outline.moveTo(contour[0].x + x, contour[0].y + y);
+              for (const point of contour.slice(1)) recess.outline.lineTo(point.x + x, point.y + y);
+              recess.outline.closePath();
+            }
+          }
+        }
       }
-      cursor += vertical ? 1.06 : glyph.ha / font.data.resolution + .015;
+      cursor += vertical ? keyringLetterStackStep : glyph.ha / font.data.resolution + keyringLetterSpacing;
     }
     if (text.children.length) {
-      const layout = keyringLetteringLayout(configuration.shape, style, safeText, face === "front" && !!configuration.logo);
-      const lettering = new THREE.Group();
+      const layout = keyringLetteringLayout(configuration.shape, style, inscription, !back && !!configuration.logo);
       fitXY(text, layout.width, layout.height, 0);
       text.position.z = 0;
       lettering.add(text);
-      const back = face === "back";
-      lettering.position.set(back ? -layout.x : layout.x, layout.y, back ? -.022 : depth + .022);
+      const z = .02 + (recess ? 0 : raised ? -.002 : .001);
+      lettering.position.set(back ? -layout.x : layout.x, layout.y, back ? -z : depth + z);
       if (back) lettering.rotation.y = Math.PI;
       if (layout.rotation) lettering.rotateZ(layout.rotation);
       body.add(lettering);
       letters[face] = lettering;
+      if (recess) {
+        caps[face] = recess.cap;
+        updateRecess[face] = recess.redraw;
+        recess.redraw();
+      }
     }
   }
+  if (caps.front !== primary || caps.back !== primary) {
+    // ExtrudeGeometry emits the lower and upper lid consecutively before the bevel and walls.
+    const [lids, sides] = base.geometry.groups;
+    const faceVertexCount = lids.count / 2;
+    base.geometry.clearGroups();
+    base.geometry.addGroup(lids.start, faceVertexCount, 0);
+    base.geometry.addGroup(lids.start + faceVertexCount, faceVertexCount, 1);
+    base.geometry.addGroup(sides.start, sides.count, 2);
+    base.material = [caps.back, caps.front, primary];
+  }
   if (configuration.shape === "rectangle") {
-    if (Math.hypot(hole.x + 1.34, hole.y + .95) > .42) {
-      const accent = new THREE.MeshStandardMaterial({ color: "#72c94f", roughness: .45 });
-      add(body, new THREE.BoxGeometry(.22, .025, .006), accent, -1.42, -.95, .154).castShadow = false;
-      add(body, new THREE.BoxGeometry(.07, .025, .006), accent, -1.23, -.95, .154).castShadow = false;
-    }
     if (Math.hypot(hole.x - 1.45, hole.y + .95) > .3) {
       const dot = new THREE.MeshStandardMaterial({ color: "#829ba3", roughness: .48, metalness: .06 });
       add(body, new THREE.CircleGeometry(.025, 16), dot, 1.45, -.95, .154).castShadow = false;
@@ -231,7 +310,7 @@ export function createKeyring(configuration: ProductConfiguration, font: Font | 
   // La centratura segue il corpo, senza inseguire l'oscillazione della catena.
   body.position.sub(new THREE.Box3().setFromObject(base).getCenter(new THREE.Vector3()));
   group.scale.setScalar(1.12);
-  return { group, chain, keyring: { body, depth, letters } };
+  return { group, chain, keyring: { body, depth, letters, updateRecess } };
 }
 
 export function disposeModel(root: THREE.Object3D, sharedMaterials: THREE.Material[] = []) {
@@ -245,8 +324,9 @@ export function disposeModel(root: THREE.Object3D, sharedMaterials: THREE.Materi
   });
   geometries.forEach(geometry => geometry.dispose());
   materials.forEach(material => {
-    const map = (material as THREE.MeshStandardMaterial).map;
-    map?.dispose();
+    const surface = material as THREE.MeshStandardMaterial;
+    surface.map?.dispose();
+    surface.alphaMap?.dispose();
     material.dispose();
   });
 }

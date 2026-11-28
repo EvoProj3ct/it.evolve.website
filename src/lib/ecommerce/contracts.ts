@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { linkerOfferKinds } from "@evolve/ecommerce-server/keyring-offers";
-import { keyringHoleIds, keyringLetteringPattern, keyringShapes, keyringTextOrientations, keyringTextSizes } from "@evolve/ecommerce-server/keyring-design";
+import { keyringFonts, keyringHoleIds, keyringLetteringPattern, keyringMaxTextLength, keyringReliefs, keyringShapes, keyringTextOrientations, keyringTextSizes } from "@evolve/ecommerce-server/keyring-design";
 import { stripeCheckoutUrlIssue, stripeCheckoutUrlMaxLength } from "@evolve/ecommerce-server/stripe-checkout-url";
 
 export const publicIdSchema = z.string().regex(/^[A-Za-z0-9_-]{16,80}$/);
@@ -12,6 +12,8 @@ const inscriptionSchema = z.string().trim().min(1).max(80).refine(value => !/[\u
 const keyringLetteringSchema = z.object({
   orientation: z.enum(keyringTextOrientations),
   size: z.enum(keyringTextSizes),
+  relief: z.enum(keyringReliefs).optional(),
+  font: z.enum(keyringFonts).optional(),
   x: z.number().int().min(-100).max(100),
   y: z.number().int().min(-100).max(100),
 }).strict();
@@ -26,7 +28,7 @@ const configurationDetailsSchema = z.discriminatedUnion("kind", [
     kind: z.enum(linkerOfferKinds), secondaryColor: colorSchema, shape: z.enum(keyringShapes),
     hole: z.enum(keyringHoleIds).optional(),
     front: keyringLetteringSchema.optional(),
-    back: keyringLetteringSchema.extend({ text: z.string().trim().min(1).max(18).regex(keyringLetteringPattern) }).optional(),
+    back: keyringLetteringSchema.extend({ text: z.string().trim().min(1).max(keyringMaxTextLength).regex(keyringLetteringPattern) }).optional(),
   }).strict(),
   z.object({ kind: z.literal("e-disk-disc"), dedication: inscriptionSchema.optional(), trackUrl: z.string().max(512).optional() }).strict(),
   z.object({ kind: z.literal("e-led"), secondaryColor: colorSchema, effect: z.enum(["flow", "steady", "breathe", "pulse"]), mode: z.enum(["text", "logo", "both"]), width: integer.min(60).max(180), brightness: integer.min(20).max(100), speedTenths: integer.min(5).max(15).optional() }).strict(),

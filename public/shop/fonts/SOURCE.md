@@ -1,8 +1,8 @@
 # Carattere per le estrusioni 3D
 
-e-linker usa `helvetica-regular.typeface.json`, derivato da `public/fonts/Helvetica.ttf`, lo stesso carattere già incluso nel sito. Sono conservati nome e metadati del font originale. Il sottoinsieme contiene i glifi latini e la punteggiatura ammessi nel configuratore.
+Le anteprime di e-linker usano Helvetica, Helvetica Rounded, Helvetica Compressa, Inter e Geist Mono. L’altorilievo usa Helvetica Bold. I JSON sono derivati dai caratteri locali del sito e conservano il nome, la fonte e i metadati originali. Per Inter e Geist Mono la licenza SIL Open Font License si trova in `src/app/fonts/OFL.txt`.
 
-Per rigenerare l’asset: `node scripts/create-keyring-font.cjs`. Il convertitore usa fontkit già incluso in Next.js e scrive soltanto il JSON del carattere; non aggiunge dipendenze e non usa servizi remoti. La pagina carica direttamente il JSON locale, senza conversioni nel browser.
+Il comando `node scripts/create-keyring-font.cjs` rigenera i JSON dai caratteri sorgente usando fontkit, già incluso in Next.js. Il configuratore carica i JSON dei caratteri selezionati.
 
 ## Asset precedente
 

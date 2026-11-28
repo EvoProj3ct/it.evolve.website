@@ -9,13 +9,23 @@ import { createKeyring, createTurntable, disposeModel, type ProductModel, type R
 import type { ProductConfiguration, ProductId } from "./products";
 import { ProductIllustration } from "./ProductIllustration";
 import { KeyringChainPhysics } from "./KeyringChainPhysics";
-import { keyringHoleRadius, keyringHoles, keyringLetteringLayout } from "./keyringGeometry";
+import { keyringHoleRadius, keyringHoles, keyringLetteringLayout, keyringTypeface, type KeyringTypeface } from "./keyringGeometry";
 import styles from "./Shop.module.css";
 
-let fontPromise: Promise<Font> | null = null;
-function loadFont() {
-  if (!fontPromise) fontPromise = new FontLoader().loadAsync("/shop/fonts/helvetica-regular.typeface.json").catch(error => { fontPromise = null; throw error; });
-  return fontPromise;
+const fontFiles: Record<KeyringTypeface, string> = {
+  helvetica: "helvetica-regular", bold: "helvetica-bold", rounded: "helvetica-rounded",
+  condensed: "helvetica-condensed", inter: "inter", mono: "geist-mono",
+};
+const fontRequests = new Map<KeyringTypeface, Promise<Font>>();
+function loadFont(typeface: KeyringTypeface) {
+  const cached = fontRequests.get(typeface);
+  if (cached) return cached;
+  const request = new FontLoader().loadAsync(`/shop/fonts/${fontFiles[typeface]}.typeface.json`).catch(error => {
+    fontRequests.delete(typeface);
+    throw error;
+  });
+  fontRequests.set(typeface, request);
+  return request;
 }
 
 type Props = {
@@ -102,7 +112,9 @@ export default function ProductScene({ product, configuration, presentation = fa
     const targetPrimary = primary.color.clone(), targetSecondary = secondary.color.clone();
     let model: ProductModel | null = null;
     let chainPhysics: KeyringChainPhysics | null = null;
-    let font: Font | null = null;
+    const fonts = new Map<KeyringTypeface, Font>();
+    const requestedFonts = new Set<KeyringTypeface>();
+    const failedFonts = new Set<KeyringTypeface>();
     let lastConfiguration: ProductConfiguration | null = null;
     const editMarker = new THREE.Mesh(new THREE.RingGeometry(keyringHoleRadius, .235, 40),
       new THREE.MeshBasicMaterial({ color: "#63d642", side: THREE.DoubleSide, depthTest: false, depthWrite: false }));
@@ -116,12 +128,25 @@ export default function ProductScene({ product, configuration, presentation = fa
       const changed = !lastConfiguration || config.shape !== lastConfiguration.shape || config.text !== lastConfiguration.text
         || config.logo !== lastConfiguration.logo || config.keyring !== lastConfiguration.keyring;
       if (!model || (product === "e-linker" && (changed || force))) {
-        stateRef.current.onError?.("");
+        if (product === "e-linker") {
+          const needed = new Set<KeyringTypeface>();
+          if (config.text.trim()) needed.add(keyringTypeface(config.keyring.front));
+          if (config.keyring.back.text.trim()) needed.add(keyringTypeface(config.keyring.back));
+          for (const typeface of needed) {
+            if (requestedFonts.has(typeface)) continue;
+            requestedFonts.add(typeface);
+            void loadFont(typeface).then(font => { fonts.set(typeface, font); }, () => { failedFonts.add(typeface); })
+              .then(() => { if (!disposed) update(stateRef.current.configuration, true); });
+          }
+          const useIllustration = [...needed].some(typeface => failedFonts.has(typeface));
+          setUnavailable(useIllustration);
+          stateRef.current.onError?.(useIllustration ? "Il carattere 3D non è disponibile. La sagoma mostra comunque testo e colori scelti." : "");
+        }
         const currentOrientation = model?.group.quaternion.clone() ?? initialOrientation.clone();
         const chainState = lastConfiguration?.shape === config.shape && lastConfiguration.keyring.hole === config.keyring.hole
           ? chainPhysics?.snapshot() : undefined;
         if (model) { scene.remove(model.group); disposeModel(model.group, [primary, secondary]); }
-        model = product === "e-disk" ? createTurntable(primary, secondary) : createKeyring(config, font, primary, secondary, message => stateRef.current.onError?.(message), !presentation);
+        model = product === "e-disk" ? createTurntable(primary, secondary) : createKeyring(config, fonts, primary, secondary, message => stateRef.current.onError?.(message), !presentation);
         model.group.quaternion.copy(currentOrientation);
         if (freeRotation) model.group.position.copy(viewUp).multiplyScalar(.35);
         if (stateRef.current.recordAppearance) model.setRecordAppearance?.(stateRef.current.recordAppearance);
@@ -132,11 +157,6 @@ export default function ProductScene({ product, configuration, presentation = fa
       lastConfiguration = config;
     };
     update(stateRef.current.configuration);
-    if (product === "e-linker") void loadFont().then(loaded => {
-      if (disposed) return;
-      font = loaded;
-      update(stateRef.current.configuration, true);
-    }).catch(() => { if (!disposed) { setUnavailable(true); stateRef.current.onError?.("Il carattere 3D non è disponibile. La sagoma mostra comunque testo e colori scelti."); } });
 
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(22, 22), new THREE.ShadowMaterial({ color: "#11171a", opacity: product === "e-linker" ? .055 : .16 }));
     floor.rotation.x = -Math.PI / 2;
@@ -209,6 +229,7 @@ export default function ProductScene({ product, configuration, presentation = fa
       editDrag.position = { x, y };
       lettering.position.x = (back ? -1 : 1) * x * layout.travelX / 100;
       lettering.position.y = layout.centerY + y * layout.travelY / 100;
+      keyring.updateRecess[editDrag.face]?.();
     }
     const trackballPoint = (x: number, y: number) => {
       const bounds = host.getBoundingClientRect();
@@ -229,6 +250,7 @@ export default function ProductScene({ product, configuration, presentation = fa
           const layout = keyringLetteringLayout(config.shape, config.keyring[face], (back ? config.keyring.back.text : config.text).trim(), !back && !!config.logo);
           lettering.position.x = back ? -layout.x : layout.x;
           lettering.position.y = layout.y;
+          model.keyring.updateRecess[face]?.();
         }
       }
       editDrag = null;

@@ -95,15 +95,15 @@ function arrange(width: number, height: number, size: number, layer: (typeof lay
       const offset = (row % 2 ? .45 : 0) + layer.offsetX;
       const x = (column + offset + (random() - .5) * jitter) * spacingX;
       const y = (row + layer.offsetY + (random() - .5) * jitter) * spacingY;
-      const top = size * (.56 + .13 * Math.sin(x / (size * 2.3)));
-      const bottom = height - size * (.58 + .13 * Math.cos(x / (size * 1.8)));
+      const top = size * (.84 + .12 * Math.sin(x / (size * 2.3)));
+      const bottom = height - size * (.84 + .12 * Math.cos(x / (size * 1.8)));
       if (y >= top && y <= bottom) pieces.push(makePiece(x, y, size, layer.mobility, random));
     }
   }
   return pieces;
 }
 
-export async function drawLinkerCarpet(surface: HTMLButtonElement, canvas: HTMLCanvasElement, signal: AbortSignal) {
+export async function drawLinkerCarpet(playground: HTMLDivElement, surface: HTMLButtonElement, canvas: HTMLCanvasElement, signal: AbortSignal) {
   const marks = await loadMarks(signal);
   if (signal.aborted) return;
   const context = canvas.getContext("2d");
@@ -111,7 +111,7 @@ export async function drawLinkerCarpet(surface: HTMLButtonElement, canvas: HTMLC
   const paint = context;
   const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const moving = new Set<Piece>();
-  let width = 0, height = 0, size = 0, pixels = 1;
+  let width = 0, height = 0, drawingHeight = 0, size = 0, pixels = 1;
   let pieces: Piece[] = [];
   let capacity = 0;
   let visible = true;
@@ -134,9 +134,9 @@ export async function drawLinkerCarpet(surface: HTMLButtonElement, canvas: HTMLC
 
   function keepInside(piece: Piece) {
     const xMargin = piece.width * .24;
-    const yMargin = piece.width * .48;
+    const yMargin = piece.width * (.62 * Math.abs(Math.sin(piece.angle)) + .4 * Math.abs(Math.cos(piece.angle))) + 2;
     piece.x = clamp(piece.x, -xMargin, width + xMargin);
-    piece.y = clamp(piece.y, yMargin, height - yMargin);
+    piece.y = clamp(piece.y, yMargin, drawingHeight - yMargin);
   }
 
   function draw(time: number) {
@@ -169,21 +169,31 @@ export async function drawLinkerCarpet(surface: HTMLButtonElement, canvas: HTMLC
     if (signal.aborted) return;
     const bounds = surface.getBoundingClientRect();
     const newWidth = bounds.width, newHeight = bounds.height;
-    if (!newWidth || !newHeight || (width === newWidth && height === newHeight)) return;
+    const newDrawingHeight = canvas.getBoundingClientRect().height;
+    if (!newWidth || !newHeight || !newDrawingHeight) return;
+    const resetPile = width !== newWidth || height !== newHeight;
+    if (!resetPile && drawingHeight === newDrawingHeight) return;
     width = newWidth;
     height = newHeight;
+    drawingHeight = newDrawingHeight;
     pixels = Math.min(window.devicePixelRatio || 1, 1.65);
     canvas.width = Math.round(width * pixels);
-    canvas.height = Math.round(height * pixels);
+    canvas.height = Math.round(drawingHeight * pixels);
+    if (!resetPile) {
+      pieces.forEach(keepInside);
+      queueFrame();
+      return;
+    }
     size = clamp(width * .06, 54, 92);
     pieces = layers.flatMap(layer => arrange(width, height, size, layer));
     capacity = pieces.length + Math.max(36, Math.ceil(pieces.length * .2));
     moving.clear();
     const initialLimit = pieces.length + Math.ceil(pieces.length * .07);
     const spacing = size * .32;
-    for (let y = size * .72; y < height - size * .72 && pieces.length < initialLimit; y += spacing) {
+    for (let y = size * .9; y < height - size * .9 && pieces.length < initialLimit; y += spacing) {
       for (let x = 0; x <= width && pieces.length < initialLimit; x += spacing) fillGap(x, y);
     }
+    pieces.forEach(keepInside);
     queueFrame();
   }
 
@@ -203,7 +213,7 @@ export async function drawLinkerCarpet(surface: HTMLButtonElement, canvas: HTMLC
   }
 
   function fillGap(x: number, y: number) {
-    if (x < 0 || x > width || y < size * .55 || y > height - size * .55) return;
+    if (x < 0 || x > width || y < size * .82 || y > height - size * .82) return;
     const covered = pieces.some(piece => {
       const dx = x - piece.x, dy = y - piece.y;
       if (Math.abs(dx) > piece.width * .38 || Math.abs(dy) > piece.width * .38) return false;
@@ -217,7 +227,7 @@ export async function drawLinkerCarpet(surface: HTMLButtonElement, canvas: HTMLC
   }
 
   function replenishBelow(x: number, y: number) {
-    if (x < 0 || x > width || y < size * .55 || y > height - size * .55) return;
+    if (x < 0 || x > width || y < size * .55 || y > drawingHeight - size * .55) return;
     const radiusSquared = (size * .44) ** 2;
     let cover: Piece | undefined;
     let nearby = 0;
@@ -291,26 +301,38 @@ export async function drawLinkerCarpet(surface: HTMLButtonElement, canvas: HTMLC
     sweep(x - size * .31, y, x + size * .26, y - size * .11);
   }
 
-  function hand(event: PointerEvent) {
-    const bounds = surface.getBoundingClientRect();
-    const x = event.clientX - bounds.left, y = event.clientY - bounds.top;
-    surface.style.setProperty("--hand-x", `${x}px`);
-    surface.style.setProperty("--hand-y", `${y}px`);
-    surface.dataset.hand = "true";
-    return { x, y };
+  function pointerPosition(event: PointerEvent) {
+    const bounds = canvas.getBoundingClientRect();
+    return { x: event.clientX - bounds.left, y: event.clientY - bounds.top };
   }
 
-  surface.addEventListener("pointerdown", event => {
+  function canPush(event: PointerEvent, x: number, y: number) {
+    if (event.target === surface) return true;
+    if (event.target instanceof Element && event.target.closest("a, button, summary, input, select, textarea")) return false;
+    return pieces.some(piece => Math.hypot(piece.x - x, piece.y - y) < piece.width * .54);
+  }
+
+  function showHand(x: number, y: number) {
+    playground.style.setProperty("--hand-x", `${x}px`);
+    playground.style.setProperty("--hand-y", `${y}px`);
+    playground.dataset.hand = "true";
+  }
+
+  playground.addEventListener("pointerdown", event => {
     if (!event.isPrimary || event.button !== 0 || gesture) return;
-    const { x, y } = hand(event);
+    const { x, y } = pointerPosition(event);
+    if (!canPush(event, x, y)) return;
+    showHand(x, y);
     gesture = { id: event.pointerId, x, y, moved: false };
-    surface.setPointerCapture(event.pointerId);
-    surface.dataset.pushing = "true";
+    (event.target === surface ? surface : playground).setPointerCapture(event.pointerId);
+    playground.dataset.pushing = "true";
   }, { signal });
 
-  surface.addEventListener("pointermove", event => {
+  playground.addEventListener("pointermove", event => {
     if (!event.isPrimary || (event.pointerType === "touch" && gesture?.id !== event.pointerId)) return;
-    const { x, y } = hand(event);
+    const { x, y } = pointerPosition(event);
+    if (gesture || canPush(event, x, y)) showHand(x, y);
+    else delete playground.dataset.hand;
     if (gesture?.id !== event.pointerId) return;
     const dx = x - gesture.x, dy = y - gesture.y;
     if (Math.hypot(dx, dy) < 3 || (!gesture.moved && event.pointerType === "touch" && Math.abs(dx) < 6)) return;
@@ -324,14 +346,14 @@ export async function drawLinkerCarpet(surface: HTMLButtonElement, canvas: HTMLC
     if (gesture?.id !== event.pointerId) return;
     if (event.type === "pointerup" && !gesture.moved) tap(gesture.x, gesture.y);
     gesture = undefined;
-    delete surface.dataset.pushing;
-    if (event.pointerType !== "mouse" || !surface.matches(":hover")) delete surface.dataset.hand;
+    delete playground.dataset.pushing;
+    delete playground.dataset.hand;
   }
 
-  surface.addEventListener("pointerup", release, { signal });
-  surface.addEventListener("pointercancel", release, { signal });
-  surface.addEventListener("lostpointercapture", release, { signal });
-  surface.addEventListener("pointerleave", () => { if (!gesture) delete surface.dataset.hand; }, { signal });
+  playground.addEventListener("pointerup", release, { signal });
+  playground.addEventListener("pointercancel", release, { signal });
+  playground.addEventListener("lostpointercapture", release, { signal });
+  playground.addEventListener("pointerleave", () => { if (!gesture) delete playground.dataset.hand; }, { signal });
   surface.addEventListener("click", event => {
     if (event.detail === 0 && !gesture) tap(width / 2, height / 2);
   }, { signal });
@@ -340,9 +362,10 @@ export async function drawLinkerCarpet(surface: HTMLButtonElement, canvas: HTMLC
     visible = entry.isIntersecting;
     if (visible) queueFrame();
   });
-  observer.observe(surface);
+  observer.observe(canvas);
   const resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(surface);
+  resizeObserver.observe(canvas);
   resize();
 
   return () => {
