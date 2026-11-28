@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Check, Copy, Nfc, Smartphone } from "lucide-react";
+import { ArrowLeft, Check, Copy, Nfc, QrCode, Smartphone } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ProductMark } from "./ProductMark";
 import controls from "./Storefront.module.css";
@@ -40,11 +41,16 @@ function writeError(error: unknown) {
   return "Scrittura non riuscita. Tieni fermo il portachiavi vicino al telefono e riprova. Se il link è lungo, prova con uno più breve.";
 }
 
+function pageUrl() {
+  return window.location.origin + window.location.pathname;
+}
+
 export function LinkerNfcWriter() {
   const [link, setLink] = useState("");
   const [available, setAvailable] = useState<boolean | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [pageCopy, setPageCopy] = useState<{ url: string; copied: boolean } | null>(null);
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
   const activeWrite = useRef<AbortController | null>(null);
   const field = useRef<HTMLInputElement>(null);
   const waiting = feedback?.kind === "waiting";
@@ -59,7 +65,7 @@ export function LinkerNfcWriter() {
   }, []);
 
   async function copyPage() {
-    const url = window.location.origin + window.location.pathname;
+    const url = pageUrl();
     try {
       await navigator.clipboard.writeText(url);
       setPageCopy({ url, copied: true });
@@ -118,9 +124,19 @@ export function LinkerNfcWriter() {
         <div>
           <h2 id="linker-nfc-handoff">Apri dal telefono</h2>
           <p>Per scrivere dal browser, apri questa pagina in Chrome su un telefono Android con NFC attivo.</p>
-          <button type="button" className={controls.secondary} onClick={copyPage}>Copia il link della pagina <Copy size={14} aria-hidden="true" /></button>
+          <div className={styles.actions}>
+            <button type="button" className={controls.secondary} onClick={copyPage}>Copia il link della pagina <Copy size={14} aria-hidden="true" /></button>
+            <button type="button" className={controls.secondary} aria-expanded={qrUrl !== null} aria-controls="linker-nfc-qr"
+              onClick={() => setQrUrl(current => current ? null : pageUrl())}>Accedi con QR <QrCode size={16} aria-hidden="true" /></button>
+          </div>
           <div role="status" className={styles.copyFeedback}>
             {pageCopy && (pageCopy.copied ? "Indirizzo della pagina copiato." : <>Copia questo indirizzo <span>{pageCopy.url}</span></>)}
+          </div>
+          <div id="linker-nfc-qr" hidden={!qrUrl}>
+            {qrUrl && <figure className={styles.qr}>
+              <QRCodeSVG value={qrUrl} size={208} marginSize={4} fgColor="#101914" title="QR per aprire Configura e-linker" />
+              <figcaption>Inquadra il codice con la fotocamera del telefono.</figcaption>
+            </figure>}
           </div>
         </div>
       </section>}
@@ -141,7 +157,7 @@ export function LinkerNfcWriter() {
         </div>
         {available !== null && <p className={styles.hint}>{available
           ? "La scrittura sostituisce il link già presente sul tag."
-          : "Su iPhone puoi copiare il link e scriverlo con un’app per tag NFC."}</p>}
+          : "Puoi usare il link copiato in un’app di scrittura NFC sul tuo telefono."}</p>}
         <div id="linker-nfc-feedback" className={styles.feedback} role="status">
           {feedback && <p data-kind={feedback.kind}>
             {feedback.kind === "success" && <Check size={18} aria-hidden="true" />}

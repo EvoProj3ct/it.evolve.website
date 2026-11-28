@@ -72,3 +72,6 @@
 .copyFeedback { color: #355632; font-size: 12px; overflow-wrap: anywhere; }
 .copyFeedback:not(:empty) { margin-top: 8px; }
 .copyFeedback > span { display: block; user-select: all; }
+.qr { display: grid; justify-items: start; gap: 8px; margin: 16px 0 0; }
+.qr > svg { display: block; max-width: 100%; height: auto; border: 1px solid #dce6d7; border-radius: 10px; }
+.qr > figcaption { color: #465942; font-size: 12px; line-height: 1.6; }

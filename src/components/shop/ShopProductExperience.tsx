@@ -333,7 +333,7 @@ export function ShopProductExperience({ product }: { product: Exclude<ProductId,
               </div>}
             </div>
             <div className={styles.viewerTools}><span><MoveHorizontal size={16} />{isDisk ? "Trascina per ruotare" : canvasTool === "hole" ? "Trascina il foro" : canvasTool === "text" ? (activeText.trim() ? "Trascina la scritta" : "Inserisci una scritta per spostarla") : "Ruota liberamente in 3D"}</span><div>{isDisk && <button type="button" onClick={() => setRecordPlaying(current => !current)} aria-label={recordPlaying ? "Metti in pausa la rotazione dell’anteprima" : "Riprendi la rotazione dell’anteprima"}>{recordPlaying ? <Pause size={16} /> : <Play size={16} />}</button>}<button type="button" onClick={() => setViewReset(value => value + 1)} aria-label="Ripristina la vista 3D"><RotateCcw size={16} /></button></div></div>
-            <div className={styles.viewerCaption}><span>Anteprima dimostrativa</span><span>Designed by Evolve ↗</span></div>
+            <div className={styles.viewerCaption}>{isDisk && <span>Anteprima dimostrativa</span>}<span>Designed by Evolve ↗</span></div>
           </div>
 
           <div className={styles.configPanel}>
