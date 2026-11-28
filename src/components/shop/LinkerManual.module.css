@@ -1,0 +1,66 @@
+.manual h3 {
+  margin: 26px 0 9px;
+  color: var(--shop-ink);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.manual strong {
+  color: var(--shop-ink);
+  font-weight: 600;
+}
+
+.manual code {
+  font-size: .95em;
+}
+
+.figure {
+  margin: 24px 0 30px;
+  overflow: hidden;
+  border: 1px solid #ccd9c3;
+  border-radius: 16px;
+  background: #f1f6ec;
+}
+
+.drawing {
+  display: block;
+  width: 100%;
+  height: auto;
+  background-image:
+    linear-gradient(#7b997225 1px, transparent 1px),
+    linear-gradient(90deg, #7b997225 1px, transparent 1px),
+    linear-gradient(#7b997213 1px, transparent 1px),
+    linear-gradient(90deg, #7b997213 1px, transparent 1px);
+  background-position: center;
+  background-size: 48px 48px, 48px 48px, 12px 12px, 12px 12px;
+}
+
+.caption {
+  padding: 15px clamp(14px, 3vw, 25px);
+  border-top: 1px solid #ccd9c3;
+  background: #f8faf5;
+  color: #304538;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.manual .caption ol {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 30px;
+  row-gap: 2px;
+  margin: 7px 0 0;
+  padding-left: 17px;
+  font-weight: 400;
+}
+
+.caption ol li + li {
+  margin-top: 0;
+}
+
+.notice {
+  padding: 14px 16px;
+  border-inline-start: 3px solid #84ae76;
+  background: #ecf3e9;
+}

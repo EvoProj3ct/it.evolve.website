@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
+import { LinkerManual, linkerManualSections } from "./LinkerManual";
 import type { ProductId } from "./products";
 import styles from "./Shop.module.css";
 import controls from "./Storefront.module.css";
@@ -14,14 +15,7 @@ const SECTIONS = {
     { id: "nfc", title: "Associare un disco NFC" },
     { id: "audio", title: "Dove ascolti la musica" },
   ],
-  "e-linker": [
-    { id: "inizia", title: "Un link sempre con te" },
-    { id: "nfc", title: "Attività, prodotti e ricordi" },
-    { id: "testo", title: "Una scritta in rilievo" },
-    { id: "logo", title: "Prepara il tuo logo" },
-    { id: "colori", title: "Due colori, il tuo stile" },
-    { id: "richiesta", title: "Dall’idea all’oggetto" },
-  ],
+  "e-linker": linkerManualSections,
 };
 
 export function ProductDocumentation({ product }: { product: Exclude<ProductId, "e-led"> }) {
@@ -30,7 +24,7 @@ export function ProductDocumentation({ product }: { product: Exclude<ProductId, 
     <main id="shop-content" className={styles.docs}>
       <h1>Dentro {product}<span>.</span></h1>
       <div className={styles.docsIntro}>
-        <p className={styles.docsLead}>{isDisk ? "L’oggetto, l’app e i tuoi dischi. Tutto quello che serve per capire come si incontrano." : "Il tuo brand, un prodotto, un ricordo: il portachiavi NFC che apre un collegamento con un gesto. Poi forme, logo e colori lo rendono tuo."}</p>
+        <p className={styles.docsLead}>{isDisk ? "L’oggetto, l’app e i tuoi dischi. Tutto quello che serve per capire come si incontrano." : "Istruzioni per configurare il tag NFC e usare e-linker in sicurezza."}</p>
         {!isDisk && <Link className={controls.primary} href="/shop/e-linker/configura">
           Configura e-linker <ArrowUpRight size={17} aria-hidden="true" />
         </Link>}
@@ -46,19 +40,7 @@ export function ProductDocumentation({ product }: { product: Exclude<ProductId, 
             <section id="collegamento"><h2>Il collegamento al giradischi.</h2><p>Apri l’app da HTTPS o localhost in un browser che supporti Web Bluetooth. Dal pannello dei collegamenti scegli il giradischi e autorizza il collegamento al dispositivo Evolve. La pagina non si collega all’hardware senza una tua azione.</p><p>Supporto e disponibilità dipendono dal browser e dal sistema operativo. Se Web Bluetooth non è disponibile, la gestione della collezione rimane separata dal collegamento al dispositivo fisico.</p><p>Gli indicatori di connessione e motore riflettono i messaggi ricevuti dal dispositivo. La rotazione del modello 3D è una rappresentazione visiva, non una misura dei giri del motore.</p></section>
             <section id="nfc"><h2>Un codice per ogni disco NFC.</h2><p>Associa il brano al codice della collezione, poi usa la scrittura NFC nell’app per richiedere al giradischi di scrivere quel codice sul tag. Durante la scrittura, segui i messaggi nel pannello e presenta il tag al lettore quando richiesto.</p><p>La scrittura è conclusa soltanto quando il dispositivo conferma lo stesso codice richiesto. Attesa, errore, annullamento o perdita del collegamento non equivalgono a una scrittura completata.</p><p>Il formato del tag è gestito dal firmware del giradischi. L’app associa al tag un codice numerico; titolo e collegamento del brano rimangono nella collezione del browser.</p></section>
             <section id="audio"><h2>La musica segue il tuo dispositivo.</h2><p>Puoi ascoltare dal telefono o dal computer, oppure usare cuffie o una cassa collegata al sistema. Il collegamento BLE al giradischi serve per i tag e i comandi; l’audio passa dall’uscita multimediale del tuo dispositivo.</p><p>Per una cassa Bluetooth, abbinala dalle impostazioni del telefono o del computer e selezionala come uscita audio. Le possibilità di selezione direttamente nella pagina dipendono dal browser.</p><p className={styles.docsNote}>Il modello dello shop è un’anteprima dimostrativa del prodotto. Colori, finiture, dimensioni e disponibilità vengono confermati con Evolve.</p></section>
-          </> : <>
-            <section id="inizia"><h2>Un piccolo oggetto. Un accesso diretto.</h2><p>e-linker è un portachiavi stampato in 3D con un tag NFC al suo interno. Avvicinandolo a uno smartphone compatibile, il tag può aprire il collegamento scelto. Il tuo logo e i tuoi colori rendono riconoscibile l’oggetto; il link gli dà una destinazione.</p><p>Scegli la base fra le forme piane del configuratore. Trascina il modello per osservarlo in 3D; le quattro frecce, Q/E e Home permettono di ruotarlo e ripristinare la vista da tastiera.</p></section>
-            <section id="nfc"><h2>Che cosa vuoi far scoprire?</h2><p>Per la tua attività puoi scegliere sito, social, menu, catalogo o una pagina di contatto. Per un prodotto, una scheda o un video di presentazione. Per un amico, un album di foto, una dedica o un ricordo online.</p><p>Il tag apre un link: immagini, musica e video rimangono nel servizio che li ospita. Per un ricordo personale, imposta nella pagina di destinazione chi può accedere al contenuto.</p><p>Per salvare o cambiare il link sul tuo e-linker, usa il pulsante «Configura e-linker» e avvicina il portachiavi al telefono quando richiesto.</p></section>
-            <section id="testo"><h2>Lascia un segno, in rilievo.</h2><p>Il testo si adatta allo spazio disponibile nella forma scelta. Il configuratore indica il limite di caratteri per ogni faccia.</p><p>Nomi brevi e lettere ben distinte sono più leggibili su un piccolo oggetto.</p><p>La dimensione minima delle lettere e gli spessori effettivamente stampabili vengono verificati prima della produzione.</p></section>
-            <section id="logo">
-              <h2>Il tuo logo, preparato bene.</h2>
-              <p>Dal bundle da 20 portachiavi puoi allegare un logo in formato SVG, PNG o JPG. Il nostro team riceve il logo con l’ordine e prepara il design.</p>
-              <p>Scegli un file fino a 2 MB. Le immagini possono misurare fino a 4096 × 4096 pixel. Per l’SVG usa tracciati pieni, converti eventuali testi in tracciati ed esporta il file senza risorse esterne.</p>
-              <p>Il logo viene salvato come PNG nella personalizzazione dell’ordine.</p>
-            </section>
-            <section id="colori"><h2>Base e dettagli, separatamente.</h2><p>Apri la palette dalla riga “Base” oppure “Rilievo”, poi scegli una delle 16 tonalità dimostrative. I due comandi sotto le righe permettono di scambiare i colori o scegliere un abbinamento casuale; puoi anche partire da uno dei mix suggeriti.</p><p>I colori sullo schermo sono indicativi: resa del materiale, finitura e filamenti disponibili vengono concordati con Evolve.</p></section>
-            <section id="richiesta"><h2>Dall’idea all’oggetto.</h2><p>“Salva la tua configurazione” scarica un riepilogo delle scelte. Per progetti su misura puoi raggiungerci dalla pagina Contatti.</p><p>L’anteprima non è un file di produzione. Prima di stampare definiamo dimensioni, spessori, leggibilità, quantità, prezzo e disponibilità.</p><Link className={styles.docsAction} href="/shop/e-linker#configura">Crea il tuo e-linker <ArrowUpRight size={17} /></Link></section>
-          </>}
+          </> : <LinkerManual />}
         </div>
       </div>
     </main>
