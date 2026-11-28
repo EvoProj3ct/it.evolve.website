@@ -193,10 +193,15 @@ export const PRODUCTS = {
 } as const;
 
 export function defaultConfiguration(product: ProductId): ProductConfiguration {
+  const font = product === "e-linker" ? "rounded" : defaultKeyringLettering.font;
   return {
     primary: PRODUCTS[product].defaultPrimary, secondary: PRODUCTS[product].defaultSecondary,
     shape: "rectangle", text: product === "e-linker" ? "e-linker." : product === "e-led" ? "EVOLVE" : "CIAO.", logo: null,
-    keyring: { hole: keyringHoleOptions("rectangle")[0].id, front: { ...defaultKeyringLettering }, back: { ...defaultKeyringLettering, text: "" } },
+    keyring: {
+      hole: keyringHoleOptions("rectangle")[0].id,
+      front: { ...defaultKeyringLettering, font },
+      back: { ...defaultKeyringLettering, font, text: "" },
+    },
   };
 }
 
