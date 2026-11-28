@@ -14,7 +14,7 @@
 .page :is(button, a, summary) { -webkit-tap-highlight-color: transparent; }
 .page button:disabled { cursor: default; }
 .page :is(h1,h2,h3,p,dl,dd) { margin: 0; }
-.topline { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.topline { display: flex; align-items: center; }
 .backLink { display: inline-flex; align-items: center; gap: 9px; color: #677565; font-size: 11px; transition: color .3s; }
 .backLink svg { transition: transform .35s var(--preview-ease); }
 .backLink:hover { color: var(--preview-ink); }
@@ -305,7 +305,6 @@
 }
 @media (max-width: 700px) {
   .page { min-height: calc(100svh - 68px); padding-inline: 22px; padding-bottom: 70px; }
-  .topline { gap: 15px; }
   .previewNote > p { display: none; }
   .pageHeading { margin-block: 31px; padding-bottom: 27px; }
   .pageHeading h1 { font-size: clamp(43px,9.8vw,64px); }

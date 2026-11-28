@@ -160,7 +160,7 @@ export function ShopProfile() {
   const account = hidesPreviousData(error) ? undefined : resource.currentData?.account;
   const firstName = account?.name.trim().split(/\s+/)[0];
   return <main id="shop-content" className={`${styles.page} ${styles.profilePage}`}>
-    <ShopPageHeader title={firstName ? `Ciao, ${firstName}` : "Account"} showAccountLink={false} />
+    <ShopPageHeader title={firstName ? `Ciao, ${firstName}` : "Account"} />
     <ResourceFeedback busy={!account && resource.isFetching} error={error}
       reload={resource.refetch} />
     {account && <div className={styles.profileGrid}>
